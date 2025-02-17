@@ -50,15 +50,73 @@ app.get("/api/v1/user/:email", async (req, res) => {
         const email = req.params.email;
 
         const result = await client.query(
-            "SELECT * FROM users WHERE users.email = $1",
+            `
+            WITH outgoing AS (
+                SELECT 
+                    u.email AS email,  -- Renaming user_email to email
+                    ARRAY_AGG(DISTINCT d.ip) AS devices,  -- Renaming device_ips to devices
+                    COALESCE(
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'email', cu.email,
+                                'ip', ed.ip
+                            )
+                        ) FILTER (WHERE ed.ip IS NOT NULL), 
+                        '[]'::JSONB
+                    ) AS outgoing_edges
+                FROM users u
+                LEFT JOIN devices d ON u.userID = d.userID
+                LEFT JOIN edges e ON u.userID = e.userID
+                LEFT JOIN devices ed ON e.deviceID = ed.deviceID
+                LEFT JOIN users cu ON ed.userID = cu.userID
+                WHERE u.email = $1
+                GROUP BY u.email
+            ),
+            incoming AS (
+                SELECT 
+                    u.email AS email,  -- Renaming user_email to email
+                    ARRAY_AGG(DISTINCT d.ip) AS devices,  -- Renaming device_ips to devices
+                    COALESCE(
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'email', cu.email,  -- The email of the user adding the edge
+                                'ip', ed.ip
+                            )
+                        ) FILTER (WHERE ed.ip IS NOT NULL), 
+                        '[]'::JSONB
+                    ) AS incoming_edges
+                FROM users u
+                LEFT JOIN devices d ON u.userID = d.userID
+                LEFT JOIN edges e ON d.deviceID = e.deviceID  -- The current user's device is the target
+                LEFT JOIN devices ed ON e.deviceID = ed.deviceID  -- The devices of the other users
+                LEFT JOIN users cu ON e.userID = cu.userID  -- The user adding the edge to the current user's device
+                WHERE u.email = $1
+                GROUP BY u.email
+            )
+            SELECT 
+                o.email,
+                o.devices,
+                o.outgoing_edges,
+                i.incoming_edges
+            FROM outgoing o
+            LEFT JOIN incoming i ON o.email = i.email;
+            `,
             [email]
         );
+
         if (result.rows.length === 0) {
             res.status(404).json({ message: "User does not exist" });
             return;
         }
 
-        res.json(result.rows[0]);
+        // TODO Change the query to make sure that if condition is true it
+        // returns an empty list
+        const ret = result.rows[0];
+        if (ret.devices[0] === null) {
+            ret.devices = [];
+        }
+
+        res.json(ret);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "An error occured" });
@@ -90,9 +148,67 @@ app.delete("/api/v1/user/:email", async (req, res) => {
 app.get("/api/v1/user", async (req, res) => {
     try {
         const result = await client.query(
-            "SELECT * FROM users"
+            `
+            WITH outgoing AS (
+                SELECT 
+                    u.email AS email,  -- Renaming user_email to email
+                    ARRAY_AGG(DISTINCT d.ip) AS devices,  -- Renaming device_ips to devices
+                    COALESCE(
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'email', cu.email,
+                                'ip', ed.ip
+                            )
+                        ) FILTER (WHERE ed.ip IS NOT NULL), 
+                        '[]'::JSONB
+                    ) AS outgoing_edges
+                FROM users u
+                LEFT JOIN devices d ON u.userID = d.userID
+                LEFT JOIN edges e ON u.userID = e.userID
+                LEFT JOIN devices ed ON e.deviceID = ed.deviceID
+                LEFT JOIN users cu ON ed.userID = cu.userID
+                GROUP BY u.email
+            ),
+            incoming AS (
+                SELECT 
+                    u.email AS email,  -- Renaming user_email to email
+                    ARRAY_AGG(DISTINCT d.ip) AS devices,  -- Renaming device_ips to devices
+                    COALESCE(
+                        JSONB_AGG(
+                            DISTINCT JSONB_BUILD_OBJECT(
+                                'email', cu.email,  -- The email of the user adding the edge
+                                'ip', ed.ip
+                            )
+                        ) FILTER (WHERE ed.ip IS NOT NULL), 
+                        '[]'::JSONB
+                    ) AS incoming_edges
+                FROM users u
+                LEFT JOIN devices d ON u.userID = d.userID
+                LEFT JOIN edges e ON d.deviceID = e.deviceID  -- The current user's device is the target
+                LEFT JOIN devices ed ON e.deviceID = ed.deviceID  -- The devices of the other users
+                LEFT JOIN users cu ON e.userID = cu.userID  -- The user adding the edge to the current user's device
+                GROUP BY u.email
+            )
+            SELECT 
+                o.email,
+                o.devices,
+                o.outgoing_edges,
+                i.incoming_edges
+            FROM outgoing o
+            LEFT JOIN incoming i ON o.email = i.email;
+            `
         );
-        res.json(result.rows);
+
+        const ret = result.rows;
+
+        // TODO Change the query to make sure that if condition is true it
+        // returns an empty list for every user
+        res.json(ret.map(u => {
+            if (u.devices[0] === null) {
+                u.devices = [];
+            }
+            return u;
+        }));
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "An error has occured" });
@@ -180,6 +296,30 @@ app.post("/api/v1/edge/:email/:ip", async (req, res) => {
         );
 
         res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "An error has occured" });
+    }
+});
+
+app.delete("/api/v1/edge/:email/:ip", async (req, res) => {
+    try {
+        const email = req.params.email;
+        const ip = req.params.ip;
+
+        const result = await client.query(
+            `DELETE FROM edges
+             WHERE userID = (SELECT userID FROM users WHERE email = $1)
+             AND deviceID = (SELECT deviceID FROM devices WHERE ip = $2)
+             RETURNING *`, [email, ip]
+        );
+
+        if (result.rowCount !== 1) {
+            res.status(404).json({ message: "Edge does not exist" });
+            return;
+        }
+
+        res.json({ message: "Successfully deleted edge" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "An error has occured" });
