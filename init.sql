@@ -1,7 +1,21 @@
-CREATE TABLE IF NOT EXISTS UserTable (
-    userID SERIAL NOT NULL,
-    userEmail VARCHAR(255) NOT NULL,
-    userPasswordHash TEXT,
-    userSubnet VARCHAR(64),
-    PRIMARY KEY (userID)
+CREATE TABLE IF NOT EXISTS users (
+    userID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email varchar(255) UNIQUE NOT NULL,
+    hsUserID VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+    deviceID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    userID UUID NOT NULL,
+    hsDeviceID VARCHAR(255) UNIQUE NOT NULL,
+    ip INET UNIQUE NOT NULL,
+    FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS edges (
+    userID UUID NOT NULL,
+    deviceID UUID NOT NULL,
+    PRIMARY KEY (userID, deviceID),
+    FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
+    FOREIGN KEY (deviceID) REFERENCES devices(deviceID) ON DELETE CASCADE
 );
