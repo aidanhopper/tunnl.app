@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { login } from './API';
+import { login, getUserData } from './API';
 import { useUserContext } from './UserContext';
 import { useState, useRef } from 'react';
 
@@ -37,7 +37,8 @@ const Login = ({ redirectTo }: { redirectTo: string }) => {
                                     passwordRef.current.value
                                 );
                                 if (status === 200) {
-                                    setUser(data.user.email);
+                                    const [data, s] = await getUserData()
+                                    if (s === 200) setUser(data);
                                     navigate(`${redirectTo}`);
                                 }
                                 setIsInvalidLogin(true);

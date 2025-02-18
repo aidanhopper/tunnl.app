@@ -11,8 +11,8 @@ const App = () => {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<Landing />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/login" element={<Login redirectTo="/dashboard" />} />
+                    <Route path="/dashboard/*" element={<Dashboard />} />
+                    <Route path="/login" element={<Login redirectTo="/dashboard/networks" />} />
                     <Route path="/register" element={<Register redirectTo="/" />} />
                 </Routes>
             </BrowserRouter>

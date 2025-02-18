@@ -1,3 +1,5 @@
+// TODO Lock this API behind an API key stored in the database
+
 import dotenv from 'dotenv';
 import express from 'express';
 import pg from 'pg';
@@ -255,7 +257,7 @@ app.post("/api/v1/device/:email/:key", async (req, res) => {
             [email, hsMachineID, ip]
         );
 
-        res.json(result.rows);
+        res.status(201).json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "An error has occured" });

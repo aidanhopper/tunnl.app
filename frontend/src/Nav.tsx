@@ -21,7 +21,7 @@ const UserProfileButton = () => {
         <>
             <Link to="/dashboard" className="text-2xl hover:bg-black
             hover:text-white duration-100 py-2 px-4 rounded mr-4">
-                {user}
+                {user.email}
             </Link>
             <button className="text-2xl hover:bg-black
             hover:text-white duration-100 py-2 px-4 rounded"

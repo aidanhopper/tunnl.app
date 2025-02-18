@@ -2,12 +2,15 @@ import { Link } from 'react-router';
 import Nav from './Nav';
 import { useSession } from './Hooks';
 import { useUserContext } from './UserContext'
+import { getUserData } from './API'
 
 
 const Landing = () => {
     const [user, setUser] = useUserContext();
-    useSession(user, (data, status) => {
-        if (status) setUser(data.user.email);
+    useSession(user, (_, status) => {
+        if (status) getUserData().then(([d, status]) => {
+            if (status === 200) setUser(d);
+        })
     });
 
     return (
@@ -22,7 +25,8 @@ const Landing = () => {
                     <Link to={user === null ? "/register" : "/dashboard"}
                         className="text-2xl bg-black text-white rounded
                         py-4 px-8 hover:bg-gray-800 duration-100">
-                        Get Started &#8594;
+                        {user === null ? "Get Started " : "Dashboard "}
+                        &#8594;
                     </Link>
                 </div>
             </div>

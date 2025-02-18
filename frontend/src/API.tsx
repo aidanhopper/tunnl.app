@@ -47,6 +47,43 @@ export const register = async (email: string, password: string) => {
             }),
         }
     );
-    console.log(res);
+    return [await res.json(), res.status];
+}
+
+export const postDevice = async (key: string) => {
+    const url = `/api/v1/device/${key}`;
+    const res = await fetch(url,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+    return [await res.json(), res.status];
+}
+
+export const deleteDevice = async (ip: string) => {
+    const url = `/api/v1/device/${ip}`;
+    const res = await fetch(url,
+        {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
+    return [await res.json(), res.status];
+}
+
+export const getUserData = async () => {
+    const url = `/api/v1/user`;
+    const res = await fetch(url,
+        {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    );
     return [await res.json(), res.status];
 }
