@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { register } from './API';
+import { register, getUserData } from './API';
 import { useUserContext } from './UserContext';
 import { useState, useRef } from 'react';
 
@@ -63,8 +63,10 @@ const Register = ({ redirectTo }: { redirectTo: string }) => {
                                 return;
                             }
 
-                            setUser(data.user.email);
-                            navigate("/dashboard");
+                            console.log(data);
+                            const [userData, s] = await getUserData();
+                            if (s === 200) setUser(userData);
+                            navigate("/dashboard/networks");
                         }} />
                 </form>
             </div>

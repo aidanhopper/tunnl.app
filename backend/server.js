@@ -80,7 +80,6 @@ app.post("/api/v1/register", async (req, res) => {
         const { email, password } = req.body;
 
         const hash = await bcrypt.hash(password, saltRounds);
-
         const insertUserResponse = await client.query(
             `
                     INSERT INTO users(email, hashedPassword)
@@ -161,7 +160,7 @@ app.post("/api/v1/device/:key", async (req, res) => {
             res.status(401).json({ message: "Not logged in" });
             return;
         }
-
+        
         const email = req.session.user.email;
         const key = req.params.key;
 

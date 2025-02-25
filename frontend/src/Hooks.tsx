@@ -16,7 +16,6 @@ export const useUser = (): [any, (newUser: any) => void] => {
     const [user, setUser] = useState<any>(null);
     useSession(user, (_, success) => {
         if (success) getUserData().then(([d, status]) => {
-            console.log("query")
             if (status === 200) setUser(d);
         });
     });
