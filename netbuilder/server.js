@@ -1,7 +1,7 @@
 // TODO Lock this API behind an API key stored in the database
 
 import dotenv from 'dotenv';
-import express, { response } from 'express';
+import express from 'express';
 import pg from 'pg';
 
 dotenv.config();
@@ -16,9 +16,8 @@ const client = new pg.Client({
     database: `${process.env.PG_DATABASE}`,
 });
 
-const baseURL = "https://ziti.ahop.dev";
-const managementAPI = `${baseURL}/edge/management/v1`;
-const apiToken = "376dd2a8-eb82-496c-8a10-43090b3becad";
+const managementAPI = `${process.env.ZITI_CONTROLLER_URL}/edge/management/v1`;
+const apiToken = "268e6fe7-7ab2-40f7-aa16-e1993d101b08";
 
 client.connect()
     .then(() => console.log("Connected to PostgreSQL DB"))
@@ -49,7 +48,7 @@ app.post("/api/v1/token", async (req, res) => {
     }
 });
 
-app.post("/api/v1/device/:name", async (req, res) => {
+app.post("/api/v1/device/:id", async (req, res) => {
     try {
         const name = req.params.name;
 
@@ -95,7 +94,7 @@ app.post("/api/v1/device/:name", async (req, res) => {
             console.error(await getEnrollmentJwtResponse.json());
             throw new Error("Error getting enrollment jwt");
         }
-         
+
         const jwt = (await getEnrollmentJwtResponse.json()).data[0].jwt;
 
         res.json({ jwt: jwt });
@@ -105,4 +104,4 @@ app.post("/api/v1/device/:name", async (req, res) => {
     }
 });
 
-app.listen(process.env.PORT, () => console.log("Server running on", process.env.PORT));
+app.listen(process.env.PORT, () => console.log("Server running on", process.env.PORT))
