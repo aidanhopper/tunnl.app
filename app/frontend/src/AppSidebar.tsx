@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const buttons = [
     {
@@ -33,12 +34,20 @@ const buttons = [
 
 const ConnectButton = ({ onClick, isConnected }: { onClick: () => void, isConnected: boolean }) => {
     return (
-        <button
-            onClick={onClick}
-            className={`rounded-full w-16 h-8 flex duration-150
-                        items-center ${isConnected ? "bg-green-800" : "bg-red-800"}`}>
-            <div className={`bg-white h-7 w-7 rounded-full  duration-150
+        <button className="mb-8 flex items-center font-bold text-lg" onClick={onClick}>
+            <div
+                className={`rounded-full w-16 h-8 flex duration-150
+                        items-center ${isConnected ? "bg-green-700" : "bg-neutral-700"}`}>
+                <div className={`bg-white h-7 w-7 rounded-full  duration-150
                             ${isConnected ? "translate-x-9" : ""} `} />
+
+
+            </div>
+            {
+                isConnected ?
+                    <p className="ml-4">Connected</p> :
+                    <p className="ml-4">Disconnected</p>
+            }
         </button>
     );
 }
@@ -71,16 +80,9 @@ const AppSidebar = () => {
                 }
             </div>
             <div className="h-96 p-4 content-end text-sm">
-                <div className="mb-8 flex items-center font-bold text-lg">
-                    <ConnectButton
-                        onClick={() => setIsConnected(!isConnected)}
-                        isConnected={isConnected} />
-                    {
-                        isConnected ?
-                        <p className="ml-4">Connected</p> :
-                        <p className="ml-4">Disconnected</p>
-                    }
-                </div>
+                <ConnectButton
+                    onClick={() => setIsConnected(!isConnected)}
+                    isConnected={isConnected} />
                 <div className="flex items-center mb-4 group">
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex">
@@ -93,7 +95,7 @@ const AppSidebar = () => {
                             </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="text-black">
-                            <DropdownMenuItem>Log Out</DropdownMenuItem>
+                            <DropdownMenuItem><Link to="/login">Log Out</Link></DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

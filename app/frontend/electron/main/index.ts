@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
-import { spawn, exec } from 'child_process';
+import axios from 'axios'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -44,6 +44,24 @@ let win: BrowserWindow | null = null
 const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
+if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient("tunnl", process.execPath, [path.resolve(process.argv[1])])
+    }
+} else {
+    app.setAsDefaultProtocolClient("tunnl")
+}
+
+const gotTheLock = app.requestSingleInstanceLock()
+
+const handleDeeplink = (url: string) => {
+    if (win) {
+        const data = url.replace("tunnl://", "");
+        console.log(data);
+        win.webContents.send("login-event", data);
+    }
+}
+
 async function createWindow() {
     win = new BrowserWindow({
         title: 'Main window',
@@ -82,23 +100,37 @@ async function createWindow() {
     update(win)
 }
 
-app.whenReady().then(() => {
-    createWindow()
-    ipcMain.on("start-tunnel", startTunnel);
-    startTunnel();
+if (!gotTheLock) {
+    app.quit()
+} else {
+    app.whenReady().then(() => {
+        createWindow()
+    })
+}
+
+app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    if (win) {
+        if (win.isMinimized()) win.restore()
+        win.focus()
+    }
+    // the commandLine is array of strings in which last element is deep link url
+
+    if (process.platform !== 'darwin') {
+        const url: string | undefined = commandLine.pop();
+        if (url)
+            handleDeeplink(url);
+    }
+
+})
+
+app.on('open-url', (_, url) => {
+    handleDeeplink(url);
 })
 
 app.on('window-all-closed', () => {
     win = null
     if (process.platform !== 'darwin') app.quit()
-})
-
-app.on('second-instance', () => {
-    if (win) {
-        // Focus on the main window if the user tried to open another
-        if (win.isMinimized()) win.restore()
-        win.focus()
-    }
 })
 
 app.on('activate', () => {
@@ -127,11 +159,9 @@ ipcMain.handle('open-win', (_, arg) => {
     }
 })
 
-let tunnelProcess;
+ipcMain.handle('request', async (_, axios_request) => {
+    const result = await axios(axios_request)
+    return { data: result.data, status: result.status }
+})
 
-const startTunnel = () => {
-    //tunnelProcess = spawn("/Users/aidanhopper/Projects/MeshNetPlatform/ziti-edge-tunnel");
-    //tunnelProcess.stdout.on("data", (data) => {
-    //    console.log(`Tunnel Output: ${data}`);
-    //});
-}
+ipcMain.handle('openLinkInBrowser', async (_, url) => shell.openExternal(url));

@@ -2,11 +2,13 @@ import { useLocation } from 'react-router-dom';
 import ScrollingList from './ScrollingList';
 import ListingLayout from './ListingLayout';
 import { Link } from 'react-router-dom';
+import { getHello } from './API';
 
 const Communities = () => {
     const location = useLocation();
     const tokens = location.pathname.split("/").filter(e => e !== "");
     const activeItemId = tokens.length >= 2 ? tokens[1] : "";
+
     return (
         <ListingLayout>
             <div className="h-full flex flex-col w-[300px] bg-neutral-900 px-4">

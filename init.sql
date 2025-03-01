@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS services (
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS shares (
     serviceID UUID NOT NULL,

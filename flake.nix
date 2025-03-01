@@ -22,6 +22,7 @@
             nodejs
             create-react-app 
             yarn
+            python313
           ]; 
         };
       });
