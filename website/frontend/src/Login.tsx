@@ -6,7 +6,7 @@ const CLIENT_ID = "519403689632-1t14ifrjndvttr1sfjn5p945pigc8a3s.apps.googleuser
 const Login = () => {
     const navigate = useNavigate();
     return (
-        <div className="h-screen w-screen bg-neutral-800 text-neutral-200 flex
+        <div className="h-screen w-screen bg-neutral-800 text-white flex
             items-center justify-center text-3xl">
             <div className="flex items-center justify-center">
                 <div className="flex justify-center items-center flex-col"
