@@ -9,7 +9,8 @@ const Login = () => {
         <div className="h-screen w-screen bg-neutral-800 text-neutral-200 flex
             items-center justify-center text-3xl">
             <div className="flex items-center justify-center">
-                <div className="flex justify-center items-center flex-col">
+                <div className="flex justify-center items-center flex-col"
+                    style={{ colorScheme: "light" }}>
                     <h1 className="font-bold">
                         tunnl.app
                     </h1>
