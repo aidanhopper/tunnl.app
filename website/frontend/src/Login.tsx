@@ -21,7 +21,7 @@ const Login = () => {
                                 text="continue_with"
                                 theme="filled_blue"
                                 onSuccess={(response) => {
-                                    location.href = `tunnl://?token=${JSON.stringify(response.credential)}`;
+                                    location.href = `tunnl://${JSON.stringify(response.credential)}`;
                                     navigate("/login/success");
                                 }} />
                         </GoogleOAuthProvider>
