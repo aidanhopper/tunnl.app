@@ -10,7 +10,7 @@ const Login = () => {
             items-center justify-center text-3xl">
             <div className="flex items-center justify-center">
                 <div className="flex justify-center items-center flex-col"
-                    style={{ colorScheme: "light" }}>
+                    style={{ colorScheme: "dark" }}>
                     <h1 className="font-bold">
                         tunnl.app
                     </h1>
@@ -18,6 +18,7 @@ const Login = () => {
                     <GoogleOAuthProvider clientId={CLIENT_ID}>
                         <GoogleLogin
                             text="continue_with"
+                            theme="filled_blue"
                             onSuccess={(response) => {
                                 location.href = `tunnl://?token=${JSON.stringify(response.credential)}`;
                                 navigate("/login/success");
