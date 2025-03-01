@@ -25,7 +25,7 @@ const Login = () => {
                                         event: "login",
                                         token: response.credential,
                                     };
-                                    location.href = `tunnl://?data=${encodeURIComponent(JSON.stringify(data))}`;
+                                    location.href = `tunnl://message?data=${encodeURIComponent(JSON.stringify(data))}`;
                                     navigate("/login/success");
                                 }} />
                         </GoogleOAuthProvider>
