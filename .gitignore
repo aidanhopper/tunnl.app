@@ -4,3 +4,4 @@
 postgres_data
 *.env
 acls.json
+*/dist
