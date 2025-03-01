@@ -25,6 +25,7 @@ const Login = () => {
                                         event: "login",
                                         token: response.credential,
                                     };
+                                    console.log(data);
                                     location.href = `tunnl://message?data=${encodeURIComponent(JSON.stringify(data))}`;
                                     navigate("/login/success");
                                 }} />
