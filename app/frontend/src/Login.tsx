@@ -1,6 +1,7 @@
 import { postAuthGoogle } from './API';
 
 const handleLogin = (token: string) => {
+    console.log(token);
     postAuthGoogle(token).then(d => console.log(d));
 }
 

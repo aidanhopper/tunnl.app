@@ -22,6 +22,8 @@ app.post("/api/v1/auth/google/callback", async (req, res) => {
     try {
         console.log("/api/v1/auth/google");
 
+        console.log(req);
+
         const { code } = req.body;
 
         const ticket = await googleClient.verifyIdToken({
