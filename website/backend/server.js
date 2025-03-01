@@ -22,7 +22,7 @@ app.post("/api/v1/auth/google/callback", async (req, res) => {
     try {
         console.log("/api/v1/auth/google");
 
-        console.log(req);
+        console.log("req.body", req.body);
 
         const { code } = req.body;
 
