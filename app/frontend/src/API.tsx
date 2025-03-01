@@ -10,4 +10,15 @@ const getHello = async () => {
     });
 }
 
-export { getHello };
+const postAuthGoogle = async (code: string) => {
+    const response = await request({
+        url: `https://tunnl.app/api/v1/auth/google/${encodeURIComponent(code)}`,
+        method: "POST",
+    });
+
+    console.log(response);
+
+    return response;
+}
+
+export { getHello, postAuthGoogle };

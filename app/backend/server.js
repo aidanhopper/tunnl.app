@@ -1,5 +1,6 @@
 import express from "express";
 import session from "express-session";
+import axios from 'axios';
 import dotenv from "dotenv";
 import pg from "pg";
 import bcrypt from "bcryptjs";

@@ -56,10 +56,17 @@ const gotTheLock = app.requestSingleInstanceLock()
 
 const handleDeeplink = (url: string) => {
     if (win) {
-        const data = url.replace("tunnl://", "");
-        console.log(data);
-        win.webContents.send("login-event", data);
+        const decodedUrl = decodeURI(url);
+        const urlObj = new URL(decodedUrl);
+        const params = new URLSearchParams(urlObj.search);
+        const dataParam = params.get("data");
+        if (dataParam) {
+            const data = JSON.parse(decodeURIComponent(dataParam));
+            if (data.event === 'login')
+                win.webContents.send("login-event", data.token);
+        }
     }
+
 }
 
 async function createWindow() {

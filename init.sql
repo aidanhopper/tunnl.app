@@ -62,8 +62,9 @@ CREATE TABLE IF NOT EXISTS apiKeys (
 CREATE TABLE IF NOT EXISTS users (
     userID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
-    passwordHash TEXT UNIQUE NOT NULL,
-    displayName TEXT
+    displayName TEXT,
+    accessToken TEXT NOT NULL,
+    refreshToken TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS communities (
