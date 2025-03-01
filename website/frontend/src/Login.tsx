@@ -14,18 +14,18 @@ const Login = () => {
                     <h1 className="font-bold">
                         tunnl.app
                     </h1>
-                    <div className="h-14 w-1" />
-                    <GoogleOAuthProvider clientId={CLIENT_ID}>
-                        <GoogleLogin
-                            text="continue_with"
-                            theme="filled_blue"
-                            onSuccess={(response) => {
-                                location.href = `tunnl://?token=${JSON.stringify(response.credential)}`;
-                                navigate("/login/success");
-                            }} />
-                    </GoogleOAuthProvider>
-                    <div className="h-14 w-1" />
-                    <div className="h-14 w-1" />
+                    <div className="h-10 w-1"/>
+                    <div className="bg-white w-64  h-24 flex justify-center items-center rounded-lg shadow-lg">
+                        <GoogleOAuthProvider clientId={CLIENT_ID}>
+                            <GoogleLogin
+                                text="continue_with"
+                                theme="filled_blue"
+                                onSuccess={(response) => {
+                                    location.href = `tunnl://?token=${JSON.stringify(response.credential)}`;
+                                    navigate("/login/success");
+                                }} />
+                        </GoogleOAuthProvider>
+                    </div>
                 </div>
             </div>
         </div>
