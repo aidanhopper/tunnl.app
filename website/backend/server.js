@@ -12,6 +12,8 @@ const app = express();
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+app.use(express.json());
+
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 app.get("*", (_, res) => {
