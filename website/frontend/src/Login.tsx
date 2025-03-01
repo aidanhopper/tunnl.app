@@ -1,10 +1,10 @@
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 
 const CLIENT_ID = "519403689632-1t14ifrjndvttr1sfjn5p945pigc8a3s.apps.googleusercontent.com";
 
 const Login = () => {
-    const navigate = useNavigate();
+    //const navigate = useNavigate();
     return (
         <div className="h-screen w-screen bg-neutral-800 text-white flex
             items-center justify-center text-3xl">
@@ -20,14 +20,25 @@ const Login = () => {
                             <GoogleLogin
                                 text="continue_with"
                                 theme="filled_blue"
-                                onSuccess={(response) => {
-                                    const data = {
-                                        event: "login",
-                                        token: response.credential,
-                                    };
+                                onSuccess={async (response) => {
+                                    const callbackResponse = await fetch("/api/v1/auth/google/callback",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                code: response.credential,
+                                            }),
+                                        }
+                                    )
+
+                                    const data = await callbackResponse.json();
+
                                     console.log(data);
-                                    location.href = `tunnl://message?data=${encodeURIComponent(JSON.stringify(data))}`;
-                                    navigate("/login/success");
+
+                                    //location.href = `tunnl://message?data=${encodeURIComponent(JSON.stringify(data))}`;
+                                    //navigate("/login/success");
                                 }} />
                         </GoogleOAuthProvider>
                     </div>
