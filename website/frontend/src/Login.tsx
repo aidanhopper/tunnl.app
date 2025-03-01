@@ -16,7 +16,6 @@ const Login = () => {
                     <div className="h-14 w-1" />
                     <GoogleOAuthProvider clientId={CLIENT_ID}>
                         <GoogleLogin
-                            theme="filled_blue"
                             text="continue_with"
                             onSuccess={(response) => {
                                 location.href = `tunnl://?token=${JSON.stringify(response.credential)}`;
