@@ -23,6 +23,8 @@
             create-react-app 
             yarn
             python313
+            netcat
+            inetutils
           ]; 
         };
       });

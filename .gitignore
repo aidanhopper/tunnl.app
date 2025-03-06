@@ -5,3 +5,6 @@ postgres_data
 *.env
 acls.json
 *dist
+*build
+*release
+app/ziti

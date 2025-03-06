@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS dials (
     PRIMARY KEY (userID, serviceID)
 );
 
-CREATE TABLE IF NOT EXISTS apiKeys (
-    key TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS tokens (
+    token TEXT NOT NULL,
     time TIMESTAMP NOT NULL
 );
 
@@ -62,17 +62,28 @@ CREATE TABLE IF NOT EXISTS apiKeys (
 CREATE TABLE IF NOT EXISTS users (
     userID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
-    displayName TEXT,
-    accessToken TEXT NOT NULL,
-    refreshToken TEXT NOT NULL
+    displayName TEXT NOT NULL,
+    googleID TEXT UNIQUE NOT NULL,
+    pictureURL TEXT NOT NULL,
+    lastLogin TIMESTAMP NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+    ownerID UUID NOT NULL,
+    deviceID TEXT UNIQUE NOT NULL,
+    deviceName TEXT NOT NULL,
+    FOREIGN KEY (ownerID) REFERENCES users(userID) ON DELETE CASCADE,
+    PRIMARY KEY (ownerID, deviceID)
 );
 
 CREATE TABLE IF NOT EXISTS communities (
     communityID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT UNIQUE NOT NULL,
-    ownerID UUID UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    ownerID UUID NOT NULL,
     description TEXT NOT NULL,
-    FOREIGN KEY (ownerID) REFERENCES users(userID) ON DELETE CASCADE
+    FOREIGN KEY (ownerID) REFERENCES users(userID) ON DELETE CASCADE,
+    UNIQUE (ownerID, name)
 );
 
 CREATE TABLE IF NOT EXISTS members (
@@ -85,11 +96,16 @@ CREATE TABLE IF NOT EXISTS members (
 
 CREATE TABLE IF NOT EXISTS services (
     serviceID UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    deviceID UUID NOT NULL,
     userID UUID NOT NULL,
     domain TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL,
-    FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
+    host TEXT NOT NULL,
+    portRange TEXT NOT NULL,
+    FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
+    FOREIGN KEY (deviceID) REFERENCES devices(deviceID) ON DELETE CASCADE,
+    UNIQUE (name, userID)
 );
 
 CREATE TABLE IF NOT EXISTS shares (
