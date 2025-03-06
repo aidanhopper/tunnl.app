@@ -5,7 +5,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { update } from './update'
 import axios from 'axios'
-import { execSync, spawn, ChildProcess } from 'child_process'
+import { execSync, exec, spawn, ChildProcess } from 'child_process'
 import Store from 'electron-store'
 import dotenv from 'dotenv'
 import crypto from 'crypto'
@@ -27,9 +27,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 process.env.APP_ROOT = path.join(__dirname, '../..')
 
-dotenv.config({
-    path: path.resolve(process.cwd(), "../.env")
-});
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist')
@@ -121,6 +119,7 @@ if (!gotTheLock) {
 } else {
     app.whenReady().then(() => {
         createWindow()
+        startZitiEdgeTunneler()
     })
 }
 
@@ -227,7 +226,7 @@ ipcMain.handle('getHostname', (_) => getHostname());
 
 let tunneler: ChildProcess | null = null;
 
-const startZitiEdgeTunneler = () => {
+const startZitiEdgeTunneler = async () => {
     if (tunneler) {
         console.log("Ziti Edge Tunneler is already running.");
         return;
@@ -237,24 +236,20 @@ const startZitiEdgeTunneler = () => {
     const identitiesPath = path.resolve(`${zitiPath}/identities`);
     const binaryPath = path.resolve(`${zitiPath}/ziti-edge-tunnel-darwin`);
 
-    const command = `${binaryPath} run-host -i ${identitiesPath}/tunnelerTester.json`;
+    const command = `${binaryPath} run -I ${identitiesPath} --dns-ip-range 203.0.113.0/24`;
 
-    tunneler = spawn(command, {
+    tunneler = spawn(`${command}`, {
+        shell: true,
         detached: false,
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: "pipe", // Capture output
+    })
+
+    tunneler.stdout?.on("data", (data) => {
+        process.stdout.write(`[TUNNELER]: ${data}`);
     });
 
     tunneler.stderr?.on("data", (data) => {
-        console.error(`CLI Error: ${data.toString()}`);
+        process.stdout.write(`[TUNNELER]: ${data}`);
     });
 
-    tunneler.stdout?.on("data", (data) => {
-        console.log(`CLI Output: ${data.toString()}`);
-    });
-
-    tunneler.on("error", (err) => {
-        console.error(`Failed to start CLI process: ${err}`);
-    });
 }
-
-startZitiEdgeTunneler()

@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import os from "node:os";
 import axios from "axios";
-import { execSync, spawn } from "child_process";
+import { spawn, execSync } from "child_process";
 import Store from "electron-store";
 import dotenv from "dotenv";
 import crypto from "crypto";
@@ -61,9 +61,7 @@ const store = new Store();
 createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 process.env.APP_ROOT = path.join(__dirname, "../..");
-dotenv.config({
-  path: path.resolve(process.cwd(), "../.env")
-});
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
@@ -131,6 +129,7 @@ if (!gotTheLock) {
 } else {
   app.whenReady().then(() => {
     createWindow();
+    startZitiEdgeTunneler();
   });
 }
 app.on("second-instance", (event, commandLine, workingDirectory) => {
@@ -211,7 +210,7 @@ const getHostname = () => {
 };
 ipcMain.handle("getHostname", (_) => getHostname());
 let tunneler = null;
-const startZitiEdgeTunneler = () => {
+const startZitiEdgeTunneler = async () => {
   var _a, _b;
   if (tunneler) {
     console.log("Ziti Edge Tunneler is already running.");
@@ -220,22 +219,20 @@ const startZitiEdgeTunneler = () => {
   const zitiPath = path.resolve(`${app.getAppPath()}/ziti`);
   const identitiesPath = path.resolve(`${zitiPath}/identities`);
   const binaryPath = path.resolve(`${zitiPath}/ziti-edge-tunnel-darwin`);
-  const command = `${binaryPath} run-host -i ${identitiesPath}/tunnelerTester.json`;
-  tunneler = spawn(command, {
+  const command = `${binaryPath} run -I ${identitiesPath} --dns-ip-range 203.0.113.0/24`;
+  tunneler = spawn(`${command}`, {
+    shell: true,
     detached: false,
-    stdio: ["ignore", "pipe", "pipe"]
+    stdio: "pipe"
+    // Capture output
   });
-  (_a = tunneler.stderr) == null ? void 0 : _a.on("data", (data) => {
-    console.error(`CLI Error: ${data.toString()}`);
+  (_a = tunneler.stdout) == null ? void 0 : _a.on("data", (data) => {
+    process.stdout.write(`[TUNNELER]: ${data}`);
   });
-  (_b = tunneler.stdout) == null ? void 0 : _b.on("data", (data) => {
-    console.log(`CLI Output: ${data.toString()}`);
-  });
-  tunneler.on("error", (err) => {
-    console.error(`Failed to start CLI process: ${err}`);
+  (_b = tunneler.stderr) == null ? void 0 : _b.on("data", (data) => {
+    process.stdout.write(`[TUNNELER]: ${data}`);
   });
 };
-startZitiEdgeTunneler();
 export {
   MAIN_DIST,
   RENDERER_DIST,
