@@ -5,6 +5,8 @@ const axios = require('axios');
 const { OAuth2Client } = require('google-auth-library');
 const pg = require('pg');
 const jwt = require('jsonwebtoken');
+const http = require('http');
+const socketIo = require('socket.io');
 
 dotenv.config();
 
@@ -13,6 +15,9 @@ const PORT = process.env.PORT || 3123;
 const app = express();
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const server = http.createServer(app);
+const io = socketIo(server);
 
 app.use(express.json());
 
@@ -30,14 +35,36 @@ client.connect()
 
 //app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-app.get("/api/v1/hello", (req, res) => {
-    console.log("GET /api/v1/hello");
-    res.json({ message: "world" });
-});
+const generateDaemonToken = (hwid) => {
+    const payload = { type: 'daemon token', hwid: hwid }
+    return jwt.sign(payload, process.env.JWT_SECRET);
+}
 
-//app.get("*", (_, res) => {
-//    res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-//})
+const authenticateDaemonToken = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+        if (err) {
+            res.status(403).json({ message: "Unauthorized" });
+            return;
+        }
+
+        if (payload.type !== 'daemon token') {
+            res.status(403).json({ message: "Unauthorized" });
+            return;
+        }
+
+        req.hwid = payload.hwid;
+
+        next();
+    });
+};
 
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
@@ -48,19 +75,57 @@ const authenticateToken = (req, res, next) => {
         return;
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
         if (err) {
             res.status(403).json({ message: "Unauthorized" });
             return;
         }
 
-        req.user = user;
+        if (payload.type !== 'user token') {
+            res.status(403).json({ message: "Unauthorized" });
+            return;
+        }
+
+        req.id = payload.id;
 
         next();
     });
 }
 
-app.post("/api/v1/auth/google/callback", async (req, res) => {
+app.get('/api/v1/user', authenticateToken, async (req, res) => {
+    try {
+        const id = req.id;
+
+        const response = await client.query(`
+            SELECT * FROM users WHERE id = $1
+        `, [id]);
+
+        if (response.rows.length === 0) {
+            res.status(500).json({ message: 'An error occured' });
+            return;
+        }
+
+        const dbuser = response.rows[0];
+
+        const user = {
+            id: dbuser.id,
+            email: dbuser.email,
+            name: dbuser.name,
+            displayName: dbuser.display_name,
+            googleid: dbuser.google_id,
+            picture: dbuser.picture,
+            lastLogin: dbuser.last_login,
+            createdAt: dbuser.created_at,
+        }
+
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.post('/api/v1/auth/google/callback', async (req, res) => {
     try {
         console.log("POST /api/v1/auth/google");
 
@@ -69,51 +134,45 @@ app.post("/api/v1/auth/google/callback", async (req, res) => {
         const ticket = await googleClient.verifyIdToken({
             idToken: code,
             audience: process.env.GOOGLE_CLIENT_ID,
-        })
+        });
 
         const payload = ticket.getPayload();
-        const { email, name, picture, sub: googleID } = payload;
+        const { email, name, picture, sub } = payload;
 
         await client.query("BEGIN");
 
         let result = await client.query(
-            `SELECT * FROM users WHERE googleid = $1`,
-            [googleID]
+            `SELECT * FROM users WHERE google_id = $1`,
+            [sub]
         );
 
         let user;
 
         if (result.rows.length === 0) {
             const insertResult = await client.query(`
-                INSERT INTO users (googleID, email, displayName, pictureURL, lastLogin)
-                VALUES ($1, $2, $3, $4, NOW())
+                INSERT INTO users (google_id, email, display_name, name, picture, last_login)
+                VALUES ($1, $2, $3, $4, $5, NOW())
                 RETURNING *
-                `, [googleID, email, name, picture]
+                `, [sub, email, name, name, picture]
             );
             user = insertResult.rows[0];
         } else {
             user = result.rows[0];
             await client.query(`
                 UPDATE users
-                SET lastLogin = NOW(), pictureURL = $1
-                WHERE userID = $2
-                `, [picture, user.userid]
+                SET last_login = NOW(), picture = $1
+                WHERE id = $2
+                `, [picture, user.id]
             );
         }
 
         await client.query("COMMIT");
 
-        const data = {
-            email: email,
-            pictureURL: picture,
-            googleID: googleID,
-            name: name,
-            expires: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7)
-        };
+        const data = { type: 'user token', id: user.id };
 
         const token = jwt.sign(data, process.env.JWT_SECRET);
 
-        res.status(201).json({ token: token, email: email, pictureURL: picture });
+        res.status(201).json({ token: token });
     } catch (err) {
         await client.query("ROLLBACK");
         console.error(err);
@@ -121,220 +180,41 @@ app.post("/api/v1/auth/google/callback", async (req, res) => {
     }
 });
 
-app.get("/api/v1/user/profile", authenticateToken, async (req, res) => {
+app.post('/api/v1/daemon/user', authenticateDaemonToken, async (req, res) => {
     try {
-        console.log("GET /api/v1/user/profile")
-        let result = await client.query(`
-            SELECT email, displayName, pictureURL FROM users WHERE email = $1
-        `, [req.user.email]);
+        console.log('POST /api/v1/daemon/user');
 
-        if (result.rows.length === 0) {
-            res.status(404).json({ message: "User not found" });
-            return;
-        }
+        const { userid } = req.body;
+        const hwid = req.hwid;
 
-        const displayName = result.rows[0].displayname;
-        const pictureURL = result.rows[0].pictureurl;
+        await client.query(`
+            INSERT INTO devices (id, user_id, last_login)
+            VALUES ($1, $2, NOW())
+        `, [hwid, userid]);
 
-        result = await client.query(`
-            SELECT d.deviceID, d.deviceName
-            FROM devices d
-            JOIN users u ON d.ownerID = u.userID
-            WHERE u.email = $1;
-        `, [req.user.email]);
+        res.status(200).json({ message: 'Successfully authenticated user with daemon' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
 
-        const devices = result.rows.map(elem => {
-            return { id: elem.deviceid, name: elem.devicename }
+io.on('connection', socket => {
+    console.log('a user connected');
+
+    socket.on('register:request', data => {
+        socket.emit('register:response', {
+            token: generateDaemonToken(data.hwid)
         });
 
-        result = await client.query(`
-            SELECT s.domain, s.name, s.host, s.portRange, s.description, s.deviceID
-            FROM services s
-            JOIN users u ON s.userID = u.userID
-            WHERE u.email = $1
-        `, [req.user.email]);
+        socket.emit(`${data.hwid}`, {
+            message: 'This is a message from hwid'
+        });
+    });
 
-        const services = result.rows;
-
-        result = await client.query(`
-            SELECT c.name, c.communityID, c.description 
-            FROM communities c
-            WHERE c.ownerID = (SELECT users.userID FROM users WHERE users.email = $1)
-        `, [req.user.email]);
-
-        const communities = result.rows;
-
-        const user = {
-            email: req.user.email,
-            displayName: displayName,
-            pictureURL: pictureURL,
-            devices: devices,
-            services: services.map(s => {
-                return {
-                    domain: s.domain,
-                    name: s.name,
-                    host: s.host,
-                    portRange: s.portrange,
-                    description: s.description,
-                    deviceID: s.deviceid
-                }
-            }),
-            communities: communities.map(c => {
-                return {
-                    name: c.name,
-                    id: c.communityid,
-                    description: c.description,
-                    owner: true,
-                }
-            })
-        }
-
-        res.json({ user: user });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
 });
 
-app.post("/api/v1/user/device", authenticateToken, async (req, res) => {
-    try {
-        console.log("POST /api/v1/user/device");
-
-        const { id, name } = req.body;
-        const email = req.user.email;
-
-        await client.query(`
-            INSERT INTO devices (ownerID, deviceID, deviceName)
-            VALUES (
-                (SELECT userID FROM users WHERE email = $1),
-                $2,
-                $3
-            )
-        `, [email, id, name]);
-
-        res.status(201).json({ message: "Successfully inserted device" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
-});
-
-app.post("/api/v1/user/service", authenticateToken, async (req, res) => {
-    try {
-        console.log("POST /api/v1/user/service");
-
-        const { name, domain, host, portRange, deviceID } = req.body;
-        const email = req.user.email;
-
-        const response = await client.query(`
-            INSERT INTO services (userID, domain, name, description, portRange, host, deviceID)
-            VALUES (
-                (SELECT userID FROM users WHERE email = $1),
-                $2,
-                $3,
-                $4,
-                $5,
-                $6,
-                $7
-            ) RETURNING *
-        `, [email, domain.trim(), name.trim(), "", portRange.trim(), host.trim(), deviceID.trim()]);
-
-        const service = {
-            domain: response.rows[0].domain,
-            name: response.rows[0].name,
-            description: response.rows[0].description,
-            portRange: response.rows[0].portrange,
-            host: response.rows[0].host,
-            deviceID: response.rows[0].deviceid
-        }
-
-        console.log(service)
-
-        res.status(201).json({ service: service })
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
-});
-
-app.delete("/api/v1/user/service", authenticateToken, async (req, res) => {
-    try {
-        console.log("DELETE /api/v1/user/service");
-
-        const { name } = req.body;
-        const email = req.user.email;
-
-        const response = await client.query(`
-            DELETE FROM services
-            WHERE (SELECT users.userID FROM users WHERE users.email = $1) = services.userID
-            AND services.name = $2
-            RETURNING *
-        `, [email, name]);
-
-        if (response.rows.length === 0) {
-            res.status(404).status({ message: "Service not found" });
-            return;
-        }
-
-        res.json({ message: "Successfully deleted the service" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
-});
-
-app.post("/api/v1/user/community", authenticateToken, async (req, res) => {
-    try {
-        console.log("POST /api/v1/user/community");
-
-        const { name } = req.body;
-        const email = req.user.email;
-
-        const response = await client.query(`
-            INSERT INTO communities (ownerID, name, description)
-            VALUES (
-                (SELECT userID FROM users where email = $1),
-                $2,
-                $3
-            ) RETURNING *
-        `, [email, name.trim(), ""]);
-
-        if (response.rows.length === 0) {
-            throw new Error("Error inserting community into the database");
-        }
-
-        const community = {
-            id: response.rows[0].communityid,
-            name: response.rows[0].name,
-            description: response.rows[0].description,
-            owner: true,
-        }
-
-        res.status(201).json({ community: community });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
-});
-
-app.delete("/api/v1/user/community", authenticateToken, async (req, res) => {
-    try {
-        console.log("DELETE /api/v1/user/community");
-
-        const { name } = req.body;
-        const email = req.user.email;
-
-        await client.query(`
-            DELETE FROM communities
-            WHERE ownerID = (SELECT userID FROM users WHERE email = $1)
-            AND communities.name = $2
-        `, [email, name]);
-
-        res.json({ message: "Successfully deleted community" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "An error occured" });
-    }
-});
-
-app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
+server.listen(PORT, () => console.log(`Server listening on ${PORT}`));

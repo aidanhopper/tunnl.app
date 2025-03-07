@@ -22,10 +22,17 @@
             nodejs
             create-react-app 
             yarn
-            python313
+            python312
             netcat
             inetutils
-          ]; 
+          ] ++ (with python312Packages; [
+            python-socketio
+            requests
+            websocket-client
+            fastapi
+            uvicorn
+            pyinstaller
+          ]); 
         };
       });
     };
