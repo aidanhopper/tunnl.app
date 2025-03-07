@@ -32,6 +32,7 @@
             fastapi
             uvicorn
             pyinstaller
+            python-dotenv
           ]); 
         };
       });

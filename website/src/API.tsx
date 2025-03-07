@@ -12,4 +12,16 @@ const getUser = async (token: string) => {
     });
 }
 
-export { authenticateDaemon, getUser }
+const startTunneler = async (hwid: string, token: string) => {
+    return await axios.post(`/api/v1/daemon/start`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            data: {
+                hwid: hwid
+            }
+        })
+}
+
+export { authenticateDaemon, getUser, startTunneler }

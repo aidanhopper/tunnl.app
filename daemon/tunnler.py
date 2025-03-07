@@ -1,12 +1,27 @@
 import subprocess
+import threading
+import signal
+import os
+import platform
 
 class Tunneler:
-    def __init__(self, binary_path, identities_path, dns_ip_range): 
+    def __init__(self,
+                 binary_path='ziti/ziti-edge-tunnel-darwin',
+                 identities_path='ziti/identities/',
+                 dns_ip_range='203.0.113.0/24',
+                 log_path='ziti/tunneler.log'): 
+
         self.binary_path = binary_path
         self.identities_path = identities_path
         self.dns_ip_range = dns_ip_range
+        self.log_path = log_path
+        self.is_win = platform.system().lower() == 'win32'
+        self.process = None
 
     def start(self):
+        if self.is_running():
+            return
+
         args = [
             self.binary_path,
             'run',
@@ -16,15 +31,34 @@ class Tunneler:
             self.dns_ip_range,
         ]
 
-        process = subprocess.Popen(
-            args,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
+        with open(self.log_path, 'a') as log:
+            if self.is_win:
+                self.process = subprocess.Popen(
+                    args,
+                    stdout=log,
+                    stderr=log,
+                    text=True,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                )
+            else:
+                self.process = subprocess.Popen(
+                    args,
+                    stdout=log,
+                    stderr=log,
+                    text=True,
+                    preexec_fn=os.setsid,
+                )
 
-        for line in process.stderr:
-            print(line, end='')  # `end=''` avoids adding an extra newline, since `line` already includes it
+    def stop(self):
+        if not self.is_running():
+            return
 
-        for line in process.stdout:
-            print(line, end='')  # `end=''` avoids adding an extra newline, since `line` already includes it
+        if self.is_win:
+            self.process.send_signal(signal.CTRL_BREAK_EVENT)
+        else:
+            os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+
+        self.process.wait()
+
+    def is_running(self):
+        return self.process and self.process.poll() is None

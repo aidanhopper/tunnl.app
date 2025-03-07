@@ -8,3 +8,4 @@ acls.json
 *build
 *release
 daemon/ziti
+daemon/__pycache__

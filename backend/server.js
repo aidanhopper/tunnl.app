@@ -199,6 +199,8 @@ app.post('/api/v1/daemon/user', authenticateDaemonToken, async (req, res) => {
     }
 });
 
+app.post('/api/v1/')
+
 io.on('connection', socket => {
     console.log('a user connected');
 

@@ -12,6 +12,10 @@ from fastapi.encoders import jsonable_encoder
 import requests
 import json
 from tunnler import Tunneler
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 sio = socketio.Client()
@@ -27,8 +31,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
-
-token = None
 
 def get_hardware_id():
     sys = platform.system().lower()
@@ -59,6 +61,14 @@ def get_hardware_id():
 
     return sha256(id.encode()).hexdigest()
 
+token = None
+tunneler = Tunneler()
+hwid = get_hardware_id()
+
+if hwid is None:
+    print('Cannot generate HWID')
+    exit(1)
+
 @sio.event
 def connect():
     print('CONNECTION ESTABLISHED')
@@ -73,15 +83,15 @@ def handle_register_response(data):
     token = data['token']
     print(token)
 
-@sio.on(f'{get_hardware_id()}')
-def handle_request(data):
+@sio.on(f'{hwid}:start-tunneler')
+def handle_start_tunneler(data):
+    print('HARDWARE ID ROOM', data)
+
+@sio.on(f'{hwid}:stop-tunneler')
+def handle_start_tunneler(data):
     print('HARDWARE ID ROOM', data)
 
 def start_socket_client():
-    hwid = get_hardware_id()
-    if hwid == None:
-        exit(1)
-
     print("Trying to connect to server")
     while True:
         try: 
@@ -130,12 +140,6 @@ if __name__ == '__main__':
     uvicorn_thread = threading.Thread(target=start_unvicorn, daemon=True)
     socket_thread.start()
     uvicorn_thread.start()
-
-    tunneler = Tunneler(
-        './ziti/ziti-edge-tunnel-darwin',
-        './ziti/identities',
-        '172.31.0.1/24'
-    )
 
     tunneler.start()
 
