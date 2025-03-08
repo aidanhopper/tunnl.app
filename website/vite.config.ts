@@ -11,6 +11,10 @@ export default defineConfig({
                 target: "http://localhost:3123/",
                 changeOrigin: true,
             },
+            "/sock": {
+                target: "http://localhost:3123/",
+                changeOrigin: true,
+            },
         },
     },
 })

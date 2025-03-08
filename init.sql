@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
     user_id UUID NOT NULL,
+    is_online BOOLEAN NOT NULL,
+    hostname TEXT NOT NULL,
+    display_name TEXT NOT NULL,
     last_login TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

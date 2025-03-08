@@ -4,8 +4,9 @@ const path = require('path');
 const axios = require('axios');
 const { OAuth2Client } = require('google-auth-library');
 const pg = require('pg');
-const jwt = require('jsonwebtoken');
 const http = require('http');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
 
 dotenv.config();
@@ -17,9 +18,13 @@ const app = express();
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const server = http.createServer(app);
+
 const io = socketIo(server);
 
+const sockets = new Map();
+
 app.use(express.json());
+app.use(cookieParser());
 
 const client = new pg.Client({
     host: `${process.env.PG_HOST}`,
@@ -67,8 +72,7 @@ const authenticateDaemonToken = (req, res, next) => {
 };
 
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+    const token = req.cookies.tunnl_session;
 
     if (!token) {
         res.status(401).json({ message: "Unauthorized" });
@@ -92,11 +96,48 @@ const authenticateToken = (req, res, next) => {
     });
 }
 
-app.get('/api/v1/user', authenticateToken, async (req, res) => {
+const authenticateDaemon = async (req, res, next) => {
     try {
-        const id = req.id;
+        const userid = req.id;
+        const hwid = req.params.hwid;
+
+        if (!hwid) {
+            res.status(401).json({ message: "Unauthorized access to daemon" });
+            return;
+        }
 
         const response = await client.query(`
+            SELECT * FROM devices WHERE user_id = $1
+        `, [userid]);
+
+        const exists = response.rows.find(r => r.id === hwid);
+
+        if (!exists) {
+            res.json({ message: "Unauthorized access to daemon" });
+            return;
+        }
+
+        req.daemon = daemon(hwid);
+
+        next();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+const daemon = (hwid) => {
+    const socketid = sockets.get(hwid);
+    if (!socketid) return null;
+    return io.to(socketid);
+}
+
+app.get('/api/v1/user', authenticateToken, async (req, res) => {
+    try {
+        console.log('GET /api/v1/user');
+
+        const id = req.id;
+
+        let response = await client.query(`
             SELECT * FROM users WHERE id = $1
         `, [id]);
 
@@ -107,6 +148,12 @@ app.get('/api/v1/user', authenticateToken, async (req, res) => {
 
         const dbuser = response.rows[0];
 
+        response = await client.query(`
+            SELECT * FROM devices WHERE user_id = $1
+        `, [dbuser.id]);
+
+        const dbdevices = response.rows;
+
         const user = {
             id: dbuser.id,
             email: dbuser.email,
@@ -116,6 +163,16 @@ app.get('/api/v1/user', authenticateToken, async (req, res) => {
             picture: dbuser.picture,
             lastLogin: dbuser.last_login,
             createdAt: dbuser.created_at,
+            devices: dbdevices.map(d => {
+                return {
+                    id: d.id,
+                    lastLogin: d.last_login,
+                    createdAt: d.created_at,
+                    hostname: d.hostname,
+                    displayName: d.display_name,
+                    isOnline: d.is_online,
+                }
+            })
         }
 
         res.json(user);
@@ -172,6 +229,12 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
 
         const token = jwt.sign(data, process.env.JWT_SECRET);
 
+        res.cookie("tunnl_session", token, {
+            httpOnly: true,
+            secure: process.env.IS_PROD === true,
+            sameSite: 'Strict'
+        });
+
         res.status(201).json({ token: token });
     } catch (err) {
         await client.query("ROLLBACK");
@@ -180,42 +243,94 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
     }
 });
 
-app.post('/api/v1/daemon/user', authenticateDaemonToken, async (req, res) => {
+app.post('/api/v1/daemon', authenticateDaemonToken, async (req, res) => {
     try {
         console.log('POST /api/v1/daemon/user');
 
-        const { userid } = req.body;
+        const { userid, hostname } = req.body;
         const hwid = req.hwid;
 
         await client.query(`
-            INSERT INTO devices (id, user_id, last_login)
-            VALUES ($1, $2, NOW())
-        `, [hwid, userid]);
+            INSERT INTO devices (id, user_id, last_login, hostname, display_name, is_online)
+            VALUES ($1, $2, NOW(), $3, $4, $5)
+        `, [hwid, userid, hostname, hostname, true]);
 
-        res.status(200).json({ message: 'Successfully authenticated user with daemon' });
+        res.status(200).json({ message: 'Successfully authenticated the daemon' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occured' });
     }
 });
 
-app.post('/api/v1/')
+app.post('/api/v1/daemon/:hwid/start', authenticateToken, authenticateDaemon, (req, res) => {
+    try {
+        console.log('POST /api/v1/daemon/start');
+        req.daemon.timeout(10000).emit('tunneler:start', (err, response) => {
+            if (err) throw new Error('Could not connect to daemon');
+            if (response.length === 0) throw new Error('Could not connect to daemon');
+            res.json(response[0]);
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.post('/api/v1/daemon/:hwid/stop', authenticateToken, authenticateDaemon, (req, res) => {
+    try {
+        console.log('POST /api/v1/daemon/stop');
+        req.daemon.timeout(10000).emit('tunneler:stop', (err, response) => {
+            if (err) throw new Error('Could not connect to daemon');
+            if (response.length === 0) throw new Error('Could not connect to daemon');
+            res.json(response[0]);
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.get('/api/v1/daemon/:hwid/status', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('GET /api/v1/daemon/status');
+        req.daemon.timeout(10000).emit('tunneler:status', (err, response) => {
+            if (err) throw new Error('Could not connect to daemon');
+            if (response.length === 0) throw new Error('Could not connect to daemon');
+            res.json(response[0]);
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
 
 io.on('connection', socket => {
     console.log('a user connected');
 
-    socket.on('register:request', data => {
-        socket.emit('register:response', {
-            token: generateDaemonToken(data.hwid)
-        });
+    socket.emit('server:register:request')
 
-        socket.emit(`${data.hwid}`, {
-            message: 'This is a message from hwid'
-        });
+    socket.on('register:request', data => {
+        if (!data.hwid) return;
+
+        sockets.set(data.hwid, socket.id);
+
+        try {
+            client.query('UPDATE devices SET is_online = true, last_login = NOW() WHERE id = $1', [data.hwid]);
+        } catch (err) { }
+
+        socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
     });
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        const hwid = [...sockets.entries()].find(([_, value]) => value === socket.id)?.[0];
+
+        if (!hwid) return;
+
+        try {
+            client.query('UPDATE devices SET is_online = false WHERE id = $1', [hwid]);
+        } catch (err) { }
+
+        sockets.delete(hwid);
     });
 });
 

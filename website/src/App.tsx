@@ -4,7 +4,6 @@ import Login from './Login';
 import Success from './Success';
 
 function App() {
-    console.log('hello world');
     return (
         <Router>
             <Routes>

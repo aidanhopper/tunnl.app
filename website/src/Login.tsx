@@ -23,15 +23,7 @@ const Login = () => {
 
         if (callbackResponse.status !== 201) return;
 
-        const data = await callbackResponse.json();
-        const token = data.token;
-        const userResponse = await getUser(token);
-
-        if (userResponse.status !== 200) return;
-
-        const user = await userResponse.data;
-
-        authenticateDaemon(user.id)
+        console.log(await callbackResponse.json())
 
         navigate("/login/success");
     }

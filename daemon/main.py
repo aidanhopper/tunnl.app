@@ -14,6 +14,7 @@ import json
 from tunnler import Tunneler
 from dotenv import load_dotenv
 import os
+import atexit
 
 load_dotenv()
 
@@ -65,47 +66,58 @@ token = None
 tunneler = Tunneler()
 hwid = get_hardware_id()
 
+atexit.register(tunneler.stop)
+
 if hwid is None:
     print('Cannot generate HWID')
     exit(1)
 
+def get_hostname():
+    return subprocess.check_output('hostname').decode().strip()
+
 @sio.event
 def connect():
-    print('CONNECTION ESTABLISHED')
+    print('Connected to https://tunnl.app')
 
 @sio.event
 def disconnect():
-    print('disconnected from server')
+    print('Disconnected from https://tunnl.app')
+
+@sio.on('server:register:request')
+def handle_server_register_request():
+    sio.emit('register:request', { 'hwid': hwid })
 
 @sio.on('register:response')
 def handle_register_response(data):
     global token
     token = data['token']
-    print(token)
 
-@sio.on(f'{hwid}:start-tunneler')
-def handle_start_tunneler(data):
-    print('HARDWARE ID ROOM', data)
+@sio.on('tunneler:start')
+def handle_start_tunneler():
+    print('Starting tunneler')
+    tunneler.start()
+    time.sleep(1)
+    return { 'success': tunneler.is_running() }
 
-@sio.on(f'{hwid}:stop-tunneler')
-def handle_start_tunneler(data):
-    print('HARDWARE ID ROOM', data)
+@sio.on('tunneler:stop')
+def handle_start_tunneler():
+    print('Stopping tunneler')
+    tunneler.stop()
+    return { 'success': not tunneler.is_running() }
+
+@sio.on('tunneler:status')
+def handle_tunneler_status_request():
+    return tunneler.status()
 
 def start_socket_client():
-    print("Trying to connect to server")
+    print("Trying to connect to https://tunnl.app")
     while True:
         try: 
             sio.connect('http://localhost:3123')
             break
         except socketio.exceptions.ConnectionError:
             time.sleep(5)
-
-    sio.emit('register:request', { 'hwid': hwid })
     sio.wait()
-
-@app.get('/v1/status')
-async def status():
-    return { 'message': 'Python client is running' }
 
 @app.post('/v1/authenticate/{userid}')
 async def authenticate(userid: str):
@@ -113,8 +125,7 @@ async def authenticate(userid: str):
     if token is None:
         raise HTTPException(status_code=500, detail='Daemon not registered')
 
-    print("USER ID", userid)
-    url = 'http://localhost:5173/api/v1/daemon/user'
+    url = 'http://localhost:5173/api/v1/daemon'
 
     headers = {
         'Authorization': f'Bearer {token}',
@@ -123,6 +134,7 @@ async def authenticate(userid: str):
 
     body = {
         'userid': userid,
+        'hostname': get_hostname(),
     }
 
     r = requests.post(url, json=body, headers=headers)
@@ -140,7 +152,4 @@ if __name__ == '__main__':
     uvicorn_thread = threading.Thread(target=start_unvicorn, daemon=True)
     socket_thread.start()
     uvicorn_thread.start()
-
-    tunneler.start()
-
     uvicorn_thread.join()
