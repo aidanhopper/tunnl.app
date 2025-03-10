@@ -8,6 +8,7 @@ const http = require('http');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
+const fs = require('fs');
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const server = http.createServer(app);
 
-const io = socketIo(server);
+const daemonio = socketIo(server, { path: '/daemon.sock' });
 
 const sockets = new Map();
 
@@ -128,7 +129,7 @@ const authenticateDaemon = async (req, res, next) => {
 const daemon = (hwid) => {
     const socketid = sockets.get(hwid);
     if (!socketid) return null;
-    return io.to(socketid);
+    return daemonio.to(socketid);
 }
 
 app.get('/api/v1/user', authenticateToken, async (req, res) => {
@@ -196,6 +197,10 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
         const payload = ticket.getPayload();
         const { email, name, picture, sub } = payload;
 
+        const response = await axios.get(picture, { responseType: "arraybuffer" });
+
+        fs.writeFileSync(`resources/${sub}.jpg`, response.data);
+
         await client.query("BEGIN");
 
         let result = await client.query(
@@ -210,7 +215,7 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
                 INSERT INTO users (google_id, email, display_name, name, picture, last_login)
                 VALUES ($1, $2, $3, $4, $5, NOW())
                 RETURNING *
-                `, [sub, email, name, name, picture]
+                `, [sub, email, name, name, `resources/${sub}.jpg`]
             );
             user = insertResult.rows[0];
         } else {
@@ -219,7 +224,7 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
                 UPDATE users
                 SET last_login = NOW(), picture = $1
                 WHERE id = $2
-                `, [picture, user.id]
+                `, [`resources/${sub}.jpg`, user.id]
             );
         }
 
@@ -232,14 +237,29 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
         res.cookie("tunnl_session", token, {
             httpOnly: true,
             secure: process.env.IS_PROD === true,
-            sameSite: 'Strict'
+            sameSite: 'Strict',
+            expires: new Date(Date.now() + 3600000 * 24 * 7),
         });
 
         res.status(201).json({ token: token });
     } catch (err) {
         await client.query("ROLLBACK");
         console.error(err);
-        res.status(501).json({ message: "An error occured" });
+        res.status(500).json({ message: "An error occured" });
+    }
+});
+
+app.post('/api/v1/user/logout', async (req, res) => {
+    try {
+        console.log('POST /api/v1/user/logout')
+        res.clearCookie('tunnl_session', {
+            sameSite: 'Strict',
+            path: '/'
+        });
+        res.status(201).json({ message: 'Sucessfully logged out' });
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ message: "An error occured" });
     }
 });
 
@@ -304,7 +324,12 @@ app.get('/api/v1/daemon/:hwid/status', authenticateToken, authenticateDaemon, as
     }
 });
 
-io.on('connection', socket => {
+app.get('/resources/:filename', (req, res) => {
+    const filePath = path.join(__dirname, "/resources/", req.params.filename);
+    res.sendFile(filePath);
+});
+
+daemonio.on('connection', socket => {
     console.log('a user connected');
 
     socket.emit('server:register:request')

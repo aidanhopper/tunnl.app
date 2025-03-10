@@ -1,5 +1,6 @@
-import { createContext, useState, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useState, useContext, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 type DropdownState = {
     isExpanded: boolean,
@@ -7,7 +8,7 @@ type DropdownState = {
     y: number;
 }
 
-export const DropdownContext = createContext<{
+const DropdownContext = createContext<{
     dropdownState: DropdownState, setDropdownState: (value: DropdownState) => void
 } | null>(null);
 
@@ -33,44 +34,83 @@ export const DropdownProvider = ({ children }: { children?: React.ReactNode }) =
     );
 }
 
-export const DropdownToggle = ({ children }: { children?: React.ReactNode }) => {
+export const DropdownToggle = ({ children, hover = false }: { children?: React.ReactNode, hover?: boolean }) => {
     const { dropdownState, setDropdownState } = useDropdown();
-    const ref = useRef<HTMLSpanElement>(null)
+    const ref = useRef<HTMLDivElement>(null)
+
+    const toggleDropdown = () => {
+        if (!ref.current) return;
+        setDropdownState({
+            isExpanded: !dropdownState.isExpanded,
+            x: ref.current.offsetLeft + ref.current.offsetWidth,
+            y: ref.current.offsetTop + ref.current.offsetHeight,
+        });
+        document.body.style.overflow = 'hidden';
+    }
+
     return (
-        <span
+        <div
+            onMouseEnter={() => { if (hover) toggleDropdown() }}
+            onClick={() => toggleDropdown()}
             ref={ref}
-            className='w-full h-full'
-            onClick={() => {
-                if (!ref.current) return;
-                const boundingBox = ref.current.getBoundingClientRect();
-                setDropdownState({
-                    isExpanded: !dropdownState.isExpanded,
-                    x: boundingBox.x,
-                    y: ref.current.scrollTop
-                });
-            }}>
+            className='w-full h-full'>
             {children}
-        </span >
+        </div>
     );
 }
 
-export const Dropdown = ({ children, offsetX, offsetY }:
-    { children?: React.ReactNode, offsetX?: number, offsetY?: number }) => {
+export const DropdownGroup = ({ children, className = '' }:
+    { children?: React.ReactNode, className?: string }) => {
+    return (
+        <div className={`flex items-center text-neutral-100 flex-col bg-neutral-800 overflow-auto rounded-md ${className}`}>
+            {children}
+        </div>
+    );
+}
+
+export const DropdownButton = ({ children, className = '', onClick }:
+    { children?: React.ReactNode, className?: string, onClick?: () => void }) => {
+    return (
+        <button
+            className={`flex justify-center items-center w-full text-sm px-4 py-2
+                hover:bg-neutral-700 duration-150 cursor-pointer ${className}`}
+            onClick={() => { if (onClick) onClick() }}>
+            {children}
+        </button>
+    );
+}
+
+export const DropdownLink = ({ children, to, className = '' }:
+    { children?: React.ReactNode, to: string, className?: string }) => {
+    return (
+        <Link
+            className={`flex justify-center items-center w-full text-sm px-4 py-2
+                hover:bg-neutral-700 duration-150 cursor-pointer ${className}`}
+            to={to}>
+            {children}
+        </Link>
+    );
+}
+
+export const Dropdown = ({ children, offsetX = 0, offsetY = 0, className = '' }:
+    { children?: React.ReactNode, offsetX?: number, offsetY?: number, className?: string }) => {
     const { dropdownState, setDropdownState } = useDropdown();
+    const dropdownRef = useRef<HTMLDivElement>(null);
     return (
         <AnimatePresence>
             {
                 dropdownState.isExpanded &&
                 <div className='absolute top-0 left-0 h-screen w-screen'>
                     <motion.div
+                        ref={dropdownRef}
                         initial={{ scale: 0.8, opacity: 0 }}
                         exit={{ scale: 0.8, opacity: 0 }}
                         transition={{ duration: 0.1, ease: 'circInOut' }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className='absolute z-10'
+                        className={`absolute z-10 shadow-md overflow-hidden rounded-md ${className}`}
                         style={{
-                            top: offsetY ? dropdownState.y + offsetY : dropdownState.y,
-                            left: offsetX ? dropdownState.x + offsetX : dropdownState.x,
+                            top: dropdownState.y + offsetY,
+                            left: dropdownState.x + offsetX,
                         }}>
                         {children}
                     </motion.div>
@@ -80,7 +120,8 @@ export const Dropdown = ({ children, offsetX, offsetY }:
                                 isExpanded: false,
                                 x: dropdownState.x,
                                 y: dropdownState.y,
-                            })
+                            });
+                            document.body.style.overflow = '';
                         }}
                         className='w-full h-full top-0 left-0 select-none' />
                 </div>

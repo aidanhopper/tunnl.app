@@ -10,6 +10,7 @@ export const UserProvider = ({ children }: { children?: React.ReactNode }) => {
 
     useEffect(() => {
         if (user) return;
+        if (!document.cookie.includes('tunnl_session=')) return;
         getUser().then(r => {
             if (r.status !== 200) return;
             setUser(r.data);

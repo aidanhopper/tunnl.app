@@ -19,9 +19,7 @@ export type User = {
     }[],
 }
 
-export const UserContext = createContext<{
-    user: User | null, setUser: (value: User) => void
-} | null>(null);
+export const UserContext = createContext<{ user: User | null, setUser: (value: User | null) => void } | null>(null);
 
 export const useUser = () => {
     const context = useContext(UserContext);

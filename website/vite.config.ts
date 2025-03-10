@@ -15,6 +15,10 @@ export default defineConfig({
                 target: "http://localhost:3123/",
                 changeOrigin: true,
             },
+            "/resources": {
+                target: "http://localhost:3123/",
+                changeOrigin: true,
+            },
         },
     },
 })

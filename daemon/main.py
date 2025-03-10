@@ -113,7 +113,7 @@ def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:
         try: 
-            sio.connect('http://localhost:3123')
+            sio.connect('http://localhost:3123', socketio_path='/daemon.sock')
             break
         except socketio.exceptions.ConnectionError:
             time.sleep(5)
