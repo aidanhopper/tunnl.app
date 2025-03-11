@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const { OAuth2Client } = require('google-auth-library');
+const cors = require('cors');
 const pg = require('pg');
 const http = require('http');
 const cookieParser = require('cookie-parser');
@@ -20,12 +21,14 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const server = http.createServer(app);
 
+const webio = socketIo(server, { path: '/web.sock' });
 const daemonio = socketIo(server, { path: '/daemon.sock' });
 
-const sockets = new Map();
-
+const daemons = new Map();
+const webclients = new Map();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: "http://localhost:5173" }));
 
 const client = new pg.Client({
     host: `${process.env.PG_HOST}`,
@@ -97,6 +100,25 @@ const authenticateToken = (req, res, next) => {
     });
 }
 
+const authenticateSocketToken = (socket, next) => {
+    const [_, token] = socket.handshake.headers.cookie
+        ?.split("; ")
+        .find(row => row.startsWith("tunnl_session="))
+        ?.split("=") || [];
+
+    if (!token) return next(new Error('Invalid token'));
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+        if (err) return next(new Error('Invalid token'));
+
+        if (payload.type !== 'user token') return next(new Error('Invalid token'));
+
+        socket.userid = payload.id
+
+        return next();
+    });
+}
+
 const authenticateDaemon = async (req, res, next) => {
     try {
         const userid = req.id;
@@ -127,25 +149,24 @@ const authenticateDaemon = async (req, res, next) => {
 }
 
 const daemon = (hwid) => {
-    const socketid = sockets.get(hwid);
+    const socketid = daemons.get(hwid);
     if (!socketid) return null;
     return daemonio.to(socketid);
 }
 
-app.get('/api/v1/user', authenticateToken, async (req, res) => {
+const webclient = (userid) => {
+    const socketids = webclients.get(userid);
+    if (!socketids) return [];
+    return socketids.map(id => webio.to(id));
+}
+
+const getUser = async (id) => {
     try {
-        console.log('GET /api/v1/user');
-
-        const id = req.id;
-
         let response = await client.query(`
-            SELECT * FROM users WHERE id = $1
-        `, [id]);
+        SELECT * FROM users WHERE id = $1
+    `, [id]);
 
-        if (response.rows.length === 0) {
-            res.status(500).json({ message: 'An error occured' });
-            return;
-        }
+        if (response.rows.length === 0) return null;
 
         const dbuser = response.rows[0];
 
@@ -171,11 +192,44 @@ app.get('/api/v1/user', authenticateToken, async (req, res) => {
                     createdAt: d.created_at,
                     hostname: d.hostname,
                     displayName: d.display_name,
-                    isOnline: d.is_online,
+                    isDaemonOnline: d.is_daemon_online,
+                    isTunnelOnline: d.is_tunnel_online,
                 }
             })
         }
 
+        return user;
+    } catch (err) {
+        return null;
+    }
+}
+
+const startListener = async () => {
+    try {
+        await client.query('LISTEN user_updates')
+        await client.query('LISTEN device_updates')
+        client.on('notification', async msg => {
+            const payload = JSON.parse(msg.payload);
+            console.log(payload)
+            const id = payload.user ? payload.user.id : payload.device ? payload.device.user_id : null;
+            const user = await getUser(id);
+            if (!user) return;
+            const clients = webclients.get(id);
+            if (!clients) return;
+            for (let i = 0; i < clients.length; i++) {
+                webio.to(clients[i]).emit('user:update', user);
+            }
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+app.get('/api/v1/user', authenticateToken, async (req, res) => {
+    try {
+        console.log('GET /api/v1/user');
+        const user = await getUser(req.id);
+        if (!user) return res.status(500).json({ message: 'An error occured' });
         res.json(user);
     } catch (err) {
         console.error(err);
@@ -215,7 +269,7 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
                 INSERT INTO users (google_id, email, display_name, name, picture, last_login)
                 VALUES ($1, $2, $3, $4, $5, NOW())
                 RETURNING *
-                `, [sub, email, name, name, `resources/${sub}.jpg`]
+                `, [sub, email, name, name, `/resources/${sub}.jpg`]
             );
             user = insertResult.rows[0];
         } else {
@@ -224,7 +278,7 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
                 UPDATE users
                 SET last_login = NOW(), picture = $1
                 WHERE id = $2
-                `, [`resources/${sub}.jpg`, user.id]
+                `, [`/resources/${sub}.jpg`, user.id]
             );
         }
 
@@ -237,7 +291,7 @@ app.post('/api/v1/auth/google/callback', async (req, res) => {
         res.cookie("tunnl_session", token, {
             httpOnly: true,
             secure: process.env.IS_PROD === true,
-            sameSite: 'Strict',
+            sameSite: 'strict',
             expires: new Date(Date.now() + 3600000 * 24 * 7),
         });
 
@@ -271,9 +325,9 @@ app.post('/api/v1/daemon', authenticateDaemonToken, async (req, res) => {
         const hwid = req.hwid;
 
         await client.query(`
-            INSERT INTO devices (id, user_id, last_login, hostname, display_name, is_online)
-            VALUES ($1, $2, NOW(), $3, $4, $5)
-        `, [hwid, userid, hostname, hostname, true]);
+            INSERT INTO devices (id, user_id, last_login, hostname, display_name, is_daemon_online, is_tunnel_online)
+            VALUES ($1, $2, NOW(), $3, $4, $5, $6)
+        `, [hwid, userid, hostname, hostname, true, false]);
 
         res.status(200).json({ message: 'Successfully authenticated the daemon' });
     } catch (err) {
@@ -330,33 +384,53 @@ app.get('/resources/:filename', (req, res) => {
 });
 
 daemonio.on('connection', socket => {
-    console.log('a user connected');
+    console.log('A daemon connected');
 
-    socket.emit('server:register:request')
+    socket.emit('server:register:request');
 
     socket.on('register:request', data => {
         if (!data.hwid) return;
 
-        sockets.set(data.hwid, socket.id);
+        daemons.set(data.hwid, socket.id);
 
         try {
-            client.query('UPDATE devices SET is_online = true, last_login = NOW() WHERE id = $1', [data.hwid]);
+            client.query('UPDATE devices SET is_daemon_online = true, last_login = NOW() WHERE id = $1', [data.hwid]);
         } catch (err) { }
 
         socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
     });
 
     socket.on('disconnect', () => {
-        const hwid = [...sockets.entries()].find(([_, value]) => value === socket.id)?.[0];
+        const hwid = [...daemons.entries()].find(([_, value]) => value === socket.id)?.[0];
 
         if (!hwid) return;
 
         try {
-            client.query('UPDATE devices SET is_online = false WHERE id = $1', [hwid]);
+            client.query('UPDATE devices SET is_daemon_online = false, is_tunnel_online = false WHERE id = $1', [hwid]);
         } catch (err) { }
 
-        sockets.delete(hwid);
+        daemons.delete(hwid);
     });
 });
+
+webio.use(authenticateSocketToken);
+
+webio.on('connection', socket => {
+    console.log('A web client connected')
+
+    const clients = webclients.get(socket.userid) ? webclients.get(socket.userid) : [];
+    clients.push(socket.id);
+    webclients.set(socket.userid, clients);
+
+    getUser().then(u => { if (u) socket.emit('user:update', u) });
+
+    socket.on('disconnect', () => {
+        console.log('Disconnecting web client')
+        const clients = webclients.get(socket.userid).filter(id => socket.id !== id);
+        webclients.set(socket.userid, clients);
+    });
+});
+
+startListener();
 
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));

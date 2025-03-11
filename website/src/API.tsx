@@ -11,6 +11,10 @@ export const authenticateDaemon = async (userid: string) => {
     return await axios.post(`http://localhost:45789/v1/authenticate/${encodeURIComponent(userid)}`);
 }
 
+export const getHostname = async () => {
+    return await axios.get(`http://localhost:45789/v1/hostname`);
+}
+
 export const getUser = async () => {
     return await axios.get(`/api/v1/user`, {
         withCredentials: true,

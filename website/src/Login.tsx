@@ -29,7 +29,7 @@ const Login = () => {
         if (userResponse.status !== 200) return;
         setUser(userResponse.data);
 
-        navigate("/");
+        navigate("/dashboard");
     }
 
     return (
@@ -38,7 +38,7 @@ const Login = () => {
             <div className="flex items-center justify-center">
                 <div className="flex justify-center items-center flex-col">
                     <h1 className="font-bold mb-12">
-                        tunnl.app
+                        Login
                     </h1>
                     <div className="bg-white w-64 h-24 flex justify-center items-center rounded-lg shadow-lg">
                         <GoogleOAuthProvider clientId={CLIENT_ID}>

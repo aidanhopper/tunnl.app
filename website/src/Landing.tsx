@@ -7,10 +7,11 @@ import {
     DropdownGroup, DropdownLink, DropdownButton
 } from './components/Dropdown';
 import { Link } from 'react-router-dom';
-import { postLogout, startTunneler, stopTunneler } from './API';
+import { authenticateDaemon, postLogout, startTunneler, stopTunneler } from './API';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Tagline = () => {
+const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
+    { highlightedClassName?: string, sentenceClassName?: string }) => {
     const [index, setIndex] = useState(1);
     const textRef = useRef<HTMLSpanElement>(null)
     const [width, setWidth] = useState(0);
@@ -25,15 +26,11 @@ const Tagline = () => {
             color: 'bg-green-900'
         },
         {
-            content: 'Minecraft Server',
-            color: 'bg-red-900'
-        },
-        {
             content: 'Website',
             color: 'bg-black'
         },
         {
-            content: 'Desktop Service',
+            content: 'Sunshine',
             color: 'bg-blue-900'
         },
         {
@@ -65,23 +62,28 @@ const Tagline = () => {
     }, [index]);
 
     return (
-        <div className='flex-1 flex flex-col justify-center text-6xl text-neutral-700'>
-            <div className='flex mb-4 items-center'>
-                <h1 className='font-bold'>Share private &nbsp;</h1>
+        <div className={`flex-1 flex flex-col justify-center ${sentenceClassName}
+                items-center xl:items-start text-neutral-700`}>
+            <div className='flex flex-col xl:flex-row mb-4 items-center'>
+                <h1 className='font-bold mb-4 xl:mb-0'>Easily share &nbsp;</h1>
                 <motion.div
+                    style={{
+                        width: textRef.current?.offsetWidth,
+                        height: textRef.current ? textRef.current.offsetHeight + 30 : 0
+                    }}
                     animate={{ width: width + 35 }}
                     transition={{ duration: 1, type: 'spring' }}
                     className={`${headerCycle[index].color} rounded-xl p-4
-                        text-neutral-100 font-bold text-5xl h-20 w-48`}>
+                        text-neutral-100 font-bold ${highlightedClassName}`}>
                     <AnimatePresence>
-                        <motion.span className='whitespace-nowrap overflow-hidden absolute z-0'
+                        <motion.div className='whitespace-nowrap absolute z-0'
                             key={`${index}`}
                             initial={{ opacity: 0, y: 60 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -60 }}
                             transition={{ duration: 0.2, delay: 0.1 }}>
                             {headerCycle[index].content}
-                        </motion.span>
+                        </motion.div>
                     </AnimatePresence>
                     <span ref={textRef} className='absolute bg-black whitespace-nowrap invisible'>
                         {headerCycle[index].content}
@@ -106,61 +108,66 @@ const Landing = () => {
 
 
     return (
-        <div className={`h-screen duration-200 w-screen ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
+        <div className={`min-h-screen duration-200 w-screen ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
             <div className='bg-neutral-600 w-full h-8 flex justify-center items-center text-white'>
                 <code>Alpha release coming soon!</code>
             </div>
-            <Navbar onStick={() => setIsStuck(true)} onUnstick={() => setIsStuck(false)} className='bg-neutral-200'>
+            <Navbar onStick={() => setIsStuck(true)} onUnstick={() => setIsStuck(false)} className='flex bg-neutral-200'>
                 <NavbarSection className='font-bold text-2xl text-neutral-600'>
                     <Link to='/'><code>tunnl.app</code></Link>
                 </NavbarSection>
-                <NavbarSection className='justify-end'>
-                    <button
-                        className='text mr-12 hover:bg-neutral-500 px-3 py-1 font-bold
+                <NavbarSection className='flex justify-end'>
+                    <div className='flex items-center'>
+                        <button
+                            className='text mr-4 xl:mr-12 hover:bg-neutral-500 px-3 py-1 font-bold
                                 rounded text-neutral-200 bg-neutral-600 duration-150 cursor-pointer'>
-                        Download
-                    </button>
-                    {
-                        user ?
-                            <>
-                                <h1 className='mr-12 font-bold text-neutral-600'>{user.email}</h1>
-                                <DropdownProvider>
-                                    <DropdownToggle>
-                                        <img className='cursor-pointer bg-neutral-800 min-w-12 hover:border-neutral-400
+                            Download
+                        </button>
+                        {
+                            user ?
+                                <>
+                                    <h1 className='mr-4 xl:mr-12 font-bold text-neutral-600'>{user.email}</h1>
+                                    <DropdownProvider>
+                                        <DropdownToggle>
+                                            <img className='cursor-pointer bg-neutral-800 min-w-12 hover:border-neutral-400
                                                 min-h-12 w-12 h-12 border-neutral-600 border-2 rounded-full duration-150'
-                                            src={user.picture} />
-                                    </DropdownToggle>
-                                    <Dropdown offsetX={-120} offsetY={10} className='w-[120px]'>
-                                        <DropdownGroup>
-                                            <DropdownLink to='/dashboard'>
-                                                Dashboard
-                                            </DropdownLink>
-                                            <DropdownButton onClick={async () => {
-                                                await postLogout();
-                                                setUser(null);
-                                            }}>
-                                                Log Out
-                                            </DropdownButton>
-                                        </DropdownGroup>
-                                    </Dropdown>
-                                </DropdownProvider>
-                            </>
-                            :
-                            <Link to='/login' className='hover:bg-neutral-600 hover:text-neutral-100
+                                                src={user.picture} />
+                                        </DropdownToggle>
+                                        <Dropdown offsetX={-70} offsetY={55} className='w-[120px]'>
+                                            <DropdownGroup>
+                                                <DropdownLink to='/dashboard'>
+                                                    Dashboard
+                                                </DropdownLink>
+                                                <DropdownButton onClick={async () => {
+                                                    await postLogout();
+                                                    setUser(null);
+                                                }}>
+                                                    Logout
+                                                </DropdownButton>
+                                            </DropdownGroup>
+                                        </Dropdown>
+                                    </DropdownProvider>
+                                </>
+                                :
+                                <Link to='/login' className='hover:bg-neutral-600 hover:text-neutral-100
                                 duration-150 py-1 px-2 rounded'>
-                                Sign In
-                            </Link>
-                    }
+                                    Login
+                                </Link>
+                        }
+                    </div>
                 </NavbarSection>
             </Navbar>
             <div className='h-[500px]'>
                 <Container>
-                    <div className='w-full h-full flex px-20'>
-                        <Tagline />
+                    <div className='w-full h-full flex flex-col xl:flex-row items-center
+                        xl:px-20 xl:justify-center xl:items-left'>
+                        <Tagline
+                            highlightedClassName='text-5xl xl:text-5xl'
+                            sentenceClassName='text-4xl xl:text-6xl' />
                         <div className='w-[400px] flex flex-col justify-center items-left text-neutral-700 text-lg'>
                             <p>
-                                tunnl.app makes it easy to share any private service
-                                with your friends and securely with custom DNS.
+                                tunnl.app makes it easy to securely share any private service
+                                with your communitiies over any domain you choose.
                             </p>
                             <div className='mt-7'>
                                 <Link to='/login'

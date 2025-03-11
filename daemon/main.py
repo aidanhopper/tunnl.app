@@ -113,7 +113,7 @@ def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:
         try: 
-            sio.connect('http://localhost:3123', socketio_path='/daemon.sock')
+            sio.connect('http://localhost:5173', socketio_path='/daemon.sock')
             break
         except socketio.exceptions.ConnectionError:
             time.sleep(5)
@@ -143,6 +143,10 @@ async def authenticate(userid: str):
         raise HTTPException(status_code=500, detail='Failed to authenticate')
 
     return { 'message': 'Successfully authenticated user with daemon' }
+
+@app.get('/v1/hostname')
+async def hostname():
+    return { 'hostname': get_hostname() }
 
 def start_unvicorn():
     uvicorn.run(app, host='127.0.0.1', port=45789)

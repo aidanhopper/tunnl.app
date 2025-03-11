@@ -8,16 +8,22 @@ export default defineConfig({
     server: {
         proxy: {
             "/api": {
-                target: "http://localhost:3123/",
+                target: "http://localhost:3123",
                 changeOrigin: true,
             },
-            "/sock": {
-                target: "http://localhost:3123/",
+            "/daemon.sock": {
+                target: "http://localhost:3123",
                 changeOrigin: true,
+                ws: true,
             },
             "/resources": {
-                target: "http://localhost:3123/",
+                target: "http://localhost:3123",
                 changeOrigin: true,
+            },
+            "/web.sock": {
+                target: "http://localhost:3123",
+                changeOrigin: true,
+                ws: true,
             },
         },
     },

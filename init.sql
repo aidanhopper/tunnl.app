@@ -18,10 +18,51 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
     user_id UUID NOT NULL,
-    is_online BOOLEAN NOT NULL,
+    is_daemon_online BOOLEAN NOT NULL,
+    is_tunnel_online BOOLEAN NOT NULL,
     hostname TEXT NOT NULL,
     display_name TEXT NOT NULL,
     last_login TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE OR REPLACE FUNCTION notify_user_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'user_updates',
+    json_build_object(
+      'user', row_to_json(NEW),
+      'operation', TG_OP
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER user_update_trigger
+AFTER INSERT OR UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION notify_user_update();
+
+CREATE OR REPLACE FUNCTION notify_device_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'device_updates',
+    json_build_object(
+      'device', row_to_json(NEW),
+      'operation', TG_OP
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER device_update_trigger
+AFTER INSERT OR UPDATE ON devices
+FOR EACH ROW
+EXECUTE FUNCTION notify_device_update();

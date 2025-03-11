@@ -9,3 +9,6 @@ export const useStoredState = <T>(key: string, def: T) => {
     }]
 }
 
+export const useNavPath = () => {
+    return window.location.pathname.split('/').filter(s => s !== '');
+}
