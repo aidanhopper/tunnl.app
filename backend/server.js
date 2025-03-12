@@ -41,7 +41,7 @@ client.connect()
     .then(() => console.log("Connected to PostgreSQL DB"))
     .catch(err => console.error("Error", err.stack));
 
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, '../website/dist')));
 
 const generateDaemonToken = (hwid) => {
     const payload = { type: 'daemon token', hwid: hwid }
