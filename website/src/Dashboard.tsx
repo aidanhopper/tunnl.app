@@ -10,7 +10,7 @@ import {
     DropdownToggle, DropdownProvider, Dropdown,
     DropdownGroup, DropdownButton, DropdownAnchor
 } from './components/Dropdown';
-import { authenticateDaemon, getHostname, deleteDevice, updateDeviceName, startTunneler, stopTunneler } from './API';
+import { authenticateDaemon, deleteDevice, updateDeviceName, startTunneler, stopTunneler } from './API';
 import { PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit } from './components/PopupWindow';
 
 const StatusCircle = ({ className = '', children }: { className?: string, children?: React.ReactNode }) => {
@@ -44,10 +44,6 @@ const Dashboard = () => {
     const [deleteDeviceID, setDeleteDeviceID] = useState('');
     const renameWindowInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        getHostname().then(r => { if (r.status === 200) setHostname(r.data.hostname) });
-    }, [])
-
     // might be a race condition here
     useEffect(() => { if (!user) navigate('/') }, [user, navigate]);
 
@@ -73,12 +69,11 @@ const Dashboard = () => {
                             </div>
                             <PopupWindow>
                                 <PopupWindowSubmit>
-                                    <button
-                                        onClick={() => authenticateDaemon(user.id)}
+                                    <a target='_blank' href={`http://localhost:45789/v1/authenticate/${encodeURIComponent(user.id)}`}
                                         className='font-bold text-4xl bg-neutral-800 p-4 rounded-lg
                                         cursor-pointer text-neutral-200 hover:bg-neutral-900'>
                                         Add this device
-                                    </button>
+                                    </a>
                                 </PopupWindowSubmit>
                             </PopupWindow>
                         </PopupWindowProvider>

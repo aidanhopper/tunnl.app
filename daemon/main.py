@@ -119,7 +119,7 @@ def start_socket_client():
             time.sleep(5)
     sio.wait()
 
-@app.post('/v1/authenticate/{userid}')
+@app.get('/v1/authenticate/{userid}')
 async def authenticate(userid: str):
     global token
     if token is None:
