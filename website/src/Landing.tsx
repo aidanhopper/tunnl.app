@@ -170,14 +170,14 @@ const Landing = () => {
                             sentenceClassName='text-4xl xl:text-6xl' />
                         <div className='w-[400px] flex flex-col justify-center items-left text-neutral-700 text-lg'>
                             <p>
-                                tunnl.app makes it easy to securely share any private service
+                                tunnl.app makes it easy to securely share and join any private service
                                 with your communitiies over any domain you choose.
                             </p>
                             <div className='mt-7'>
-                                <Link to='/login'
+                                <Link to={user ? '/dashboard' : '/login'}
                                     className='rounded-md bg-neutral-600 text-neutral-100
                                     py-2 px-3 font-semibold hover:bg-neutral-500 duration-150 cursor-pointer'>
-                                    Start sharing services &rarr;
+                                    Start here &rarr;
                                 </Link>
                             </div>
                         </div>

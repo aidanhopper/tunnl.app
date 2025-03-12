@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
 const fs = require('fs');
 
-dotenv.config();
+dotenv.config({ path: '../.env'});
 
 const PORT = process.env.PORT || 3123;
 
@@ -28,7 +28,6 @@ const daemons = new Map();
 const webclients = new Map();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173" }));
 
 const client = new pg.Client({
     host: `${process.env.PG_HOST}`,
@@ -42,7 +41,7 @@ client.connect()
     .then(() => console.log("Connected to PostgreSQL DB"))
     .catch(err => console.error("Error", err.stack));
 
-//app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 const generateDaemonToken = (hwid) => {
     const payload = { type: 'daemon token', hwid: hwid }

@@ -162,7 +162,7 @@ const Dashboard = () => {
                                                         <DropdownToggle>
                                                             <img
                                                                 src='/three-dots.svg'
-                                                                className='w-6 cursor-pointer' />
+                                                                className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
                                                         <Dropdown offsetX={-50} offsetY={-150} className='w-28'>
                                                             <DropdownGroup>

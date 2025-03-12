@@ -113,7 +113,7 @@ def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:
         try: 
-            sio.connect('http://localhost:5173', socketio_path='/daemon.sock')
+            sio.connect(f'{os.getenv('SERVER_URL')}', socketio_path='/daemon.sock')
             break
         except socketio.exceptions.ConnectionError:
             time.sleep(5)
@@ -125,7 +125,7 @@ async def authenticate(userid: str):
     if token is None:
         raise HTTPException(status_code=500, detail='Daemon not registered')
 
-    url = 'http://localhost:5173/api/v1/daemon'
+    url = f'{os.getenv('SERVER_URL')}/api/v1/daemon'
 
     headers = {
         'Authorization': f'Bearer {token}',
