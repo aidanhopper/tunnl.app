@@ -25,7 +25,7 @@ export const PopupWindowProvider = ({ children, initial = false }: { children?: 
 export const PopupWindowToggle = ({ children }: { children?: React.ReactNode }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
     return (
-        <span onClick={() => setIsExpanded(!isExpanded)}>
+        <span className='w-full h-full' onClick={() => setIsExpanded(!isExpanded)}>
             {children}
         </span>
     );
@@ -40,10 +40,11 @@ export const PopupWindowSubmit = ({ children }: { children?: React.ReactNode }) 
     );
 }
 
-export const PopupWindow = ({ children }: { children?: React.ReactNode }) => {
+export const PopupWindow = ({ children, onClose = () => { } }:
+    { children?: React.ReactNode, onClose?: () => void }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
     return (
-        <AnimatePresence>
+        <AnimatePresence onExitComplete={() => onClose()}>
             {
                 isExpanded &&
                 <>
@@ -69,7 +70,9 @@ export const PopupWindow = ({ children }: { children?: React.ReactNode }) => {
                     </span>
                     <span className='absolute z-10 w-screen h-screen top-0
                             left-0 select-none pointer-events-auto'
-                        onClick={() => setIsExpanded(false)} />
+                        onClick={() => {
+                            setIsExpanded(false)
+                        }} />
                 </>
             }
         </AnimatePresence>

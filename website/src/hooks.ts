@@ -1,10 +1,11 @@
 import { useState } from 'react';
 
 export const useStoredState = <T>(key: string, def: T) => {
-    const v = window.sessionStorage.getItem(key);
-    const [value, setValue] = useState(v ? JSON.parse(v) : def);
+    const item = window.localStorage.getItem(key);
+    const v = !item || item === 'undefined' ? def : JSON.parse(item);
+    const [value, setValue] = useState(v);
     return [value, (newValue: T) => {
-        window.sessionStorage.setItem(key, JSON.stringify(newValue));
+        window.localStorage.setItem(key, JSON.stringify(newValue));
         setValue(newValue);
     }]
 }

@@ -98,7 +98,11 @@ export const DropdownButton = ({ children, className = '', onClick }:
         <button
             className={`flex justify-center items-center w-full text-sm px-4 py-2
                 hover:bg-neutral-700 duration-150 cursor-pointer ${className}`}
-            onClick={() => { if (onClick) onClick(); setDropdownState({ isExpanded: false, x: 0, y: 0 }) }}>
+            onClick={() => {
+                if (onClick) onClick();
+                setDropdownState({ isExpanded: false, x: 0, y: 0 });
+                document.body.style.overflow = '';
+            }}>
             {children}
         </button>
     );
@@ -106,8 +110,14 @@ export const DropdownButton = ({ children, className = '', onClick }:
 
 export const DropdownLink = ({ children, to, className = '' }:
     { children?: React.ReactNode, to: string, className?: string }) => {
+    const { dropdownState, setDropdownState } = useDropdown();
     return (
         <Link
+            onClick={() => {
+                setDropdownState({ isExpanded: false, x: 0, y: 0 })
+                setDropdownState({ isExpanded: false, x: 0, y: 0 });
+                document.body.style.overflow = '';
+            }}
             className={`flex justify-center items-center w-full text-sm px-4 py-2
                 hover:bg-neutral-700 duration-150 cursor-pointer ${className}`}
             to={to}>
@@ -124,7 +134,7 @@ export const Dropdown = ({ children, offsetX = 0, offsetY = 0, className = '' }:
         <AnimatePresence>
             {
                 dropdownState.isExpanded &&
-                <div className='absolute top-0 left-0 h-screen w-screen z-10'>
+                <div className='absolute top-0 left-0 h-full w-full z-10'>
                     <motion.div
                         ref={dropdownRef}
                         initial={{ scale: 0.8, opacity: 0 }}

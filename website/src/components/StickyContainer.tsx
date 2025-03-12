@@ -8,6 +8,7 @@ export const StickyContainer = ({ children, offsetTop = 0 }:
     const [height, setHeight] = useState(0);
     const [width, setWidth] = useState(0);
     const [left, setLeft] = useState(0);
+    const [scrollY, setScrollY] = useState(0);
 
     useEffect(() => {
         // Get initial dimensions
@@ -30,6 +31,7 @@ export const StickyContainer = ({ children, offsetTop = 0 }:
                 // Update position if not sticky (when scrolling back up)
                 if (!shouldBeSticky) {
                     setLeft(rect.left);
+                    setScrollY(window.scrollY);
                 }
             }
         };
@@ -56,10 +58,10 @@ export const StickyContainer = ({ children, offsetTop = 0 }:
 
     return (
         <>
-            <div ref={containerRef} style={{ height: isSticky ? height : 'auto' }}>
+            <div className='relative' ref={containerRef} style={{ height: isSticky ? height : 'auto', zIndex: '100' }}>
                 <div style={{
                     position: isSticky ? 'fixed' : 'static',
-                    top: isSticky ? offsetTop : undefined,
+                    top: isSticky ? offsetTop  : undefined,
                     left: isSticky ? left : undefined,
                     width: isSticky ? width : '100%',
                     height: 'auto',

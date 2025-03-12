@@ -15,18 +15,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS devices (
-    id TEXT PRIMARY KEY,
-    user_id UUID NOT NULL,
-    is_daemon_online BOOLEAN NOT NULL,
-    is_tunnel_online BOOLEAN NOT NULL,
-    hostname TEXT NOT NULL,
-    display_name TEXT NOT NULL,
-    last_login TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
 CREATE OR REPLACE FUNCTION notify_user_update()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -47,6 +35,18 @@ AFTER INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION notify_user_update();
 
+CREATE TABLE IF NOT EXISTS devices (
+    id TEXT PRIMARY KEY,
+    user_id UUID NOT NULL,
+    is_daemon_online BOOLEAN NOT NULL,
+    is_tunnel_online BOOLEAN NOT NULL,
+    hostname TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    last_login TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE OR REPLACE FUNCTION notify_device_update()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -62,7 +62,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION notify_device_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'device_updates',
+    json_build_object(
+      'device', row_to_json(OLD),
+      'operation', 'DELETE'
+    )::text
+  );
+  
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER device_update_trigger
 AFTER INSERT OR UPDATE ON devices
 FOR EACH ROW
 EXECUTE FUNCTION notify_device_update();
+
+CREATE TRIGGER device_delete_trigger
+BEFORE DELETE ON devices
+FOR EACH ROW
+EXECUTE FUNCTION notify_device_delete();

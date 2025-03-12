@@ -27,7 +27,7 @@ export const startTunneler = async (hwid: string) => {
             withCredentials: true,
         });
 }
- 
+
 export const stopTunneler = async (hwid: string) => {
     return await axios.post(`/api/v1/daemon/${encodeURIComponent(hwid)}/stop`,
         {
@@ -37,6 +37,23 @@ export const stopTunneler = async (hwid: string) => {
 
 export const getTunnelerStatus = async (hwid: string) => {
     return await axios.get(`/api/v1/daemon/${encodeURIComponent(hwid)}/status`,
+        {
+            withCredentials: true,
+        });
+}
+
+export const updateDeviceName = async (hwid: string, name: string) => {
+    return await axios.patch(`/api/v1/daemon/${encodeURIComponent(hwid)}/name`,
+        {
+            withCredentials: true,
+            data: {
+                name: name,
+            }
+        });
+}
+
+export const deleteDevice = async (hwid: string) => {
+    return await axios.delete(`/api/v1/daemon/${encodeURIComponent(hwid)}`,
         {
             withCredentials: true,
         });

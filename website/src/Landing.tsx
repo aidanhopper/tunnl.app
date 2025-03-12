@@ -7,16 +7,19 @@ import {
     DropdownGroup, DropdownLink, DropdownButton
 } from './components/Dropdown';
 import { Link } from 'react-router-dom';
-import { authenticateDaemon, postLogout, startTunneler, stopTunneler } from './API';
+import { postLogout } from './API';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
     { highlightedClassName?: string, sentenceClassName?: string }) => {
-    const [index, setIndex] = useState(1);
     const textRef = useRef<HTMLSpanElement>(null)
-    const [width, setWidth] = useState(0);
+    const [width, setWidth] = useState(50);
 
     const headerCycle = [
+        {
+            content: 'Teamspeak',
+            color: 'bg-pink-900'
+        },
         {
             content: 'Plex',
             color: 'bg-amber-900'
@@ -47,6 +50,8 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
         },
     ]
 
+    const [index, setIndex] = useState(Math.floor(Math.random() * 1000) % headerCycle.length);
+
     useEffect(() => {
         const interval = setInterval(() => {
             setIndex((prev) => (prev + 1) % headerCycle.length);
@@ -72,15 +77,15 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
                         height: textRef.current ? textRef.current.offsetHeight + 30 : 0
                     }}
                     animate={{ width: width + 35 }}
-                    transition={{ duration: 1, type: 'spring' }}
+                    transition={{ duration: 0.7, type: 'spring' }}
                     className={`${headerCycle[index].color} rounded-xl p-4
                         text-neutral-100 font-bold ${highlightedClassName}`}>
-                    <AnimatePresence>
+                    <AnimatePresence initial={false}>
                         <motion.div className='whitespace-nowrap absolute z-0'
                             key={`${index}`}
-                            initial={{ opacity: 0, y: 60 }}
+                            initial={{ opacity: 0, y: 40 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -60 }}
+                            exit={{ opacity: 0, y: -40 }}
                             transition={{ duration: 0.2, delay: 0.1 }}>
                             {headerCycle[index].content}
                         </motion.div>
@@ -106,9 +111,8 @@ const Landing = () => {
         return () => { window.removeEventListener('resize', handleResize) }
     }, []);
 
-
     return (
-        <div className={`min-h-screen duration-200 w-screen ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
+        <div className={`min-h-screen flex flex-col duration-200 w-screen ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
             <div className='bg-neutral-600 w-full h-8 flex justify-center items-center text-white'>
                 <code>Alpha release coming soon!</code>
             </div>
@@ -157,12 +161,12 @@ const Landing = () => {
                     </div>
                 </NavbarSection>
             </Navbar>
-            <div className='h-[500px]'>
+            <div className='h-[400px]'>
                 <Container>
                     <div className='w-full h-full flex flex-col xl:flex-row items-center
                         xl:px-20 xl:justify-center xl:items-left'>
                         <Tagline
-                            highlightedClassName='text-5xl xl:text-5xl'
+                            highlightedClassName='text-4xl xl:text-5xl'
                             sentenceClassName='text-4xl xl:text-6xl' />
                         <div className='w-[400px] flex flex-col justify-center items-left text-neutral-700 text-lg'>
                             <p>
@@ -179,6 +183,21 @@ const Landing = () => {
                         </div>
                     </div>
                 </Container>
+            </div>
+            <div className='flex w-full h-screen items-end text-neutral-100'>
+                <div className='flex bg-neutral-600 py-3 items-center w-full justify-center'>
+                    <div className=''>
+                        Leave feedback at &nbsp;
+                        <code className='p-1 bg-neutral-700 rounded'>
+                            <a href='mailto:aidanhop1@gmail.com'>aidanhop1@gmail.com</a>
+                        </code>
+                        &nbsp;
+                        or my discord &nbsp;
+                        <code className='p-1 bg-neutral-700 rounded'>
+                            aidan12312
+                        </code>
+                    </div>
+                </div>
             </div>
         </div>
     );

@@ -10,8 +10,11 @@ export const DashboardPageHeader = ({ children }: { children?: React.ReactNode }
 
 export const DashboardPage = ({ children }: { children?: React.ReactNode }) => {
     return (
-        <div className='flex flex-col w-full h-full'>
-            {children}
+        <div className='flex justify-center w-full overflow-hidden'>
+            <div className='max-w-[1300px] flex flex-col w-full h-full  overflow-y-scroll
+                py-6 px-16 overflow-x-hidden'>
+                {children}
+            </div>
         </div>
     );
 }

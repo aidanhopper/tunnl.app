@@ -140,6 +140,7 @@ const authenticateDaemon = async (req, res, next) => {
             return;
         }
 
+        req.hwid = hwid;
         req.daemon = daemon(hwid);
 
         next();
@@ -336,12 +337,49 @@ app.post('/api/v1/daemon', authenticateDaemonToken, async (req, res) => {
     }
 });
 
+app.patch('/api/v1/daemon/:hwid/name', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('PATCH /api/v1/daemon/name');
+
+        const { name } = req.body.data;
+        console.log(name);
+
+        await client.query('UPDATE devices SET display_name = $2 WHERE id = $1',
+            [req.hwid, name]);
+
+        res.status(200).json({ message: 'Successfully changed device name' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.delete('/api/v1/daemon/:hwid', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('DELETE /api/v1/daemon');
+
+        req.daemon.emit('tunneler:stop');
+
+        await client.query('DELETE FROM devices WHERE id = $1',
+            [req.hwid]);
+
+        res.status(200).json({ message: 'Successfully deleted daemon' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
 app.post('/api/v1/daemon/:hwid/start', authenticateToken, authenticateDaemon, (req, res) => {
     try {
         console.log('POST /api/v1/daemon/start');
-        req.daemon.timeout(10000).emit('tunneler:start', (err, response) => {
+        req.daemon.timeout(10000).emit('tunneler:start', async (err, response) => {
             if (err) throw new Error('Could not connect to daemon');
             if (response.length === 0) throw new Error('Could not connect to daemon');
+
+            if (response[0].success)
+                await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [req.hwid]);
+
             res.json(response[0]);
         });
     } catch (err) {
@@ -353,9 +391,11 @@ app.post('/api/v1/daemon/:hwid/start', authenticateToken, authenticateDaemon, (r
 app.post('/api/v1/daemon/:hwid/stop', authenticateToken, authenticateDaemon, (req, res) => {
     try {
         console.log('POST /api/v1/daemon/stop');
-        req.daemon.timeout(10000).emit('tunneler:stop', (err, response) => {
+        req.daemon.timeout(10000).emit('tunneler:stop', async (err, response) => {
             if (err) throw new Error('Could not connect to daemon');
             if (response.length === 0) throw new Error('Could not connect to daemon');
+            if (response[0].success)
+                await client.query('UPDATE devices SET is_tunnel_online = false WHERE id = $1', [req.hwid]);
             res.json(response[0]);
         });
     } catch (err) {
@@ -412,6 +452,7 @@ daemonio.on('connection', socket => {
         daemons.delete(hwid);
     });
 });
+
 
 webio.use(authenticateSocketToken);
 

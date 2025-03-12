@@ -28,9 +28,12 @@ export const Navbar = ({ children, className, onStick, onUnstick }:
 
     return (
         <StickyContainer>
-            <div className={`w-full ${className}`} ref={navRef}>
+            <div
+                className={`w-full duration-150 ${isStuck ? 'border-b-[0.5px] border-neutral-400' : ''}
+                ${className}`}
+                ref={navRef}>
                 <Container>
-                    <nav className={`flex py-1 w-full`}>
+                    <nav className={`flex h-[70px] py-1 w-full`}>
                         {children}
                     </nav>
                 </Container>
