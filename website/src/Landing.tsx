@@ -1,5 +1,5 @@
 import { useUser } from './user';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Navbar, NavbarSection } from './components/Navbar';
 import Container from './components/Container';
 import {
@@ -17,10 +17,6 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
 
     const headerCycle = [
         {
-            content: 'Teamspeak',
-            color: 'bg-pink-900'
-        },
-        {
             content: 'Plex',
             color: 'bg-amber-900'
         },
@@ -29,8 +25,12 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
             color: 'bg-green-900'
         },
         {
-            content: 'Website',
+            content: 'Nextcloud',
             color: 'bg-black'
+        },
+        {
+            content: 'Teamspeak',
+            color: 'bg-pink-900'
         },
         {
             content: 'Sunshine',
@@ -48,22 +48,40 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
             content: 'Immich',
             color: 'bg-lime-900'
         },
+        {
+            content: 'Jellyseerr',
+            color: 'bg-teal-900'
+        },
+        {
+            content: 'PaperMC',
+            color: 'bg-rose-900'
+        },
     ]
 
     const [index, setIndex] = useState(Math.floor(Math.random() * 1000) % headerCycle.length);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % headerCycle.length);
+            const newIndex = (index + 1) % headerCycle.length;
+            setIndex(newIndex);
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [headerCycle.length]);
+    }, [headerCycle.length, index]);
 
-    useEffect(() => {
-        if (!textRef.current) return;
-        const box = textRef.current.getBoundingClientRect();
-        setWidth(box.width);
+    useLayoutEffect(() => {
+        const handleResize = () => {
+            if (!textRef.current) return;
+            const box = textRef.current.getBoundingClientRect();
+            setWidth(box.width + 35);
+
+        }
+
+        handleResize()
+
+        window.addEventListener('resize', handleResize);
+
+        return () => { window.removeEventListener('resize', handleResize) }
     }, [index]);
 
     return (
@@ -73,10 +91,10 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
                 <h1 className='font-bold mb-4 xl:mb-0'>Easily share &nbsp;</h1>
                 <motion.div
                     style={{
-                        width: textRef.current?.offsetWidth,
+                        width: textRef.current ? textRef.current.offsetWidth + 35 : 35,
                         height: textRef.current ? textRef.current.offsetHeight + 30 : 0
                     }}
-                    animate={{ width: width + 35 }}
+                    animate={{ width: width }}
                     transition={{ duration: 0.7, type: 'spring' }}
                     className={`${headerCycle[index].color} rounded-xl p-4
                         text-neutral-100 font-bold ${highlightedClassName}`}>
@@ -95,7 +113,7 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
                     </span>
                 </motion.div>
             </div>
-            <h1 className='font-bold text-center'>instances with your friends.</h1>
+            <h1 className='font-bold text-center lg:text-left'>instances with your friends.</h1>
         </div>
     );
 }
@@ -127,6 +145,9 @@ const Landing = () => {
                                md:text-sm rounded text-neutral-200 bg-neutral-600 duration-150 cursor-pointer'>
                             Download
                         </button>
+                        <h1 className='xl:mr-12 mr-4 hidden sm:block text-neutral-600 font-bold'>
+                            Pricing
+                        </h1>
                         {
                             user ?
                                 <>
@@ -137,7 +158,7 @@ const Landing = () => {
                                                 min-h-12 w-12 h-12 border-neutral-600 border-2 rounded-full duration-150'
                                                 src={user.picture} />
                                         </DropdownToggle>
-                                        <Dropdown offsetX={-140} offsetY={55} className='w-[120px]'>
+                                        <Dropdown offsetX={-70} offsetY={50} className='w-[120px]'>
                                             <DropdownGroup>
                                                 <DropdownLink to='/dashboard'>
                                                     Dashboard
@@ -161,7 +182,7 @@ const Landing = () => {
                     </div>
                 </NavbarSection>
             </Navbar>
-            <div className='h-[500px]'>
+            <div className='h-[400px]'>
                 <Container>
                     <div className='w-full h-full flex flex-col xl:flex-row items-center
                         xl:px-20 xl:justify-center xl:items-left'>

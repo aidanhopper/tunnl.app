@@ -48,6 +48,16 @@ export const updateDeviceName = async (hwid: string, name: string) => {
         });
 }
 
+export const updateDisplayName = async (name: string) => {
+    return await axios.patch(`/api/v1/user/name`,
+        {
+            withCredentials: true,
+            data: {
+                name: name,
+            }
+        });
+}
+
 export const deleteDevice = async (hwid: string) => {
     return await axios.delete(`/api/v1/daemon/${encodeURIComponent(hwid)}`,
         {

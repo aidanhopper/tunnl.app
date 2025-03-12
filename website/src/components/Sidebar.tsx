@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStoredState } from '../hooks';
 import { createContext, useContext } from 'react';
@@ -84,10 +84,14 @@ export const SidebarButton = ({ children, className = '', onClick = () => { }, i
     );
 }
 
-export const SidebarLink = ({ children, className = '', to, imgPath, active = false }:
-    { children?: React.ReactNode, className?: string, to: string, imgPath?: string, active?: boolean }) => {
+export const SidebarLink = ({ children, className = '', to, imgPath, active = false, onClick = (_) => { } }:
+    {
+        children?: React.ReactNode, className?: string, to: string, imgPath?: string, active?: boolean,
+        onClick?: (setIsExpanded: (newValue: boolean) => void) => void
+    }) => {
+    const { isExpanded, setIsExpanded } = useSidebar();
     return (
-        <Link to={to}>
+        <Link to={to} onClick={() => onClick(setIsExpanded)}>
             <div className={`text-lg hover:bg-neutral-500 rounded-md duration-150 overflow-x-hidden
             w-full cursor-pointer mb-4 ${active ? 'bg-neutral-500' : 'bg-neutral-600'} ${className}`}>
                 <div className='flex justify-start items-center px-4 py-1 whitespace-nowrap'>
@@ -111,7 +115,7 @@ export const Sidebar = ({ children, className, expandedWidth, contractedWidth, o
     const sidebarRef = useRef<HTMLDivElement>(null)
     const { isExpanded, setIsExpanded } = useSidebar();
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (onExpand && isExpanded) onExpand();
         else if (onContract && !isExpanded) onContract();
     }, [isExpanded, onContract, onExpand]);

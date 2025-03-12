@@ -15,8 +15,10 @@ export type User = {
         createdAt: string,
         hostname: string,
         displayName: string,
+        dnsIpRange: string,
         isDaemonOnline: boolean,
         isTunnelOnline: boolean,
+        isTunnelAutostart: boolean,
     }[],
 }
 

@@ -11,3 +11,4 @@ daemon/ziti
 daemon/__pycache__
 daemon/main.spec
 daemon/main
+backend/resources

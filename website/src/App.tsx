@@ -22,6 +22,7 @@ const App = () => {
                             <Route path='/dashboard/communities' element={<Dashboard />} />
                             <Route path='/dashboard/services' element={<Dashboard />} />
                             <Route path='/dashboard/devices' element={<Dashboard />} />
+                            <Route path='/dashboard/settings' element={<Dashboard />} />
                             <Route path='/*' element={<NotFound />} />
                         </Routes>
                     </Router >

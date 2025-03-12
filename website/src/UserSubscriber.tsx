@@ -10,7 +10,7 @@ const UserSubscriber = ({ children }: { children?: React.ReactNode }) => {
         if (!user) socket.disconnect();
         else {
             socket.connect();
-            socket.on('user:update', u => { setUser(u); console.log(u) })
+            socket.on('user:update', u => setUser(u))
         };
     }, [user, socket, setUser]);
 

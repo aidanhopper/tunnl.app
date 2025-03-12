@@ -30,7 +30,7 @@ export const TableHead = ({ children, className = '' }:
 export const TableData = ({ children, className = '' }:
     { children?: React.ReactNode, className?: string }) => {
     return (
-        <td className={`px-2 border-b-[0.5px] border-neutral-400 py-6 ${className}`}>
+        <td className={`px-2 border-b-[0.5px] border-neutral-400 py-2 ${className}`}>
             {children}
         </td >
     );

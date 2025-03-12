@@ -15,9 +15,7 @@ export const PopupWindowProvider = ({ children, initial = false }: { children?: 
     const [isExpanded, setIsExpanded] = useState(initial);
     return (
         <PopupWindowContext.Provider value={{ isExpanded, setIsExpanded }}>
-            <span className='h-full w-full'>
-                {children}
-            </span>
+            {children}
         </PopupWindowContext.Provider>
     );
 }

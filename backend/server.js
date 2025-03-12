@@ -160,6 +160,28 @@ const webclient = (userid) => {
     return socketids.map(id => webio.to(id));
 }
 
+const getDevice = async (id) => {
+    const response = await client.query(`
+        SELECT * FROM devices WHERE id = $1 
+    `, [id]);
+
+    if (response.rows.length === 0) return null;
+
+    const d = response.rows[0];
+
+    return {
+        id: d.id,
+        lastLogin: d.last_login,
+        createdAt: d.created_at,
+        hostname: d.hostname,
+        dnsIpRange: d.dns_ip_range,
+        displayName: d.display_name,
+        isDaemonOnline: d.is_daemon_online,
+        isTunnelOnline: d.is_tunnel_online,
+        isTunnelAutostart: d.is_tunnel_autostart
+    }
+}
+
 const getUser = async (id) => {
     try {
         let response = await client.query(`
@@ -191,9 +213,11 @@ const getUser = async (id) => {
                     lastLogin: d.last_login,
                     createdAt: d.created_at,
                     hostname: d.hostname,
+                    dnsIpRange: d.dns_ip_range,
                     displayName: d.display_name,
                     isDaemonOnline: d.is_daemon_online,
                     isTunnelOnline: d.is_tunnel_online,
+                    isTunnelAutostart: d.is_tunnel_autostart
                 }
             })
         }
@@ -325,9 +349,19 @@ app.post('/api/v1/daemon', authenticateDaemonToken, async (req, res) => {
         const hwid = req.hwid;
 
         await client.query(`
-            INSERT INTO devices (id, user_id, last_login, hostname, display_name, is_daemon_online, is_tunnel_online)
-            VALUES ($1, $2, NOW(), $3, $4, $5, $6)
-        `, [hwid, userid, hostname, hostname, true, false]);
+            INSERT INTO devices (
+                id,
+                user_id,
+                last_login,
+                hostname,
+                display_name,
+                dns_ip_range,
+                is_daemon_online,
+                is_tunnel_online,
+                is_tunnel_autostart
+            )
+            VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, $8)
+        `, [hwid, userid, hostname, hostname, '203.0.113.0/24', true, false, false]);
 
         res.status(200).json({ message: 'Successfully authenticated the daemon' });
     } catch (err) {
@@ -347,6 +381,22 @@ app.patch('/api/v1/daemon/:hwid/name', authenticateToken, authenticateDaemon, as
             [req.hwid, name]);
 
         res.status(200).json({ message: 'Successfully changed device name' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.patch('/api/v1/user/name', authenticateToken, async (req, res) => {
+    try {
+        console.log('PATCH /api/v1/user/name');
+
+        const { name } = req.body.data;
+
+        await client.query('UPDATE users SET display_name = $2 WHERE id = $1',
+            [req.id, name]);
+
+        res.status(200).json({ message: 'Successfully changed display name' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occured' });
@@ -427,7 +477,7 @@ daemonio.on('connection', socket => {
 
     socket.emit('server:register:request');
 
-    socket.on('register:request', data => {
+    socket.on('register:request', async data => {
         if (!data.hwid) return;
 
         daemons.set(data.hwid, socket.id);
@@ -437,6 +487,10 @@ daemonio.on('connection', socket => {
         } catch (err) { }
 
         socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
+
+        const device = await getDevice();
+
+        if (device && device.isTunnelAutostart) socket.emit('tunneler:start');
     });
 
     socket.on('disconnect', () => {

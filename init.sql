@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS devices (
     user_id UUID NOT NULL,
     is_daemon_online BOOLEAN NOT NULL,
     is_tunnel_online BOOLEAN NOT NULL,
+    is_tunnel_autostart BOOLEAN NOT NULL,
+    dns_ip_range TEXT NOT NULL,
     hostname TEXT NOT NULL,
     display_name TEXT NOT NULL,
     last_login TIMESTAMP NOT NULL,
