@@ -43,10 +43,6 @@ client.connect()
 
 app.use(express.static(path.join(__dirname, '../website/dist')));
 
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'website', 'dist', 'index.html'));
-});
-
 const generateDaemonToken = (hwid) => {
     const payload = { type: 'daemon token', hwid: hwid }
     return jwt.sign(payload, process.env.JWT_SECRET);
@@ -476,5 +472,9 @@ webio.on('connection', socket => {
 });
 
 startListener();
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'website', 'dist', 'index.html'));
+});
 
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
