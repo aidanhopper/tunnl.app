@@ -79,7 +79,7 @@ const Dashboard = () => {
                         </PopupWindowProvider>
                     </div>
                 </div>
-                <div className='overflow-x-scroll'>
+                <div className='overflow-x-auto'>
                     <Table>
                         <TableHeader>
                             <TableHead>
@@ -159,7 +159,7 @@ const Dashboard = () => {
                                                                 src='/three-dots.svg'
                                                                 className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
-                                                        <Dropdown offsetX={-100} offsetY={-130} className='w-28'>
+                                                        <Dropdown offsetX={-120} offsetY={-80} className='w-28'>
                                                             <DropdownGroup>
                                                                 {
                                                                     d.isDaemonOnline &&
