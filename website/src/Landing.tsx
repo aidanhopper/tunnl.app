@@ -137,7 +137,7 @@ const Landing = () => {
                                                 min-h-12 w-12 h-12 border-neutral-600 border-2 rounded-full duration-150'
                                                 src={user.picture} />
                                         </DropdownToggle>
-                                        <Dropdown offsetX={-70} offsetY={55} className='w-[120px]'>
+                                        <Dropdown offsetX={-140} offsetY={55} className='w-[120px]'>
                                             <DropdownGroup>
                                                 <DropdownLink to='/dashboard'>
                                                     Dashboard
