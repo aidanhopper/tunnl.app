@@ -21,7 +21,7 @@ export const TableHeader = ({ children }: { children?: React.ReactNode }) => {
 export const TableHead = ({ children, className = '' }:
     { children?: React.ReactNode, className?: string }) => {
     return (
-        <th className='pb-2 px-2 border-b-[0.5px] border-neutral-400 relative'>
+        <th className='md:text-xl pb-2 px-2 border-b-[0.5px] border-neutral-400 relative'>
             {children}
         </th>
     );
@@ -47,7 +47,7 @@ export const TableBody = ({ children }: { children?: React.ReactNode }) => {
 export const TableRow = ({ children }:
     { children?: React.ReactNode }) => {
     return (
-        <tr className='hover:bg-neutral-300 duration-150 text-base'>
+        <tr className='hover:bg-neutral-300 duration-150 text-sm md:text-base'>
             {children}
         </tr>
     );

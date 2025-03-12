@@ -54,14 +54,14 @@ const Dashboard = () => {
                 <DashboardPageHeader>
                     {page}
                 </DashboardPageHeader>
-                <div className='flex mb-8'>
+                <div className='flex mb-8 flex-col sm:flex-row'>
                     <p className='flex-1 flex'>
                         Manage the devices on your account.
                     </p>
-                    <div className='flex-1 justify-end flex'>
+                    <div className='flex-1 justify-start sm:justify-end flex'>
                         <PopupWindowProvider>
-                            <div className='flex justify-end'>
-                                <DashboardButton>
+                            <div className='flex mt-3 sm:mt-0 sm:justify-end'>
+                                <DashboardButton className='w-full sm:w-fit'>
                                     <PopupWindowToggle>
                                         Add this device
                                     </PopupWindowToggle>
@@ -79,7 +79,7 @@ const Dashboard = () => {
                         </PopupWindowProvider>
                     </div>
                 </div>
-                <div>
+                <div className='overflow-x-scroll'>
                     <Table>
                         <TableHeader>
                             <TableHead>
@@ -159,7 +159,7 @@ const Dashboard = () => {
                                                                 src='/three-dots.svg'
                                                                 className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
-                                                        <Dropdown offsetX={-50} offsetY={-150} className='w-28'>
+                                                        <Dropdown offsetX={-100} offsetY={-130} className='w-28'>
                                                             <DropdownGroup>
                                                                 {
                                                                     d.isDaemonOnline &&

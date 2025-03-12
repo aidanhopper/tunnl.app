@@ -4,7 +4,7 @@ import {
     Sidebar, SidebarBody, SidebarProvider, SidebarButton,
     SidebarFooter, SidebarLink, SidebarHeader
 } from './components/Sidebar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     DropdownToggle, DropdownProvider, Dropdown,
     DropdownGroup, DropdownLink, DropdownButton,
@@ -19,10 +19,23 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
     const navPath = useNavPath().filter(s => s !== 'dashboard');
     const page = navPath.length >= 1 ? navPath[0] : null;
+    const [width, setWidth] = useState(300);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 900) setWidth(300);
+            else setWidth(window.innerWidth);
+        }
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => { window.removeEventListener('resize', handleResize) }
+    }, [])
+
+
     return user !== null ? (
         <div className='flex w-screen h-screen'>
             <SidebarProvider>
-                <Sidebar expandedWidth={300} contractedWidth={0}
+                <Sidebar expandedWidth={width} contractedWidth={0}
                     className='bg-neutral-600 w-full text-neutral-100 overflow-x-hidden'
                     onExpand={() => setIsSidebarExpanded(true)} onContract={() => setIsSidebarExpanded(false)}>
                     <SidebarHeader>
@@ -94,7 +107,7 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                         </div>
                     </SidebarFooter>
                 </Sidebar>
-                <div className='w-full h-full bg-neutral-200 text-neutral-600'>
+                <div className='w-full h-full bg-neutral-200 text-neutral-600 overflow-x-hidden'>
                     {children}
                 </div>
             </SidebarProvider>

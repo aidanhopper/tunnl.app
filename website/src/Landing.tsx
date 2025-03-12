@@ -95,7 +95,7 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
                     </span>
                 </motion.div>
             </div>
-            <h1 className='font-bold'>instances with your friends.</h1>
+            <h1 className='font-bold text-center'>instances with your friends.</h1>
         </div>
     );
 }
@@ -123,14 +123,14 @@ const Landing = () => {
                 <NavbarSection className='flex justify-end'>
                     <div className='flex items-center'>
                         <button
-                            className='text mr-4 xl:mr-12 hover:bg-neutral-500 px-3 py-1 font-bold
-                                rounded text-neutral-200 bg-neutral-600 duration-150 cursor-pointer'>
+                            className='text mr-4 hidden sm:block xl:mr-12 hover:bg-neutral-500 px-3 py-1 font-bold text-base
+                               md:text-sm rounded text-neutral-200 bg-neutral-600 duration-150 cursor-pointer'>
                             Download
                         </button>
                         {
                             user ?
                                 <>
-                                    <h1 className='mr-4 xl:mr-12 font-bold text-neutral-600'>{user.email}</h1>
+                                    <h1 className='mr-4 hidden sm:block xl:mr-12 font-bold text-neutral-600'>{user.email}</h1>
                                     <DropdownProvider>
                                         <DropdownToggle>
                                             <img className='cursor-pointer bg-neutral-800 min-w-12 hover:border-neutral-400
@@ -161,21 +161,21 @@ const Landing = () => {
                     </div>
                 </NavbarSection>
             </Navbar>
-            <div className='h-[400px]'>
+            <div className='h-[500px]'>
                 <Container>
                     <div className='w-full h-full flex flex-col xl:flex-row items-center
                         xl:px-20 xl:justify-center xl:items-left'>
                         <Tagline
                             highlightedClassName='text-4xl xl:text-5xl'
                             sentenceClassName='text-4xl xl:text-6xl' />
-                        <div className='w-[400px] flex flex-col justify-center items-left text-neutral-700 text-lg'>
+                        <div className='max-w-[400px] mt-4 lg:mt-0 flex flex-col justify-center items-left text-neutral-700 text-lg'>
                             <p>
                                 tunnl.app makes it easy to securely share and join any private service
                                 with your communitiies over any domain you choose.
                             </p>
-                            <div className='mt-7'>
+                            <div className='flex mt-7 '>
                                 <Link to={user ? '/dashboard' : '/login'}
-                                    className='rounded-md bg-neutral-600 text-neutral-100
+                                    className='rounded-md bg-neutral-600 text-neutral-100 w-full xl:w-fit
                                     py-2 px-3 font-semibold hover:bg-neutral-500 duration-150 cursor-pointer'>
                                     Start here &rarr;
                                 </Link>
@@ -186,7 +186,7 @@ const Landing = () => {
             </div>
             <div className='flex w-full h-screen items-end text-neutral-100'>
                 <div className='flex bg-neutral-600 py-3 items-center w-full justify-center'>
-                    <div className=''>
+                    <div className='text-center'>
                         Leave feedback at &nbsp;
                         <code className='p-1 bg-neutral-700 rounded'>
                             <a href='mailto:aidanhop1@gmail.com'>aidanhop1@gmail.com</a>
