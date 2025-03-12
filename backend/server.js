@@ -11,7 +11,7 @@ const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
 const fs = require('fs');
 
-dotenv.config({ path: '../.env'});
+dotenv.config({ path: '../.env' });
 
 const PORT = process.env.PORT || 3123;
 
@@ -42,6 +42,10 @@ client.connect()
     .catch(err => console.error("Error", err.stack));
 
 app.use(express.static(path.join(__dirname, '../website/dist')));
+
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'website', 'dist', 'index.html'));
+});
 
 const generateDaemonToken = (hwid) => {
     const payload = { type: 'daemon token', hwid: hwid }
