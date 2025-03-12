@@ -69,7 +69,7 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                             Devices
                         </SidebarLink>
                     </SidebarBody>
-                    <SidebarFooter>
+                    <SidebarFooter >
                         <div className='w-full h-full text-neutral-200 shrink-0'>
                             <DropdownProvider>
                                 <Dropdown offsetX={-70} offsetY={-150}>
@@ -86,7 +86,7 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                                         </DropdownButton>
                                     </DropdownGroup>
                                 </Dropdown>
-                                <div className='w-full h-full flex items-center p-4'>
+                                <div className='w-full h-full flex items-center pb-20 p-4 md:pb-4'>
                                     <div className='flex items-center w-full'>
                                         <div className='flex'>
                                             <DropdownToggle>
