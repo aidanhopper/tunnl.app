@@ -1,5 +1,10 @@
 import { useState } from 'react';
 
+export const useExistingStoredState = (key: string) => {
+    const item = window.localStorage.getItem(key);
+    return !item || item === 'undefined' ? null : JSON.parse(item);
+}
+
 export const useStoredState = <T>(key: string, def: T) => {
     const item = window.localStorage.getItem(key);
     const v = !item || item === 'undefined' ? def : JSON.parse(item);

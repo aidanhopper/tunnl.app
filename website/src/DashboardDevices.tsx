@@ -8,7 +8,10 @@ import {
     DropdownGroup, DropdownButton, DropdownAnchor
 } from './components/Dropdown';
 import { authenticateDaemon, deleteDevice, updateDeviceName, startTunneler, stopTunneler } from './API';
-import { PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit } from './components/PopupWindow';
+import {
+    PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit,
+    PopupWindowContainer
+} from './components/PopupWindow';
 
 const StatusCircle = ({ className = '', children }: { className?: string, children?: React.ReactNode }) => {
     return (
@@ -105,13 +108,14 @@ const DashboardDevices = () => {
                                 </button>
                             </div>
                             <PopupWindow>
-                                <PopupWindowSubmit>
-                                    <a target='_blank' href={`http://localhost:45789/v1/authenticate/${encodeURIComponent(user.id)}`}
-                                        className='font-bold text-4xl bg-neutral-800 p-4 rounded-lg
-                                        cursor-pointer text-neutral-200 hover:bg-neutral-900'>
-                                        Add this device
-                                    </a>
-                                </PopupWindowSubmit>
+                                <PopupWindowContainer className='hover:bg-neutral-500 duration-150'>
+                                    <PopupWindowSubmit>
+                                        <a target='_blank' href={`http://localhost:45789/v1/authenticate/${encodeURIComponent(user.id)}`}
+                                            className='font-bold text-4xl p-4 block cursor-pointer text-neutral-200'>
+                                            Add this device
+                                        </a>
+                                    </PopupWindowSubmit>
+                                </PopupWindowContainer>
                             </PopupWindow>
                         </PopupWindowProvider>
                     </div>
@@ -129,6 +133,12 @@ const DashboardDevices = () => {
                                 Created
                             </TableHead>
                             <TableHead>
+                                Autostart Tunnel
+                            </TableHead>
+                            <TableHead>
+                                DNS
+                            </TableHead>
+                            <TableHead>
                                 Status
                             </TableHead>
                             <TableHead />
@@ -143,16 +153,8 @@ const DashboardDevices = () => {
                                             <TableData>
                                                 {
                                                     <div>
-                                                        <div className='font-semibold'>
+                                                        <div className='font-bold'>
                                                             {d.displayName}
-                                                        </div>
-                                                        <div>
-                                                            <span className='font-semibold'>DNS</span> &nbsp; &nbsp;
-                                                            <code>{d.dnsIpRange}</code>
-                                                        </div>
-                                                        <div>
-                                                            <span className='font-semibold'>Autostart Tunnel</span> &nbsp; &nbsp;
-                                                            {d.isTunnelAutostart ? <>On</> : <>Off</>}
                                                         </div>
                                                     </div>
                                                 }
@@ -166,6 +168,12 @@ const DashboardDevices = () => {
                                                 {
                                                     createdAt
                                                 }
+                                            </TableData>
+                                            <TableData>
+                                                {d.isTunnelAutostart ? <>On</> : <>Off</>}
+                                            </TableData>
+                                            <TableData>
+                                                <code>{d.dnsIpRange}</code>
                                             </TableData>
                                             <TableData className='min-w-32'>
                                                 <h2 className='font-bold'>Daemon</h2>

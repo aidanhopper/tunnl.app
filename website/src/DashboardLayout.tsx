@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from './user';
 import { useStoredState } from './hooks';
 import {
-    PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit
+    PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit,
+    PopupWindowContainer, PopupWindowInput, PopupWindowBody
 } from './components/PopupWindow';
 import {
     Sidebar, SidebarBody, SidebarProvider, SidebarButton,
@@ -49,25 +50,26 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                 isUpdatingDisplayName &&
                 <PopupWindowProvider initial>
                     <PopupWindow onClose={() => setIsUpdatingDisplayName(false)}>
-                        <div className='bg-neutral-600 text-neutral-200 rounded-lg'>
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                if (!newDisplayNameRef.current) return;
-                                if (newDisplayNameRef.current.value.trim() === '') return;
-                                updateDisplayName(newDisplayNameRef.current.value.trim());
-                            }}>
-                                <label className='flex flex-col p-2'>
-                                    <input
-                                        autoFocus
+                        <PopupWindowContainer>
+                            <PopupWindowBody>
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (!newDisplayNameRef.current) return;
+                                    if (newDisplayNameRef.current.value.trim() === '') return;
+                                    updateDisplayName(newDisplayNameRef.current.value.trim());
+                                }}>
+                                    <PopupWindowInput
+                                        focus
                                         ref={newDisplayNameRef}
-                                        className='bg-neutral-200 text-neutral-600 rounded p-1'
-                                        placeholder='New name' />
-                                </label>
-                                <PopupWindowToggle>
-                                    <button type='submit' className='hidden' />
-                                </PopupWindowToggle>
-                            </form>
-                        </div>
+                                        title='Change Name'
+                                        placeholder={user.displayName}
+                                    />
+                                    <PopupWindowToggle>
+                                        <button type='submit' className='hidden' />
+                                    </PopupWindowToggle>
+                                </form>
+                            </PopupWindowBody>
+                        </PopupWindowContainer>
                     </PopupWindow>
                 </PopupWindowProvider >
             }

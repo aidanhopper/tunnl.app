@@ -4,6 +4,8 @@ CREATE DATABASE app;
 
 \c app;
 
+-- USERS TABLE
+
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
@@ -35,6 +37,8 @@ AFTER INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION notify_user_update();
 
+-- DEVICES TABLE
+
 CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
     user_id UUID NOT NULL,
@@ -46,7 +50,8 @@ CREATE TABLE IF NOT EXISTS devices (
     display_name TEXT NOT NULL,
     last_login TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (user_id, display_name)
 );
 
 CREATE OR REPLACE FUNCTION notify_device_update()
@@ -88,3 +93,19 @@ CREATE TRIGGER device_delete_trigger
 BEFORE DELETE ON devices
 FOR EACH ROW
 EXECUTE FUNCTION notify_device_delete();
+
+-- SERVICES TABLE
+
+CREATE TABLE IF NOT EXISTS services (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    device_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    domain TEXT UNIQUE NOT NULL,
+    host INET NOT NULL,
+    port_range TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
+    UNIQUE (user_id, name)
+)

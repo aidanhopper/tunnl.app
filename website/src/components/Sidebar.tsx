@@ -15,7 +15,7 @@ const useSidebar = () => {
 }
 
 export const SidebarProvider = ({ children }: { children?: React.ReactNode }) => {
-    const [isExpanded, setIsExpanded] = useStoredState('sidebarIsExpaned', true);
+    const [isExpanded, setIsExpanded] = useStoredState('sidebar is expanded', true);
     return (
         <SidebarContext.Provider value={{ isExpanded, setIsExpanded }}>
             <div className="flex w-full h-full">

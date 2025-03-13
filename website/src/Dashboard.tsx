@@ -13,7 +13,6 @@ const Dashboard = () => {
     const navPath = useNavPath().filter(s => s !== 'dashboard');
     const page = navPath.length >= 1 ? navPath[0] : null;
 
-    // might be a race condition here
     useEffect(() => { if (!user) navigate('/') }, [user, navigate]);
 
     return user !== null ? (

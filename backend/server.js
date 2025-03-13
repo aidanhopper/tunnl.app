@@ -408,7 +408,6 @@ app.delete('/api/v1/daemon/:hwid', authenticateToken, authenticateDaemon, async 
         console.log('DELETE /api/v1/daemon');
 
         req.daemon.emit('tunneler:stop');
-
         await client.query('DELETE FROM devices WHERE id = $1',
             [req.hwid]);
 
