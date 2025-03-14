@@ -6,12 +6,14 @@ import DashboardLayout from './DashboardLayout';
 import { useNavPath } from './hooks';
 import DashboardDevices from './DashboardDevices';
 import DashboardServices from './DashboardServices';
+import DashboardCommunities from './DashboardCommunities';
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const { user, setUser } = useUser();
     const navPath = useNavPath().filter(s => s !== 'dashboard');
-    const page = navPath.length >= 1 ? navPath[0] : null;
+
+    const page = navPath.join('/');
 
     useEffect(() => { if (!user) navigate('/') }, [user, navigate]);
 
@@ -24,11 +26,18 @@ const Dashboard = () => {
             <div className='flex w-full h-full justify-center'>
                 <div className='flex w-full'>
                     {
-                        page === 'devices' ?
-                            <DashboardDevices /> :
-                            page === 'services' ?
-                                <DashboardServices /> :
-                                <></>
+                        (
+                            /^devices$/.test(page) || /^devices\/add$/.test(page)
+                        ) && <DashboardDevices />
+                    }
+                    {
+                        (
+                            /^services$/.test(page) || /^services\/create$/.test(page) || /^services\/edit/.test(page)
+                        ) && <DashboardServices />
+                    }
+                    {
+                        /^communities$/.test(page)
+                        && <DashboardCommunities />
                     }
                 </div>
             </div>

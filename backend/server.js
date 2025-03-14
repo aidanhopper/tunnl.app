@@ -141,10 +141,29 @@ const authenticateDaemon = async (req, res, next) => {
 
         req.hwid = hwid;
         req.daemon = daemon(hwid);
+        req.daemon.stopTunnel = () => stopTunnel(req.daemon, hwid);
+        req.daemon.startTunnel = () => startTunnel(req.daemon, hwid);
 
         next();
     } catch (err) {
         console.error(err);
+        res.status(500).json({ message: "An error occured" });
+    }
+}
+
+const authenticateService = (req, res, next) => {
+    try {
+        const serviceid = req.params.serviceid;
+
+        getService(serviceid)
+            .then(service => {
+                if (!service) return res.status(401).json({ message: 'Unauthorized' });
+                if (service.userid !== req.id) return res.status(401).json({ message: 'Unauthorized' });
+                req.service = service;
+                next();
+            });
+    } catch {
+        return res.status(401).json({ message: 'Unauthorized' });
     }
 }
 
@@ -171,6 +190,7 @@ const getDevice = async (id) => {
 
     return {
         id: d.id,
+        userid: d.user_id,
         lastLogin: d.last_login,
         createdAt: d.created_at,
         hostname: d.hostname,
@@ -179,6 +199,27 @@ const getDevice = async (id) => {
         isDaemonOnline: d.is_daemon_online,
         isTunnelOnline: d.is_tunnel_online,
         isTunnelAutostart: d.is_tunnel_autostart
+    }
+}
+
+const getService = async (id) => {
+    const response = await client.query(`
+        SELECT * FROM services WHERE id = $1
+    `, [id]);
+
+    if (response.rows.length === 0) return null;
+
+    const s = response.rows[0];
+
+    return {
+        id: s.id,
+        userid: s.user_id,
+        deviceid: s.device_id,
+        name: s.name,
+        domain: s.domain,
+        host: s.host,
+        portRange: s.port_range,
+        createdAt: s.created_at
     }
 }
 
@@ -197,6 +238,12 @@ const getUser = async (id) => {
         `, [dbuser.id]);
 
         const dbdevices = response.rows;
+
+        response = await client.query(`
+            SELECT * FROM services WHERE user_id = $1
+        `, [dbuser.id]);
+
+        const dbservices = response.rows;
 
         const user = {
             id: dbuser.id,
@@ -219,6 +266,17 @@ const getUser = async (id) => {
                     isTunnelOnline: d.is_tunnel_online,
                     isTunnelAutostart: d.is_tunnel_autostart
                 }
+            }),
+            services: dbservices.map(s => {
+                return {
+                    id: s.id,
+                    deviceid: s.device_id,
+                    name: s.name,
+                    domain: s.domain,
+                    host: s.host,
+                    portRange: s.port_range,
+                    createdAt: s.created_at,
+                }
             })
         }
 
@@ -232,10 +290,14 @@ const startListener = async () => {
     try {
         await client.query('LISTEN user_updates')
         await client.query('LISTEN device_updates')
+        await client.query('LISTEN service_updates')
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
             console.log(payload)
-            const id = payload.user ? payload.user.id : payload.device ? payload.device.user_id : null;
+            const id = payload.user ?
+                payload.user.id : payload.device ?
+                    payload.device.user_id : payload.service ?
+                        payload.service.user_id : null;
             const user = await getUser(id);
             if (!user) return;
             const clients = webclients.get(id);
@@ -249,12 +311,90 @@ const startListener = async () => {
     }
 }
 
+const startTunnel = (daemon, hwid) => {
+    return new Promise((resolve, reject) => {
+        try {
+            daemon.timeout(10000).emit('tunneler:start', async (err, response) => {
+                if (err) throw new Error('Could not connect to daemon');
+                if (response.length === 0) throw new Error('Could not connect to daemon');
+                if (response[0].success)
+                    await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [hwid]);
+                resolve();
+            });
+        } catch (err) {
+            console.error(err);
+            reject();
+        }
+    });
+}
+
+const stopTunnel = (daemon, hwid) => {
+    return new Promise((resolve, reject) => {
+        try {
+            daemon.timeout(10000).emit('tunneler:stop', async (err, response) => {
+                if (err) throw new Error('Could not connect to daemon');
+                if (response.length === 0) throw new Error('Could not connect to daemon');
+                if (response[0].success)
+                    await client.query('UPDATE devices SET is_tunnel_online = false WHERE id = $1', [hwid]);
+                resolve();
+            });
+        } catch (err) {
+            console.error(err);
+            reject();
+        }
+    });
+}
+
 app.get('/api/v1/user', authenticateToken, async (req, res) => {
     try {
         console.log('GET /api/v1/user');
         const user = await getUser(req.id);
         if (!user) return res.status(500).json({ message: 'An error occured' });
         res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+const testDomain = (domain) => {
+    return !/^[a-zA-Z][a-zA-Z0-9]+$/.test(domain)
+}
+const testPortRange = (portRange) => {
+    if (portRange.includes(' ')) return false;
+    const ports = portRange.split(/[;-]/);
+    const filteredPorts = ports.filter(p => {
+        const n = Number(p);
+        return Number.isInteger(n) && n >= 0 && n <= 65535;
+    });
+    return ports.length === filteredPorts.length;
+}
+
+app.post('/api/v1/service/:hwid', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('POST /api/v1/service');
+        const { name, domain, host, portRange } = req.body.data;
+
+        const service = {
+            userid: req.id,
+            deviceid: req.hwid,
+            name: name.trim(),
+            domain: domain.trim().toLowerCase(),
+            host: host.trim(),
+            portRange: portRange.trim(),
+        }
+
+        if (!testDomain(service.domain)) throw new Error('Invalid domain');
+
+        if (!testPortRange(service.portRange)) throw new Error('Invalid port range');
+
+        await client.query(`
+            INSERT INTO services (user_id, device_id, name, domain, host, port_range)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [service.userid, service.deviceid, service.name, service.domain, service.host, service.portRange]);
+
+        res.status(201).json({ message: 'Successfully inserted service' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occured' });
@@ -343,7 +483,7 @@ app.post('/api/v1/user/logout', async (req, res) => {
 
 app.post('/api/v1/daemon', authenticateDaemonToken, async (req, res) => {
     try {
-        console.log('POST /api/v1/daemon/user');
+        console.log('POST /api/v1/daemon');
 
         const { userid, hostname } = req.body;
         const hwid = req.hwid;
@@ -407,9 +547,10 @@ app.delete('/api/v1/daemon/:hwid', authenticateToken, authenticateDaemon, async 
     try {
         console.log('DELETE /api/v1/daemon');
 
-        req.daemon.emit('tunneler:stop');
         await client.query('DELETE FROM devices WHERE id = $1',
             [req.hwid]);
+
+        if (req.daemon) req.daemon.emit('tunneler:stop');
 
         res.status(200).json({ message: 'Successfully deleted daemon' });
     } catch (err) {
@@ -418,34 +559,39 @@ app.delete('/api/v1/daemon/:hwid', authenticateToken, authenticateDaemon, async 
     }
 });
 
-app.post('/api/v1/daemon/:hwid/start', authenticateToken, authenticateDaemon, (req, res) => {
+app.delete('/api/v1/service/:serviceid', authenticateToken, authenticateService, async (req, res) => {
     try {
-        console.log('POST /api/v1/daemon/start');
-        req.daemon.timeout(10000).emit('tunneler:start', async (err, response) => {
-            if (err) throw new Error('Could not connect to daemon');
-            if (response.length === 0) throw new Error('Could not connect to daemon');
+        console.log('DELETE /api/v1/service');
 
-            if (response[0].success)
-                await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [req.hwid]);
+        await client.query(
+            'DELETE FROM services WHERE id = $1 AND user_id = $2 RETURNING *',
+            [req.service.id, req.id]
+        );
 
-            res.json(response[0]);
-        });
+        res.json({ message: 'Successfully deleted service' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occured' });
     }
 });
 
-app.post('/api/v1/daemon/:hwid/stop', authenticateToken, authenticateDaemon, (req, res) => {
+app.post('/api/v1/daemon/:hwid/start', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('POST /api/v1/daemon/start');
+        await startTunnel(req.daemon, req.hwid);
+        await req.daemon.startTunnel();
+        res.json({ message: 'Successfully started tunnel' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.post('/api/v1/daemon/:hwid/stop', authenticateToken, authenticateDaemon, async (req, res) => {
     try {
         console.log('POST /api/v1/daemon/stop');
-        req.daemon.timeout(10000).emit('tunneler:stop', async (err, response) => {
-            if (err) throw new Error('Could not connect to daemon');
-            if (response.length === 0) throw new Error('Could not connect to daemon');
-            if (response[0].success)
-                await client.query('UPDATE devices SET is_tunnel_online = false WHERE id = $1', [req.hwid]);
-            res.json(response[0]);
-        });
+        await req.daemon.stopTunnel();
+        res.json({ message: 'Successfully stopped tunnel' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'An error occured' });
@@ -466,6 +612,54 @@ app.get('/api/v1/daemon/:hwid/status', authenticateToken, authenticateDaemon, as
     }
 });
 
+app.patch('/api/v1/daemon/:hwid/autostart', authenticateToken, authenticateDaemon, async (req, res) => {
+    try {
+        console.log('GET /api/v1/daemon/status');
+        const { value } = req.body.data;
+        await client.query('UPDATE devices SET is_tunnel_autostart = $1 WHERE id = $2', [value, req.hwid])
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.patch('/api/v1/service/:serviceid', authenticateToken, authenticateService, async (req, res) => {
+    try {
+        console.log('PATCH /api/v1/service')
+        const { name, domain, host, portRange, deviceid } = req.body.data;
+
+        const s = {
+            name: name ? name : req.service.name,
+            domain: domain ? domain.toLowerCase() : req.service.domain,
+            host: host ? host : req.service.host,
+            portRange: portRange ? portRange : req.service.portRange,
+            deviceid: deviceid ? deviceid : req.service.deviceid,
+        }
+
+        const device = await getDevice(s.deviceid);
+
+        if (device.userid !== req.id) return res.status(401).json({ message: 'Unauthorized' });
+
+        if (!testDomain(s.domain)) throw new Error('Invalid domain');
+        if (!testPortRange(s.portRange)) throw new Error('Invalid portRange');
+
+        const response = await client.query(`
+            UPDATE services SET 
+            name = $1,
+            domain = $2,
+            host = $3,
+            port_range = $4,
+            device_id = $5
+            WHERE id = $6
+        `, [s.name, s.domain, s.host, s.portRange, s.deviceid, req.service.id]);
+
+        res.status(200).json({ message: 'Successfully updated service' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
 app.get('/resources/:filename', (req, res) => {
     const filePath = path.join(__dirname, "/resources/", req.params.filename);
     res.sendFile(filePath);
@@ -474,9 +668,7 @@ app.get('/resources/:filename', (req, res) => {
 daemonio.on('connection', socket => {
     console.log('A daemon connected');
 
-    socket.emit('server:register:request');
-
-    socket.on('register:request', async data => {
+    socket.emit('register:request', async data => {
         if (!data.hwid) return;
 
         daemons.set(data.hwid, socket.id);
@@ -487,9 +679,8 @@ daemonio.on('connection', socket => {
 
         socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
 
-        const device = await getDevice();
-
-        if (device && device.isTunnelAutostart) socket.emit('tunneler:start');
+        const device = await getDevice(data.hwid);
+        if (device && device.isTunnelAutostart) startTunnel(daemon(data.hwid), data.hwid);
     });
 
     socket.on('disconnect', () => {
@@ -515,13 +706,13 @@ webio.on('connection', socket => {
     clients.push(socket.id);
     webclients.set(socket.userid, clients);
 
-    getUser().then(u => { if (u) socket.emit('user:update', u) });
-
     socket.on('disconnect', () => {
         console.log('Disconnecting web client')
         const clients = webclients.get(socket.userid).filter(id => socket.id !== id);
         webclients.set(socket.userid, clients);
     });
+
+    getUser().then(u => { if (u) socket.emit('user:update', u) });
 });
 
 startListener();

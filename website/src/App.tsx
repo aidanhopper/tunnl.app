@@ -21,7 +21,10 @@ const App = () => {
                             <Route path='/dashboard' element={<Dashboard />} />
                             <Route path='/dashboard/communities' element={<Dashboard />} />
                             <Route path='/dashboard/services' element={<Dashboard />} />
+                            <Route path='/dashboard/services/create' element={<Dashboard />} />
+                            <Route path='/dashboard/services/edit/:id' element={<Dashboard />} />
                             <Route path='/dashboard/devices' element={<Dashboard />} />
+                            <Route path='/dashboard/devices/add' element={<Dashboard />} />
                             <Route path='/dashboard/settings' element={<Dashboard />} />
                             <Route path='/*' element={<NotFound />} />
                         </Routes>

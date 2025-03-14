@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, Ref, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useStoredState } from '../hooks';
 
 const PopupWindowContext = createContext<{
     isExpanded: boolean, setIsExpanded: (value: boolean) => void
@@ -103,7 +104,7 @@ export const PopupWindowFooter = ({ children }: { children?: React.ReactNode }) 
 }
 
 
-export const PopupWindowForm = ({ children, onSubmit = () => { } }:
+export const PopupWindowForm = ({ children, onSubmit = async () => { } }:
     { children?: React.ReactNode, onSubmit?: (closeForm: () => void) => void }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
     return (
@@ -176,11 +177,20 @@ export const PopupWindowFormSubmitButton = ({ children, onSubmit = () => { }, cl
     );
 }
 
-export const PopupWindow = ({ children, onClose = () => { }, initial = true }:
-    { children?: React.ReactNode, onClose?: () => void, initial?: boolean }) => {
+export const PopupWindow = ({ children, onClose = () => { } }:
+    { children?: React.ReactNode, onClose?: () => void }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
+    const [isAlreadyExpanded, setIsAlreadyExpanded] = useStoredState('popup is open', false);
+
+    useEffect(() => {
+        setIsAlreadyExpanded(isExpanded);
+        return () => { setIsAlreadyExpanded(false) }
+    }, [setIsAlreadyExpanded, isExpanded]);
+
     return (
-        <AnimatePresence initial={initial} onExitComplete={() => onClose()}>
+        <AnimatePresence
+            initial={!isAlreadyExpanded}
+            onExitComplete={() => { setIsAlreadyExpanded(false); onClose(); }}>
             {
                 isExpanded &&
                 <>
@@ -275,8 +285,7 @@ export const PopupWindowSelectToggle = ({ children, onClick = () => { } }:
             type='button'
             className='mt-3 mb-6 hover:bg-neutral-800 bg-neutral-700 duration-150
             font-bold w-full text-neutral-200 px-1 py-2 rounded-md cursor-pointer'>
-
-            {children}
+            &nbsp; {children} &nbsp;
         </button>
     );
 }
@@ -324,7 +333,6 @@ export const PopupWindowSelect = ({ children, onClose = () => { }, onSubmit = ()
             },
         });
     }, [popupWindowSelectState.selectedValue, onSubmit, popupWindowSelectState, setPopupWindowSelectState, onClose]);
-
     return (
         <AnimatePresence>
             {

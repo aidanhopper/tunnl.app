@@ -64,3 +64,48 @@ export const deleteDevice = async (hwid: string) => {
             withCredentials: true,
         });
 }
+
+export const updateTunnelAutostart = async (hwid: string, value: boolean) => {
+    return await axios.patch(`/api/v1/daemon/${encodeURIComponent(hwid)}/autostart`,
+        {
+            withCredentials: true,
+            data: {
+                value: value,
+            }
+        });
+}
+
+export const postService = async (hwid: string, name: string, domain: string, host: string, portRange: string) => {
+    return await axios.post(`/api/v1/service/${encodeURIComponent(hwid)}`,
+        {
+            withCredentials: true,
+            data: {
+                name: name,
+                domain: domain,
+                host: host,
+                portRange: portRange,
+            }
+        });
+}
+
+export const updateService = async (serviceid: string, name: string | null, domain:
+    string | null, host: string | null, portRange: string | null, deviceid: string | null) => {
+    return await axios.patch(`/api/v1/service/${encodeURIComponent(serviceid)}`,
+        {
+            withCredentials: true,
+            data: {
+                name: name,
+                domain: domain,
+                host: host,
+                portRange: portRange,
+                deviceid: deviceid
+            }
+        })
+}
+
+export const deleteService = async (serviceid: string) => {
+    return await axios.delete(`/api/v1/service/${encodeURIComponent(serviceid)}`,
+        {
+            withCredentials: true,
+        });
+}

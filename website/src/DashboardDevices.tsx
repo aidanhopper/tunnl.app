@@ -7,16 +7,20 @@ import {
     DropdownToggle, DropdownProvider, Dropdown,
     DropdownGroup, DropdownButton, DropdownAnchor
 } from './components/Dropdown';
-import { authenticateDaemon, deleteDevice, updateDeviceName, startTunneler, stopTunneler } from './API';
+import {
+    authenticateDaemon, deleteDevice, updateDeviceName, startTunneler,
+    stopTunneler, updateTunnelAutostart,
+} from './API';
 import {
     PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit,
-    PopupWindowContainer
+    PopupWindowContainer, PopupWindowBody, PopupWindowForm, PopupWindowInput
 } from './components/PopupWindow';
+import { useNavigate, Link } from 'react-router-dom';
 
 const StatusCircle = ({ className = '', children }: { className?: string, children?: React.ReactNode }) => {
     return (
-        <div className='w-full h-full flex justify-left items-center font-semibold'>
-            <div className={`mr-4 shadow-white shadow-xl w-3 h-3 rounded-full ${className}`} />
+        <div className='flex h-7 justify-left items-center font-semibold'>
+            <div className={`shadow-white shadow-xl w-3 h-3 mr-3 rounded-full ${className}`} />
             {children}
         </div>
     );
@@ -24,12 +28,14 @@ const StatusCircle = ({ className = '', children }: { className?: string, childr
 
 const DashboardDevices = () => {
     const { user, setUser } = useUser();
-    const navPath = useNavPath().filter(s => s !== 'dashboard');
-    const page = navPath.length >= 1 ? navPath[0] : null;
+    const navPath = useNavPath();
+    const page = navPath.length >= 2 ? navPath[1] : null;
     const [isWaitingForTunneler, setIsWaitingForTunneler] = useState(false);
     const [renameWindowID, setRenameWindowID] = useState('');
     const renameWindowInputRef = useRef<HTMLInputElement>(null);
     const [deleteDeviceID, setDeleteDeviceID] = useState('');
+    const isAddCreateDeviceWindowOpen = navPath.length >= 3 && navPath[2] === 'add';
+    const navigate = useNavigate();
     return !user ? <></> : (
         <>
             {
@@ -64,27 +70,42 @@ const DashboardDevices = () => {
                 renameWindowID !== '' &&
                 <PopupWindowProvider initial>
                     <PopupWindow onClose={() => setRenameWindowID('')}>
-                        <div className='bg-neutral-600 text-neutral-200 rounded-lg'>
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                if (!renameWindowInputRef.current) return;
-                                if (renameWindowInputRef.current.value.trim() === '') return;
-                                updateDeviceName(renameWindowID, renameWindowInputRef.current.value.trim());
-                            }}>
-                                <label className='flex flex-col p-2'>
-                                    <input
-                                        autoFocus
+                        <PopupWindowContainer>
+                            <PopupWindowBody className='mt-3'>
+                                <PopupWindowForm onSubmit={(close) => {
+                                    if (!renameWindowInputRef.current) return;
+                                    if (renameWindowInputRef.current.value.trim() === '') return;
+                                    updateDeviceName(renameWindowID, renameWindowInputRef.current.value.trim());
+                                    close();
+                                }}>
+                                    <PopupWindowInput
+                                        focus
+                                        title='New device name'
+                                        description='Enter a new name for the device.'
                                         ref={renameWindowInputRef}
-                                        className='bg-neutral-200 text-neutral-600 rounded p-1'
-                                        placeholder='New name' />
-                                </label>
-                                <PopupWindowToggle>
-                                    <button type='submit' className='hidden' />
-                                </PopupWindowToggle>
-                            </form>
-                        </div>
+                                        placeholder='eg. My Laptop'
+                                    />
+                                    <PopupWindowSubmit />
+                                </PopupWindowForm>
+                            </PopupWindowBody>
+                        </PopupWindowContainer>
                     </PopupWindow>
                 </PopupWindowProvider >
+            }
+            {
+                isAddCreateDeviceWindowOpen &&
+                <PopupWindowProvider initial>
+                    <PopupWindow onClose={() => navigate('/dashboard/devices')}>
+                        <PopupWindowContainer className='hover:bg-neutral-500 duration-150'>
+                            <PopupWindowSubmit>
+                                <a target='_blank' href={`http://localhost:45789/v1/authenticate/${encodeURIComponent(user.id)}`}
+                                    className='font-bold text-4xl p-4 block cursor-pointer text-neutral-200'>
+                                    Add this device
+                                </a>
+                            </PopupWindowSubmit>
+                        </PopupWindowContainer>
+                    </PopupWindow>
+                </PopupWindowProvider>
             }
             <DashboardPage>
                 <DashboardPageHeader>
@@ -98,26 +119,14 @@ const DashboardDevices = () => {
                         Manage the devices on your account.
                     </p>
                     <div className='flex-1 justify-start sm:justify-end flex'>
-                        <PopupWindowProvider>
-                            <div className='flex mt-4 sm:mt-0 sm:justify-end'>
-                                <button className='bg-neutral-600 text-neutral-100 px-2 py-1
+                        <div className='flex mt-4 sm:mt-0 sm:justify-end'>
+                            <Link
+                                to='/dashboard/devices/add'
+                                className='bg-neutral-600 text-neutral-100 px-2 py-1
                                     rounded-md w-full sm:w-fit cursor-pointer duration-150 hover:bg-neutral-500'>
-                                    <PopupWindowToggle>
-                                        Add this device
-                                    </PopupWindowToggle>
-                                </button>
-                            </div>
-                            <PopupWindow>
-                                <PopupWindowContainer className='hover:bg-neutral-500 duration-150'>
-                                    <PopupWindowSubmit>
-                                        <a target='_blank' href={`http://localhost:45789/v1/authenticate/${encodeURIComponent(user.id)}`}
-                                            className='font-bold text-4xl p-4 block cursor-pointer text-neutral-200'>
-                                            Add this device
-                                        </a>
-                                    </PopupWindowSubmit>
-                                </PopupWindowContainer>
-                            </PopupWindow>
-                        </PopupWindowProvider>
+                                Add this device
+                            </Link>
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -127,19 +136,16 @@ const DashboardDevices = () => {
                                 Device
                             </TableHead>
                             <TableHead>
-                                Last Login
-                            </TableHead>
-                            <TableHead>
-                                Created
-                            </TableHead>
-                            <TableHead>
-                                Autostart Tunnel
-                            </TableHead>
-                            <TableHead>
                                 DNS
                             </TableHead>
                             <TableHead>
                                 Status
+                            </TableHead>
+                            <TableHead>
+                                Last Login
+                            </TableHead>
+                            <TableHead>
+                                Created
                             </TableHead>
                             <TableHead />
                         </TableHeader>
@@ -160,6 +166,49 @@ const DashboardDevices = () => {
                                                 }
                                             </TableData>
                                             <TableData>
+                                                <code>{d.dnsIpRange}</code>
+                                            </TableData>
+                                            <TableData className='min-w-32 flex'>
+                                                <div className='flex flex-1 flex-col mr-1'>
+                                                    <span className='font-semibold h-1'>Daemon</span> &nbsp;
+                                                    <span className='font-semibold h-1'>Tunnel</span> &nbsp;
+                                                    <span className='font-semibold h-1'>Autostart</span> &nbsp;
+                                                </div>
+                                                <div className='flex flex-1 flex-col min-w-24'>
+                                                    {
+                                                        d.isDaemonOnline ?
+                                                            <StatusCircle className='bg-green-500'>
+                                                                Online
+                                                            </StatusCircle>
+                                                            : <StatusCircle className='bg-red-500'>
+                                                                Offline
+                                                            </StatusCircle>
+                                                    }
+                                                    {
+                                                        isWaitingForTunneler ?
+                                                            <StatusCircle className='bg-yellow-600'>
+                                                                Waiting...
+                                                            </StatusCircle> :
+                                                            d.isTunnelOnline ?
+                                                                <StatusCircle className='bg-green-500'>
+                                                                    Online
+                                                                </StatusCircle>
+                                                                : <StatusCircle className='bg-red-500'>
+                                                                    Offline
+                                                                </StatusCircle>
+                                                    }
+                                                    {
+                                                        d.isTunnelAutostart ?
+                                                            <StatusCircle className='bg-green-500'>
+                                                                On
+                                                            </StatusCircle>
+                                                            : <StatusCircle className='bg-red-500'>
+                                                                Off
+                                                            </StatusCircle>
+                                                    }
+                                                </div>
+                                            </TableData>
+                                            <TableData>
                                                 {
                                                     lastLogin
                                                 }
@@ -170,37 +219,6 @@ const DashboardDevices = () => {
                                                 }
                                             </TableData>
                                             <TableData>
-                                                {d.isTunnelAutostart ? <>On</> : <>Off</>}
-                                            </TableData>
-                                            <TableData>
-                                                <code>{d.dnsIpRange}</code>
-                                            </TableData>
-                                            <TableData className='min-w-32'>
-                                                <h2 className='font-bold'>Daemon</h2>
-                                                {d.isDaemonOnline ?
-                                                    <StatusCircle className='bg-green-500'>
-                                                        Online
-                                                    </StatusCircle>
-                                                    : <StatusCircle className='bg-red-500'>
-                                                        Offline
-                                                    </StatusCircle>
-                                                }
-                                                <h2 className='font-bold mt-3'>Tunnel</h2>
-                                                {
-                                                    isWaitingForTunneler ?
-                                                        <StatusCircle className='bg-yellow-600'>
-                                                            Waiting...
-                                                        </StatusCircle> :
-                                                        d.isTunnelOnline ?
-                                                            <StatusCircle className='bg-green-500'>
-                                                                Online
-                                                            </StatusCircle>
-                                                            : <StatusCircle className='bg-red-500'>
-                                                                Offline
-                                                            </StatusCircle>
-                                                }
-                                            </TableData>
-                                            <TableData>
                                                 <DropdownProvider>
                                                     <DropdownAnchor>
                                                         <DropdownToggle>
@@ -208,7 +226,7 @@ const DashboardDevices = () => {
                                                                 src='/three-dots.svg'
                                                                 className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
-                                                        <Dropdown offsetX={-85} offsetY={10} className='w-28'>
+                                                        <Dropdown offsetX={-135} offsetY={10} className='w-38'>
                                                             <DropdownGroup>
                                                                 {
                                                                     d.isDaemonOnline &&
@@ -236,6 +254,17 @@ const DashboardDevices = () => {
                                                                     onClick={() => setRenameWindowID(d.id)}>
                                                                     Rename
                                                                 </DropdownButton>
+                                                                {
+                                                                    d.isDaemonOnline &&
+                                                                    <DropdownButton
+                                                                        onClick={() => updateTunnelAutostart(d.id, !d.isTunnelAutostart)}>
+                                                                        {
+                                                                            d.isTunnelAutostart ?
+                                                                                'Turn off autostart' :
+                                                                                'Turn on autostart'
+                                                                        }
+                                                                    </DropdownButton>
+                                                                }
                                                                 <DropdownButton
                                                                     onClick={() => setDeleteDeviceID(d.id)}
                                                                     className='hover:bg-red-900'>

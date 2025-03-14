@@ -3,7 +3,7 @@ import { useUser } from './user';
 import { useStoredState } from './hooks';
 import {
     PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit,
-    PopupWindowContainer, PopupWindowInput, PopupWindowBody
+    PopupWindowContainer, PopupWindowInput, PopupWindowBody, PopupWindowForm
 } from './components/PopupWindow';
 import {
     Sidebar, SidebarBody, SidebarProvider, SidebarButton,
@@ -44,6 +44,13 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
         return () => { window.removeEventListener('resize', handleResize) }
     }, [setWidth, setIsSidebarFullWidth]);
 
+    const onSubmit = (close: () => void) => {
+        if (!newDisplayNameRef.current) return;
+        if (newDisplayNameRef.current.value.trim() === '') return;
+        updateDisplayName(newDisplayNameRef.current.value.trim());
+        close();
+    }
+
     return user !== null ? (
         <>
             {
@@ -51,23 +58,17 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                 <PopupWindowProvider initial>
                     <PopupWindow onClose={() => setIsUpdatingDisplayName(false)}>
                         <PopupWindowContainer>
-                            <PopupWindowBody>
-                                <form onSubmit={(e) => {
-                                    e.preventDefault();
-                                    if (!newDisplayNameRef.current) return;
-                                    if (newDisplayNameRef.current.value.trim() === '') return;
-                                    updateDisplayName(newDisplayNameRef.current.value.trim());
-                                }}>
+                            <PopupWindowBody className='mt-3 min-w-[300px]'>
+                                <PopupWindowForm onSubmit={onSubmit}>
                                     <PopupWindowInput
                                         focus
                                         ref={newDisplayNameRef}
                                         title='Change Name'
+                                        description='Your new display name.'
                                         placeholder={user.displayName}
                                     />
-                                    <PopupWindowToggle>
-                                        <button type='submit' className='hidden' />
-                                    </PopupWindowToggle>
-                                </form>
+                                    <PopupWindowSubmit />
+                                </PopupWindowForm>
                             </PopupWindowBody>
                         </PopupWindowContainer>
                     </PopupWindow>
@@ -117,13 +118,6 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                                 imgPath='/devices.svg'
                                 active={page === 'devices'}>
                                 Devices
-                            </SidebarLink>
-                            <SidebarLink
-                                onClick={(setIsSidebarExpanded) => { if (isSidebarFullWidth) setIsSidebarExpanded(false) }}
-                                to='/dashboard/settings'
-                                imgPath='/settings.svg'
-                                active={page === 'settings'}>
-                                Settings
                             </SidebarLink>
                         </SidebarBody>
                         <SidebarFooter>

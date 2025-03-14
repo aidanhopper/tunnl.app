@@ -1,5 +1,27 @@
 import { useContext, createContext } from 'react';
 
+export type Device = {
+    id: string,
+    lastLogin: string,
+    createdAt: string,
+    hostname: string,
+    displayName: string,
+    dnsIpRange: string,
+    isDaemonOnline: boolean,
+    isTunnelOnline: boolean,
+    isTunnelAutostart: boolean,
+}
+
+export type Service = {
+    id: string,
+    deviceid: string,
+    name: string,
+    domain: string,
+    host: string,
+    portRange: string,
+    createdAt: string,
+}
+
 export type User = {
     id: string,
     email: string,
@@ -9,17 +31,8 @@ export type User = {
     picture: string,
     lastLogin: string,
     createdAt: string,
-    devices: {
-        id: string,
-        lastLogin: string,
-        createdAt: string,
-        hostname: string,
-        displayName: string,
-        dnsIpRange: string,
-        isDaemonOnline: boolean,
-        isTunnelOnline: boolean,
-        isTunnelAutostart: boolean,
-    }[],
+    devices: Device[]
+    services: Service[],
 }
 
 export const UserContext = createContext<{ user: User | null, setUser: (value: User | null) => void } | null>(null);

@@ -83,9 +83,9 @@ def connect():
 def disconnect():
     print('Disconnected from https://tunnl.app')
 
-@sio.on('server:register:request')
+@sio.on('register:request')
 def handle_server_register_request():
-    sio.emit('register:request', { 'hwid': hwid })
+    return { 'hwid': hwid }
 
 @sio.on('register:response')
 def handle_register_response(data):
