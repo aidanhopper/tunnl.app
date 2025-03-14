@@ -129,7 +129,8 @@ const Landing = () => {
     }, []);
 
     return (
-        <div className={`min-h-screen flex flex-col duration-200 w-screen ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
+        <div className={`min-h-screen flex flex-col duration-200 w-screen 
+            overflow-x-hidden ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
             <div className='bg-neutral-600 w-full h-8 flex justify-center items-center text-white'>
                 <code>Alpha release coming soon!</code>
             </div>
