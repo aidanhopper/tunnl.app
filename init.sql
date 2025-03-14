@@ -98,7 +98,6 @@ EXECUTE FUNCTION notify_device_delete();
 
 CREATE TABLE IF NOT EXISTS services (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    role UUID DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     device_id TEXT NOT NULL,
     name TEXT NOT NULL,
