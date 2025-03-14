@@ -4,7 +4,7 @@ import { Navbar, NavbarSection } from './components/Navbar';
 import Container from './components/Container';
 import {
     DropdownToggle, DropdownProvider, Dropdown,
-    DropdownGroup, DropdownLink, DropdownButton
+    DropdownGroup, DropdownLink, DropdownButton, DropdownAnchor
 } from './components/Dropdown';
 import { Link } from 'react-router-dom';
 import { postLogout } from './API';
@@ -74,7 +74,6 @@ const Tagline = ({ highlightedClassName = '', sentenceClassName = '' }:
             if (!textRef.current) return;
             const box = textRef.current.getBoundingClientRect();
             setWidth(box.width + 35);
-
         }
 
         handleResize()
@@ -134,54 +133,56 @@ const Landing = () => {
             <div className='bg-neutral-600 w-full h-8 flex justify-center items-center text-white'>
                 <code>Alpha release coming soon!</code>
             </div>
-            <Navbar onStick={() => setIsStuck(true)} onUnstick={() => setIsStuck(false)} className='flex bg-neutral-200'>
-                <NavbarSection className='font-bold text-2xl text-neutral-600'>
-                    <Link to='/'><code>tunnl.app</code></Link>
-                </NavbarSection>
-                <NavbarSection className='flex justify-end'>
-                    <div className='flex items-center'>
-                        <button
-                            className='text mr-4 hidden sm:block xl:mr-12 hover:bg-neutral-500 px-3 py-1 font-bold text-base
+            <DropdownProvider>
+                <DropdownAnchor>
+                    <Navbar onStick={() => setIsStuck(true)} onUnstick={() => setIsStuck(false)} className='flex bg-neutral-200'>
+                        <NavbarSection className='font-bold text-2xl text-neutral-600'>
+                            <Link to='/'><code>tunnl.app</code></Link>
+                        </NavbarSection>
+                        <NavbarSection className='flex justify-end'>
+                            <div className='flex items-center'>
+                                <button
+                                    className='text mr-4 hidden sm:block xl:mr-12 hover:bg-neutral-500 px-3 py-1 font-bold text-base
                                md:text-sm rounded text-neutral-200 bg-neutral-600 duration-150 cursor-pointer'>
-                            Download
-                        </button>
-                        <h1 className='xl:mr-12 mr-4 hidden sm:block text-neutral-600 font-bold'>
-                            Pricing
-                        </h1>
-                        {
-                            user ?
-                                <>
-                                    <h1 className='mr-4 hidden sm:block xl:mr-12 font-bold text-neutral-600'>{user.email}</h1>
-                                    <DropdownProvider>
-                                        <DropdownToggle>
-                                            <img className='cursor-pointer bg-neutral-800 min-w-12 hover:border-neutral-400
+                                    Download
+                                </button>
+                                <h1 className='xl:mr-12 mr-4 hidden sm:block text-neutral-600 font-bold'>
+                                    Pricing
+                                </h1>
+                                {
+                                    user ?
+                                        <>
+                                            <h1 className='mr-4 hidden sm:block xl:mr-12 font-bold text-neutral-600'>{user.email}</h1>
+                                            <DropdownToggle>
+                                                <img className='cursor-pointer bg-neutral-800 min-w-12 hover:border-neutral-400
                                                 min-h-12 w-12 h-12 border-neutral-600 border-2 rounded-full duration-150'
-                                                src={user.picture} />
-                                        </DropdownToggle>
-                                        <Dropdown offsetX={-70} offsetY={50} className='w-[120px]'>
-                                            <DropdownGroup>
-                                                <DropdownLink to='/dashboard'>
-                                                    Dashboard
-                                                </DropdownLink>
-                                                <DropdownButton onClick={async () => {
-                                                    await postLogout();
-                                                    setUser(null);
-                                                }}>
-                                                    Logout
-                                                </DropdownButton>
-                                            </DropdownGroup>
-                                        </Dropdown>
-                                    </DropdownProvider>
-                                </>
-                                :
-                                <Link to='/login' className='hover:bg-neutral-600 hover:text-neutral-100
+                                                    src={user.picture} />
+                                            </DropdownToggle>
+                                            <Dropdown offsetX={-120} offsetY={10} className='w-[120px]'>
+                                                <DropdownGroup>
+                                                    <DropdownLink to='/dashboard'>
+                                                        Dashboard
+                                                    </DropdownLink>
+                                                    <DropdownButton onClick={async () => {
+                                                        await postLogout();
+                                                        setUser(null);
+                                                    }}>
+                                                        Logout
+                                                    </DropdownButton>
+                                                </DropdownGroup>
+                                            </Dropdown>
+                                        </>
+                                        :
+                                        <Link to='/login' className='hover:bg-neutral-600 hover:text-neutral-100
                                 duration-150 py-1 px-2 rounded'>
-                                    Login
-                                </Link>
-                        }
-                    </div>
-                </NavbarSection>
-            </Navbar>
+                                            Login
+                                        </Link>
+                                }
+                            </div>
+                        </NavbarSection>
+                    </Navbar>
+                </DropdownAnchor>
+            </DropdownProvider>
             <div className='h-[400px]'>
                 <Container>
                     <div className='w-full h-full flex flex-col xl:flex-row items-center

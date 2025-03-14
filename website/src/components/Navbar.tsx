@@ -29,7 +29,7 @@ export const Navbar = ({ children, className, onStick, onUnstick }:
     return (
         <StickyContainer>
             <div
-                className={`w-full duration-150 ${isStuck ? 'border-b-[0.5px] border-neutral-400' : ''}
+                className={`w-full duration-150 
                 ${className}`}
                 ref={navRef}>
                 <Container>
