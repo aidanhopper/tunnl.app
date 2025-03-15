@@ -1,8 +1,11 @@
 import { useUser } from './user';
 import { useState, useRef } from 'react';
 import { useNavPath } from './hooks';
-import { DashboardPage, DashboardPageHeader } from './DashboardPage';
-import { Table, TableHead, TableRow, TableBody, TableHeader, TableData } from './components/Table';
+import {
+    DashboardPage, DashboardPageHeader, DashboardPageHeaderImage,
+    DashboardPageDescription, DashboardPageDescriptionItem, DashboardPageDescriptionLink
+} from './DashboardPage';
+import { Table, TableHead, TableRow, TableBody, TableHeader, TableData, TableProvider } from './components/Table';
 import {
     DropdownToggle, DropdownProvider, Dropdown,
     DropdownGroup, DropdownButton, DropdownAnchor
@@ -19,7 +22,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 const StatusCircle = ({ className = '', children }: { className?: string, children?: React.ReactNode }) => {
     return (
-        <div className='flex h-7 justify-left items-center font-semibold'>
+        <div className='flex h-7 items-center font-semibold'>
             <div className={`shadow-white shadow-xl w-3 h-3 mr-3 rounded-full ${className}`} />
             {children}
         </div>
@@ -109,27 +112,20 @@ const DashboardDevices = () => {
             }
             <DashboardPage>
                 <DashboardPageHeader>
-                    <img src='/devices-dark.svg' className='mt-1 w-12 mr-4' />
-                    <h1>
-                        Devices
-                    </h1>
+                    <DashboardPageHeaderImage path='/devices-dark.svg' className='w-12' />
+                    Devices
                 </DashboardPageHeader>
-                <div className='flex mb-8 flex-col sm:flex-row'>
-                    <p className='flex-1 flex items-center whitespace-nowrap'>
-                        Manage the devices on your account.
-                    </p>
-                    <div className='flex-1 justify-start sm:justify-end flex'>
-                        <div className='flex mt-4 sm:mt-0 sm:justify-end'>
-                            <Link
-                                to='/dashboard/devices/add'
-                                className='bg-neutral-600 text-neutral-100 px-2 py-1
-                                    rounded-md w-full sm:w-fit cursor-pointer duration-150 hover:bg-neutral-500'>
-                                Add this device
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-                <div>
+                <DashboardPageDescription>
+                    <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
+                        <p> Manage the devices on your account.</p>
+                    </DashboardPageDescriptionItem>
+                    <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
+                        <DashboardPageDescriptionLink to='/dashboard/devices/add'>
+                            Add this device
+                        </DashboardPageDescriptionLink>
+                    </DashboardPageDescriptionItem>
+                </DashboardPageDescription>
+                <TableProvider>
                     <Table>
                         <TableHeader>
                             <TableHead>
@@ -226,7 +222,7 @@ const DashboardDevices = () => {
                                                                 src='/three-dots.svg'
                                                                 className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
-                                                        <Dropdown offsetX={-135} offsetY={10} className='w-38'>
+                                                        <Dropdown offsetX={-140} offsetY={-180} className='w-38'>
                                                             <DropdownGroup>
                                                                 {
                                                                     d.isDaemonOnline &&
@@ -281,7 +277,7 @@ const DashboardDevices = () => {
                             }
                         </TableBody>
                     </Table>
-                </div>
+                </TableProvider>
             </DashboardPage>
         </>
     );

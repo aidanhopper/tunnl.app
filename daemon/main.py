@@ -109,6 +109,11 @@ def handle_start_tunneler():
 def handle_tunneler_status_request():
     return tunneler.status()
 
+@sio.on('tunneler:set:dns-ip-range')
+def handle_set_dns_ip_range(data):
+    tunneler.dns_ip_range = data['dns_ip_range']
+    return { 'success': True }
+
 def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:

@@ -143,6 +143,7 @@ const authenticateDaemon = async (req, res, next) => {
         req.daemon = daemon(hwid);
         req.daemon.stopTunnel = () => stopTunnel(req.daemon, hwid);
         req.daemon.startTunnel = () => startTunnel(req.daemon, hwid);
+        req.daemon.setDnsIpRange = (dnsIpRange) => setDnsIpRange(req.daemon, dnsIpRange);
 
         next();
     } catch (err) {
@@ -315,8 +316,8 @@ const startTunnel = (daemon, hwid) => {
     return new Promise((resolve, reject) => {
         try {
             daemon.timeout(10000).emit('tunneler:start', async (err, response) => {
-                if (err) throw new Error('Could not connect to daemon');
-                if (response.length === 0) throw new Error('Could not connect to daemon');
+                if (err) reject();
+                if (response.length === 0) reject();
                 if (response[0].success)
                     await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [hwid]);
                 resolve();
@@ -332,10 +333,25 @@ const stopTunnel = (daemon, hwid) => {
     return new Promise((resolve, reject) => {
         try {
             daemon.timeout(10000).emit('tunneler:stop', async (err, response) => {
-                if (err) throw new Error('Could not connect to daemon');
-                if (response.length === 0) throw new Error('Could not connect to daemon');
+                if (err) reject();
+                if (response.length === 0) reject();
                 if (response[0].success)
                     await client.query('UPDATE devices SET is_tunnel_online = false WHERE id = $1', [hwid]);
+                resolve();
+            });
+        } catch (err) {
+            console.error(err);
+            reject();
+        }
+    });
+}
+
+const setDnsIpRange = (daemon, dnsIpRange) => {
+    return new Promise((resolve, reject) => {
+        try {
+            daemon.timeout(10000).emit('tunneler:set:dns-ip-range', { dns_ip_range: dnsIpRange }, async (err, response) => {
+                if (err) reject();
+                if (response.length === 0) reject();
                 resolve();
             });
         } catch (err) {
@@ -675,12 +691,15 @@ daemonio.on('connection', socket => {
 
         try {
             client.query('UPDATE devices SET is_daemon_online = true, last_login = NOW() WHERE id = $1', [data.hwid]);
-        } catch (err) { }
+        } catch { }
 
         socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
 
         const device = await getDevice(data.hwid);
-        if (device && device.isTunnelAutostart) startTunnel(daemon(data.hwid), data.hwid);
+        if (!device) return;
+        const d = daemon(data.hwid);
+        await setDnsIpRange(d, device.dnsIpRange);
+        await startTunnel(d, data.hwid);
     });
 
     socket.on('disconnect', () => {

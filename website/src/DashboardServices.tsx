@@ -1,4 +1,7 @@
-import { DashboardPage, DashboardPageHeader } from './DashboardPage';
+import {
+    DashboardPage, DashboardPageHeader, DashboardPageHeaderImage,
+    DashboardPageDescription, DashboardPageDescriptionItem, DashboardPageDescriptionLink
+} from './DashboardPage';
 import {
     DropdownToggle, DropdownProvider, Dropdown, DropdownLink,
     DropdownGroup, DropdownButton, DropdownAnchor
@@ -9,7 +12,10 @@ import {
     PopupWindowSubmit, PopupWindowHeader, PopupWindowContainer, PopupWindowFooter,
     PopupWindowBody, PopupWindowForm, PopupWindowInput, PopupWindowFormSubmit, PopupWindowFormSubmitButton
 } from './components/PopupWindow';
-import { Table, TableHead, TableRow, TableBody, TableHeader, TableData } from './components/Table';
+import {
+    Table, TableHead, TableRow, TableBody,
+    TableHeader, TableData, TableProvider
+} from './components/Table';
 import { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import { useStoredState, useExistingStoredState } from './hooks';
 import { useUser, Service } from './user';
@@ -293,7 +299,7 @@ const DashboardServices = () => {
                                 <PopupWindowForm onSubmit={async (close) => { await deleteService(deleteServiceID); close() }}>
                                     <PopupWindowSubmit>
                                         <div className='w-full py-5 px-2 rounded-md my-6 text-center
-                                        hover:bg-red-500 font-bold duration-150 rounded cursor-pointer'>
+                                        hover:bg-red-500 font-bold duration-150 cursor-pointer'>
                                             yes
                                         </div>
                                     </PopupWindowSubmit>
@@ -311,29 +317,20 @@ const DashboardServices = () => {
                 closeWindow={() => navigate('/dashboard/services')} />
             <DashboardPage>
                 <DashboardPageHeader>
-                    <img src='/services-dark.svg' className='mt-1 w-12 mr-4' />
-                    <h1>
-                        Services
-                    </h1>
+                    <DashboardPageHeaderImage path='/services-dark.svg' className='w-12' />
+                    Services
                 </DashboardPageHeader>
-                <div className='flex mb-8'>
-                    <div className='flex-1 flex items-center'>
-                        <p>
-                            Manage and create services that you can share.
-                        </p>
-                    </div>
-                    <div className='flex-1 flex justify-end'>
-                        <div>
-                            <Link
-                                to='/dashboard/services/create'
-                                className='rounded-md px-3 py-2 bg-neutral-600 hover:bg-neutral-500
-                                duration-150 cursor-pointer text-neutral-100 whitespace-nowrap'>
-                                Create a service
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-                <div>
+                <DashboardPageDescription>
+                    <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
+                        <p>Manage and create services that you can share.</p>
+                    </DashboardPageDescriptionItem>
+                    <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
+                        <DashboardPageDescriptionLink to='/dashboard/services/create'>
+                            Create a service
+                        </DashboardPageDescriptionLink>
+                    </DashboardPageDescriptionItem>
+                </DashboardPageDescription>
+                <TableProvider>
                     <Table>
                         <TableHeader>
                             <TableHead>
@@ -396,7 +393,7 @@ const DashboardServices = () => {
                                                                 src='/three-dots.svg'
                                                                 className='w-6 min-w-6 max-w-6 cursor-pointer' />
                                                         </DropdownToggle>
-                                                        <Dropdown offsetX={-135} offsetY={10} className='w-38'>
+                                                        <Dropdown offsetX={-140} offsetY={-100} className='w-38'>
                                                             <DropdownGroup>
                                                                 <DropdownLink
                                                                     to={`/dashboard/services/edit/${encodeURIComponent(s.id)}`}>
@@ -418,7 +415,7 @@ const DashboardServices = () => {
                             }
                         </TableBody>
                     </Table>
-                </div>
+                </TableProvider>
             </DashboardPage>
         </>
     );

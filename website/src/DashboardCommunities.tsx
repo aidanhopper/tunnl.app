@@ -1,14 +1,25 @@
-import { DashboardPage, DashboardPageHeader } from './DashboardPage';
+import {
+    DashboardPage, DashboardPageHeader, DashboardPageHeaderImage,
+    DashboardPageDescription, DashboardPageDescriptionItem, DashboardPageDescriptionLink
+} from './DashboardPage';
 
 export const DashboardCommunities = () => {
     return (
         <DashboardPage>
             <DashboardPageHeader>
-                <img src='/communities-dark.svg' className='mt-1 w-10 mr-6' />
-                <h1>
-                    Communities
-                </h1>
+                <DashboardPageHeaderImage path='/communities-dark.svg' />
+                Communities
             </DashboardPageHeader>
+            <DashboardPageDescription>
+                <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
+                    <p>Manage and create services that you can share.</p>
+                </DashboardPageDescriptionItem>
+                <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
+                    <DashboardPageDescriptionLink to='/dashboard/communities'>
+                        Create a community
+                    </DashboardPageDescriptionLink>
+                </DashboardPageDescriptionItem>
+            </DashboardPageDescription>
         </DashboardPage>
     );
 }

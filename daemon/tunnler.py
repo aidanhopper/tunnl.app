@@ -14,10 +14,18 @@ class Tunneler:
 
         self.binary_path = binary_path
         self.identities_path = identities_path
-        self.dns_ip_range = dns_ip_range
+        self._dns_ip_range = dns_ip_range
         self.log_path = log_path
         self.is_win = platform.system().lower() == 'win32'
         self.process = None
+
+    @property
+    def dns_ip_range(self):
+        return self._dns_ip_range
+
+    @dns_ip_range.setter
+    def dns_ip_range(self, value):
+        self._dns_ip_range = value
 
     def start(self):
         if self.is_running():
@@ -29,7 +37,7 @@ class Tunneler:
             '-I',
             self.identities_path,
             '--dns-ip-range',
-            self.dns_ip_range,
+            self._dns_ip_range,
         ]
 
         with open(self.log_path, 'a') as log:
