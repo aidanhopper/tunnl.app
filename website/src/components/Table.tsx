@@ -43,7 +43,7 @@ export const Table = ({ children }: { children?: React.ReactNode }) => {
             </table>
         </div>
     ) : (
-        <div className='flex flex-row h-96'>
+        <div className='flex flex-row h-96 overflow-x-auto'>
             {children}
         </div>
     );
