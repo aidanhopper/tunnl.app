@@ -351,7 +351,7 @@ const DashboardServices = () => {
                             <TableHead>
                                 Created
                             </TableHead>
-                            <TableHead />
+                            <TableHead className='w-16' />
                         </TableHeader>
                         <TableBody>
                             {
@@ -385,14 +385,14 @@ const DashboardServices = () => {
                                             <TableData>
                                                 {created}
                                             </TableData>
-                                            <TableData>
+                                            <TableData className='w-16'>
                                                 <DropdownProvider>
+                                                    <DropdownToggle>
+                                                        <img
+                                                            src='/three-dots.svg'
+                                                            className='w-6 min-w-6 max-w-6 cursor-pointer' />
+                                                    </DropdownToggle>
                                                     <DropdownAnchor>
-                                                        <DropdownToggle>
-                                                            <img
-                                                                src='/three-dots.svg'
-                                                                className='w-6 min-w-6 max-w-6 cursor-pointer' />
-                                                        </DropdownToggle>
                                                         <Dropdown offsetX={-140} offsetY={-100} className='w-38'>
                                                             <DropdownGroup>
                                                                 <DropdownLink

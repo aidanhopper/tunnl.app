@@ -148,17 +148,58 @@ EXECUTE FUNCTION notify_service_update();
 CREATE TRIGGER service_delete_trigger
 BEFORE DELETE ON services
 FOR EACH ROW
-EXECUTE FUNCTION notify_device_delete();
+EXECUTE FUNCTION notify_service_delete();
 
 -- COMMUNITIES TABLE
 
 CREATE TABLE IF NOT EXISTS communities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    owner_id UUID UNIQUE NOT NULL,
+    owner_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (owner_id, name)
 );
+
+CREATE OR REPLACE FUNCTION notify_community_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'community_updates',
+    json_build_object(
+      'community', row_to_json(NEW),
+      'operation', TG_OP
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION notify_community_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'community_updates',
+    json_build_object(
+      'community', row_to_json(OLD),
+      'operation', 'DELETE'
+    )::text
+  );
+  
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER community_update_trigger
+AFTER INSERT OR UPDATE ON communities
+FOR EACH ROW
+EXECUTE FUNCTION notify_community_update();
+
+CREATE TRIGGER community_delete_trigger
+BEFORE DELETE ON communities
+FOR EACH ROW
+EXECUTE FUNCTION notify_community_delete();
 
 -- MEMBERS TABLE
 
@@ -179,4 +220,28 @@ CREATE TABLE IF NOT EXISTS shares (
     PRIMARY KEY (service_id, member_id),
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE, 
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
+);
+
+-- INVITES TABLE
+
+CREATE OR REPLACE FUNCTION gen_random_url() RETURNS TEXT AS $$
+DECLARE
+    chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    result TEXT := '';
+    i INT := 0;
+BEGIN
+    FOR i IN 1..6 LOOP
+        result := result || substr(chars, floor(random() * length(chars) + 1)::INT, 1);
+    END LOOP;
+    RETURN result;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS invites (
+    id TEXT PRIMARY KEY DEFAULT gen_random_url(),
+    community_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_one_time_use BOOLEAN NOT NULL,
+    expires TIMESTAMP NOT NULL,
+    FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE
 );

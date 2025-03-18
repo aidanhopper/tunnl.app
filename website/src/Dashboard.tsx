@@ -36,8 +36,9 @@ const Dashboard = () => {
                         ) && <DashboardServices />
                     }
                     {
-                        /^communities$/.test(page)
-                        && <DashboardCommunities />
+                        (
+                            /^communities$/.test(page) || /^communities\/create$/.test(page)
+                        ) && <DashboardCommunities />
                     }
                 </div>
             </div>

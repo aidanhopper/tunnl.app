@@ -109,3 +109,23 @@ export const deleteService = async (serviceid: string) => {
             withCredentials: true,
         });
 }
+
+export const postCommunity = async (name: string) => {
+    return await axios.post('/api/v1/community',
+        {
+            withCredentials: true,
+            data: { name: name }
+        })
+}
+
+export const postInvite = async (communityid: string, isOneTimeUse: boolean, expires: Date) => {
+    return await axios.post('/api/v1/invite',
+        {
+            withCredentials: true,
+            data: {
+                communityid: communityid,
+                isOneTimeUse: isOneTimeUse,
+                expires: expires,
+            }
+        })
+}

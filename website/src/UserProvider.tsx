@@ -18,6 +18,8 @@ const UserProvider = ({ children }: { children?: React.ReactNode }) => {
         });
     }, [user, setUser, hasQueried, setHasQueried]);
 
+    console.log(user);
+
     return (
         <UserContext.Provider value={{ user, setUser }}>
             {children}

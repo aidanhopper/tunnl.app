@@ -143,7 +143,7 @@ const DashboardDevices = () => {
                             <TableHead>
                                 Created
                             </TableHead>
-                            <TableHead />
+                            <TableHead className='w-16' />
                         </TableHeader>
                         <TableBody>
                             {
@@ -214,7 +214,7 @@ const DashboardDevices = () => {
                                                     createdAt
                                                 }
                                             </TableData>
-                                            <TableData>
+                                            <TableData className='w-16'>
                                                 <DropdownProvider>
                                                     <DropdownAnchor>
                                                         <DropdownToggle>

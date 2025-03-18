@@ -246,6 +246,12 @@ const getUser = async (id) => {
 
         const dbservices = response.rows;
 
+        response = await client.query(`
+            SELECT * FROM communities WHERE owner_id = $1
+        `, [dbuser.id]);
+
+        const dbcommunities = response.rows;
+
         const user = {
             id: dbuser.id,
             email: dbuser.email,
@@ -278,6 +284,13 @@ const getUser = async (id) => {
                     portRange: s.port_range,
                     createdAt: s.created_at,
                 }
+            }),
+            communities: dbcommunities.map(c => {
+                return {
+                    id: c.id,
+                    name: c.name,
+                    createdAt: c.created_at,
+                };
             })
         }
 
@@ -292,13 +305,15 @@ const startListener = async () => {
         await client.query('LISTEN user_updates')
         await client.query('LISTEN device_updates')
         await client.query('LISTEN service_updates')
+        await client.query('LISTEN community_updates')
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
             console.log(payload)
             const id = payload.user ?
                 payload.user.id : payload.device ?
                     payload.device.user_id : payload.service ?
-                        payload.service.user_id : null;
+                        payload.service.user_id : payload.community ?
+                            payload.community.owner_id : null;
             const user = await getUser(id);
             if (!user) return;
             const clients = webclients.get(id);
@@ -679,6 +694,54 @@ app.patch('/api/v1/service/:serviceid', authenticateToken, authenticateService, 
 app.get('/resources/:filename', (req, res) => {
     const filePath = path.join(__dirname, "/resources/", req.params.filename);
     res.sendFile(filePath);
+});
+
+app.post('/api/v1/community', authenticateToken, async (req, res) => {
+    try {
+        console.log('POST /api/v1/community');
+
+        const { name } = req.body.data;
+
+        await client.query('BEGIN');
+
+        const response = await client.query(
+            'INSERT INTO communities (name, owner_id) VALUES ($1, $2) RETURNING *',
+            [name, req.id]
+        );
+
+        const community = response.rows[0];
+
+        await client.query(
+            'INSERT INTO members (user_id, community_id) VALUES ($1, $2)',
+            [req.id, community.id]
+        );
+
+        await client.query('COMMIT');
+
+        res.status(201).json({ message: 'Successfully inserted community' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
+app.post('/api/v1/invite', authenticateToken, async (req, res) => {
+    try {
+        console.log('POST /api/v1/invite');
+
+        const { communityid, isOneTimeUse, expires } = req.body.data;
+
+        const response = await client.query(
+            'INSERT INTO invites (community_id, is_one_time_use, expires) VALUES ($1, $2, $3) RETURNING *',
+            [communityid, isOneTimeUse, expires]
+        );
+
+        res.status(201).json({ code: response.rows[0].id });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
 });
 
 daemonio.on('connection', socket => {

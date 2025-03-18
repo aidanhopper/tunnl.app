@@ -20,6 +20,7 @@ const App = () => {
                             <Route path='/login/success' element={<Success />} />
                             <Route path='/dashboard' element={<Dashboard />} />
                             <Route path='/dashboard/communities' element={<Dashboard />} />
+                            <Route path='/dashboard/communities/create' element={<Dashboard />} />
                             <Route path='/dashboard/services' element={<Dashboard />} />
                             <Route path='/dashboard/services/create' element={<Dashboard />} />
                             <Route path='/dashboard/services/edit/:id' element={<Dashboard />} />
