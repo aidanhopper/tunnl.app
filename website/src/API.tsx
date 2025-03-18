@@ -100,7 +100,7 @@ export const updateService = async (serviceid: string, name: string | null, doma
                 portRange: portRange,
                 deviceid: deviceid
             }
-        })
+        });
 }
 
 export const deleteService = async (serviceid: string) => {
@@ -115,7 +115,7 @@ export const postCommunity = async (name: string) => {
         {
             withCredentials: true,
             data: { name: name }
-        })
+        });
 }
 
 export const postInvite = async (communityid: string, isOneTimeUse: boolean, expires: Date) => {
@@ -127,5 +127,12 @@ export const postInvite = async (communityid: string, isOneTimeUse: boolean, exp
                 isOneTimeUse: isOneTimeUse,
                 expires: expires,
             }
-        })
+        });
+}
+
+export const isInviteValid = async (code: string) => {
+    return await axios.get(`/api/v1/invite/${encodeURIComponent(code)}`,
+        {
+            withCredentials: true,
+        });
 }

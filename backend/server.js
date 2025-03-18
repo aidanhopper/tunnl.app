@@ -744,6 +744,18 @@ app.post('/api/v1/invite', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/v1/invite/:code', async (req, res) => {
+    try {
+        const code = req.params.code;
+        const response = await client.query('SELECT * FROM invites WHERE id = $1', [code])
+        if (response.rows.length === 0) return res.status(404).json();
+        res.status(200).json();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json();
+    }
+});
+
 daemonio.on('connection', socket => {
     console.log('A daemon connected');
 
@@ -777,7 +789,6 @@ daemonio.on('connection', socket => {
         daemons.delete(hwid);
     });
 });
-
 
 webio.use(authenticateSocketToken);
 

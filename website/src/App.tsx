@@ -7,6 +7,7 @@ import Success from './Success';
 import Dashboard from './Dashboard';
 import NotFound from './NotFound';
 import UserSubscriber from './UserSubscriber';
+import DyanmicUrl from './DynamicUrl';
 
 const App = () => {
     return (
@@ -16,7 +17,7 @@ const App = () => {
                     <Router>
                         <Routes>
                             <Route path='/' element={<Landing />} />
-                            <Route path='/login' element={<Login />} />
+                            <Route path='/login' element={<Login redirect='/dashboard' />} />
                             <Route path='/login/success' element={<Success />} />
                             <Route path='/dashboard' element={<Dashboard />} />
                             <Route path='/dashboard/communities' element={<Dashboard />} />
@@ -27,7 +28,7 @@ const App = () => {
                             <Route path='/dashboard/devices' element={<Dashboard />} />
                             <Route path='/dashboard/devices/add' element={<Dashboard />} />
                             <Route path='/dashboard/settings' element={<Dashboard />} />
-                            <Route path='/*' element={<NotFound />} />
+                            <Route path='/*' element={<DyanmicUrl />} />
                         </Routes>
                     </Router >
                 </UserSubscriber>

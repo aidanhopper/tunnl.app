@@ -5,7 +5,7 @@ import { useUser } from './user';
 
 const CLIENT_ID = "519403689632-1t14ifrjndvttr1sfjn5p945pigc8a3s.apps.googleusercontent.com";
 
-const Login = () => {
+const Login = ({ redirect }: { redirect?: string }) => {
     const navigate = useNavigate();
     const { user, setUser } = useUser();
 
@@ -29,7 +29,7 @@ const Login = () => {
         if (userResponse.status !== 200) return;
         setUser(userResponse.data);
 
-        navigate("/dashboard");
+        if (redirect) navigate(redirect);
     }
 
     return (
