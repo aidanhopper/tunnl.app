@@ -22,10 +22,27 @@ export type Service = {
     createdAt: string
 }
 
+export type Share = {
+    id: string
+    name: string
+}
+
+export type Member = {
+    id: string
+    displayName: string
+    shares: Share[]
+}
+
+export type Membership = {
+    id: string
+    community: Community
+}
+
 export type Community = {
     id: string
     name: string
     createdAt: string
+    members: Member[]
 }
 
 export type User = {
@@ -40,6 +57,7 @@ export type User = {
     devices: Device[]
     services: Service[]
     communities: Community[]
+    memberships: Membership[]
 }
 
 export const UserContext = createContext<{ user: User | null, setUser: (value: User | null) => void } | null>(null);

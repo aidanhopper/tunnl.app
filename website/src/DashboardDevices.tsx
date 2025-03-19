@@ -117,7 +117,7 @@ const DashboardDevices = () => {
                 </DashboardPageHeader>
                 <DashboardPageDescription>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
-                        <p> Manage the devices on your account.</p>
+                        <p> Manage the devices on your account</p>
                     </DashboardPageDescriptionItem>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
                         <DashboardPageDescriptionLink to='/dashboard/devices/add'>

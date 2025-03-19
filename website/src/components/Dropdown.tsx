@@ -45,7 +45,7 @@ export const DropdownToggle = ({ children, hover = false }: { children?: React.R
             x: ref.current.offsetLeft + ref.current.offsetWidth,
             y: ref.current.offsetTop + ref.current.offsetHeight,
         });
-        document.body.style.overflow = 'hidden';
+        //document.body.style.overflow = 'hidden';
     }
 
     return (
@@ -81,7 +81,7 @@ export const DropdownAnchor = ({ children }: { children?: React.ReactNode }) => 
                             x: dropdownState.x,
                             y: dropdownState.y,
                         });
-                        document.body.style.overflow = '';
+                        //document.body.style.overflow = '';
                     }} />
             }
             <span className='relative'>
@@ -101,7 +101,7 @@ export const DropdownButton = ({ children, className = '', onClick }:
             onClick={() => {
                 if (onClick) onClick();
                 setDropdownState({ isExpanded: false, x: 0, y: 0 });
-                document.body.style.overflow = '';
+                //document.body.style.overflow = '';
             }}>
             {children}
         </button>
@@ -116,7 +116,7 @@ export const DropdownLink = ({ children, to, className = '' }:
             onClick={() => {
                 setDropdownState({ isExpanded: false, x: 0, y: 0 })
                 setDropdownState({ isExpanded: false, x: 0, y: 0 });
-                document.body.style.overflow = '';
+                //document.body.style.overflow = '';
             }}
             className={`flex justify-center items-center w-full text-sm px-4 py-2
                 hover:bg-neutral-700 duration-150 cursor-pointer ${className}`}
@@ -155,7 +155,7 @@ export const Dropdown = ({ children, offsetX = 0, offsetY = 0, className = '' }:
                                 x: dropdownState.x,
                                 y: dropdownState.y,
                             });
-                            document.body.style.overflow = '';
+                            //document.body.style.overflow = '';
                         }}
                         className='z-40 w-full h-full top-0 left-0 select-none' />
                 </div>

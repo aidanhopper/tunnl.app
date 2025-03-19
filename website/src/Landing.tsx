@@ -123,13 +123,13 @@ const Landing = () => {
     const [firstWindowHeight, setFirstWindowHeight] = useState(window.innerHeight);
 
     useEffect(() => {
-        const handleResize = () => setFirstWindowHeight(window.innerHeight);
+        const handleResize = () => setFirstWindowHeight(window.innerHeight)
         window.addEventListener('resize', handleResize);
         return () => { window.removeEventListener('resize', handleResize) }
     }, []);
 
     return (
-        <div className={`min-h-screen flex flex-col duration-200 
+        <div className={`flex flex-col duration-200
             overflow-x-hidden ${isStuck ? 'bg-neutral-300' : 'bg-neutral-200'}`}>
             <div className='bg-neutral-600 w-full h-8 flex justify-center items-center text-white'>
                 <code>Alpha release coming soon!</code>

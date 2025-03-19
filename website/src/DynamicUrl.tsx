@@ -9,6 +9,7 @@ const DyanmicUrl = () => {
     const { user, setUser } = useUser();
     const path = useNavPath();
     const [exists, setExists] = useState<null | boolean>(null);
+    const [data, setData] = useState<{ name: string, id: string } | null>(null);
 
     const code = path.length === 1 ? path[0] : null;
 
@@ -16,18 +17,35 @@ const DyanmicUrl = () => {
         if (!code) { setExists(false); return };
         if (exists !== null) return;
         isInviteValid(code)
-            .then(() => setExists(true))
+            .then(r => {
+                setExists(true)
+                setData(r.data);
+            })
             .catch(() => setExists(false));
     }, [path, code, exists]);
 
+    const join = () => {
+        if (!data) return;
+        console.log('joining', data.id);
+    }
 
     return exists === null ? <></> :
         exists === false ? <NotFound /> :
-            !user ? <Login /> : (
-                <div className='w-screen h-screen text-7xl font-bold flex items-center justify-center text-white'>
-                    {path}
-                </div>
-            );
+            !user ? <Login /> :
+                !data ? <></> : (
+                    <div className='w-screen h-screen text-6xl font-bold flex items-center justify-center text-white'>
+                        <div className='flex bg-neutral-700 rounded items-center'>
+                            <div className='rounded-l px-4 border-r-[8px] border-neutral-600 h-24 flex justify-center items-center'>
+                                {data.name}
+                            </div>
+                            <button className='h-24 flex items-center justify-center px-8 cursor-pointer 
+                                hover:bg-neutral-800 rounded-r duration-150'
+                                onClick={join}>
+                                join
+                            </button>
+                        </div>
+                    </div>
+                );
 }
 
 export default DyanmicUrl;

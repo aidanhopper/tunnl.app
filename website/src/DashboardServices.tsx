@@ -322,7 +322,7 @@ const DashboardServices = () => {
                 </DashboardPageHeader>
                 <DashboardPageDescription>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
-                        <p>Manage and create services that you can share.</p>
+                        <p>Manage and create services that you can share</p>
                     </DashboardPageDescriptionItem>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
                         <DashboardPageDescriptionLink to='/dashboard/services/create'>

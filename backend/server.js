@@ -252,6 +252,12 @@ const getUser = async (id) => {
 
         const dbcommunities = response.rows;
 
+        response = await client.query(`
+            SELECT * FROM members WHERE user_id = $1
+        `, [dbuser.id]);
+
+        const dbmembers = response.rows;
+
         const user = {
             id: dbuser.id,
             email: dbuser.email,
@@ -285,15 +291,51 @@ const getUser = async (id) => {
                     createdAt: s.created_at,
                 }
             }),
-            communities: dbcommunities.map(c => {
+            communities: await Promise.all(dbcommunities.map(async c => {
+                const r = await client.query(
+                    'SELECT * FROM members WHERE community_id = $1', [c.id]);
                 return {
                     id: c.id,
                     name: c.name,
                     createdAt: c.created_at,
+                    members: await Promise.all(r.rows.map(async m => {
+                        const r2 = await client.query(
+                            'SELECT display_name FROM users WHERE id = $1', [m.user_id]);
+                        return {
+                            id: m.id,
+                            displayName: r2.rows[0].display_name,
+                        }
+                    })),
                 };
-            })
+            })),
+            memberships: await Promise.all(dbmembers.map(async m => {
+                let r = await client.query(
+                    'SELECT * FROM communities WHERE id = $1', [m.community_id])
+
+                const c = r.rows[0];
+
+                r = await client.query(
+                    'SELECT * FROM members WHERE community_id = $1', [m.community_id])
+
+                return {
+                    id: c.id,
+                    community: {
+                        name: c.name,
+                        createdAt: c.created_at,
+                        members: await Promise.all(r.rows.map(async m => {
+                            const r2 = await client.query(
+                                'SELECT display_name FROM users WHERE id = $1', [m.user_id]);
+                            return {
+                                id: m.id,
+                                displayName: r2.rows[0].display_name,
+                            }
+                        })),
+                    }
+                };
+            })),
         }
 
+        //console.log(user);
         return user;
     } catch (err) {
         return null;
@@ -726,6 +768,25 @@ app.post('/api/v1/community', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete('/api/v1/community/:id', authenticateToken, async (req, res) => {
+    try {
+        console.log('DELETE /api/v1/community');
+
+        const id = req.params.id;
+
+        await client.query(
+            'DELETE FROM communities WHERE id = $1 AND owner_id = $2',
+            [id, req.id]
+        );
+
+        res.status(200).json({ message: 'Successfully deleted community' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ message: 'An error occured' });
+    }
+});
+
 app.post('/api/v1/invite', authenticateToken, async (req, res) => {
     try {
         console.log('POST /api/v1/invite');
@@ -746,10 +807,15 @@ app.post('/api/v1/invite', authenticateToken, async (req, res) => {
 
 app.get('/api/v1/invite/:code', async (req, res) => {
     try {
+        console.log('GET /api/v1/invite');
         const code = req.params.code;
-        const response = await client.query('SELECT * FROM invites WHERE id = $1', [code])
+        let response = await client.query('SELECT * FROM invites WHERE id = $1', [code])
         if (response.rows.length === 0) return res.status(404).json();
-        res.status(200).json();
+        const communityid = response.rows[0].community_id;
+        response = await client.query('SELECT name FROM communities WHERE id = $1', [communityid]);
+        if (response.rows.length === 0) return res.status(404).json();
+        const name = response.rows[0].name;
+        res.status(200).json({ name: name, id: communityid });
     } catch (err) {
         console.error(err);
         res.status(500).json();

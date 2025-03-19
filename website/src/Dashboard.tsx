@@ -7,6 +7,7 @@ import { useNavPath } from './hooks';
 import DashboardDevices from './DashboardDevices';
 import DashboardServices from './DashboardServices';
 import DashboardCommunities from './DashboardCommunities';
+import DashboardHome from './DashboardHome';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -27,6 +28,11 @@ const Dashboard = () => {
                 <div className='flex w-full'>
                     {
                         (
+                            page === ''
+                        ) && <DashboardHome />
+                    }
+                    {
+                        (
                             /^devices$/.test(page) || /^devices\/add$/.test(page)
                         ) && <DashboardDevices />
                     }
@@ -37,7 +43,7 @@ const Dashboard = () => {
                     }
                     {
                         (
-                            /^communities$/.test(page) || /^communities\/create$/.test(page)
+                            /^communities$/.test(page) || /^communities\/create$/.test(page) || /^communities\/invite/.test(page)
                         ) && <DashboardCommunities />
                     }
                 </div>

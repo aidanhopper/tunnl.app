@@ -19,8 +19,8 @@ import {
     TableHeader, TableData, TableProvider
 } from './components/Table';
 import { useNavPath } from './hooks';
-import { useRef } from 'react';
-import { postCommunity, postInvite } from './API';
+import { useRef, useState } from 'react';
+import { deleteCommunity, postCommunity, postInvite } from './API';
 
 const Create = () => {
     const navigate = useNavigate();
@@ -61,15 +61,60 @@ const Create = () => {
     );
 }
 
+const Invite = () => {
+    const navigate = useNavigate();
+    const path = useNavPath();
+    const code = path[3];
+    const base = location.protocol + '//' + window.location.host;
+    const inviteUrl = `${base}/${code}`;
+    const [isCopied, setIsCopied] = useState(false);
+
+    const copy = () => {
+        navigator.clipboard.writeText(inviteUrl);
+        setIsCopied(true);
+    }
+
+    return (
+        <PopupWindowProvider initial>
+            <PopupWindow onClose={() => navigate('/dashboard/communities')}>
+                <PopupWindowContainer>
+                    <PopupWindowHeader>
+                        Invite Code
+                    </PopupWindowHeader>
+                    <PopupWindowBody>
+                        <div className={`duration-150 flex items-center ${isCopied ? 'bg-neutral-700' : 'bg-neutral-500'} rounded text-lg `}>
+                            < div className='p-1'>
+                                {inviteUrl}
+                            </div>
+                            <button
+                                onClick={() => copy()}
+                                className='p-1 hover:bg-neutral-700 duration-150 cursor-pointer'>
+                                Copy
+                            </button>
+                        </div>
+                    </PopupWindowBody>
+                    <PopupWindowFooter />
+                </PopupWindowContainer>
+            </PopupWindow>
+        </PopupWindowProvider >
+    );
+}
+
 const DashboardCommunities = () => {
+    const navigate = useNavigate();
     const path = useNavPath();
     const isCreateCommunityWindowOpen = path.length === 3 && path[2] === 'create';
+    const isInviteWindowOpen = path.length === 4 && path[2] === 'invite';
     const { user, setUser } = useUser();
     return !user ? <></> : (
         <>
             {
                 isCreateCommunityWindowOpen &&
                 <Create />
+            }
+            {
+                isInviteWindowOpen &&
+                <Invite />
             }
             <DashboardPage>
                 <DashboardPageHeader>
@@ -78,7 +123,7 @@ const DashboardCommunities = () => {
                 </DashboardPageHeader>
                 <DashboardPageDescription>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
-                        <p>Manage and create services that you can share.</p>
+                        <p>Manage the communities that you own</p>
                     </DashboardPageDescriptionItem>
                     <DashboardPageDescriptionItem className='justify-center sm:justify-end'>
                         <DashboardPageDescriptionLink to='/dashboard/communities/create'>
@@ -126,11 +171,14 @@ const DashboardCommunities = () => {
                                                                     const date = new Date();
                                                                     date.setDate(date.getDate() + 5);
                                                                     const response = await postInvite(c.id, false, date);
-                                                                    console.log(response.data);
+                                                                    if (response.status === 201)
+                                                                        navigate(`/dashboard/communities/invite/${response.data.code}`)
                                                                 }}>
                                                                     Invite
                                                                 </DropdownButton>
-                                                                <DropdownButton className='hover:bg-red-900'>
+                                                                <DropdownButton
+                                                                    onClick={async () => await deleteCommunity(c.id)}
+                                                                    className='hover:bg-red-900'>
                                                                     Delete
                                                                 </DropdownButton>
                                                             </DropdownGroup>

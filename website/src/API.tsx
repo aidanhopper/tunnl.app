@@ -118,6 +118,13 @@ export const postCommunity = async (name: string) => {
         });
 }
 
+export const deleteCommunity = async (id: string) => {
+    return await axios.delete(`/api/v1/community/${encodeURIComponent(id)}`,
+        {
+            withCredentials: true,
+        });
+}
+
 export const postInvite = async (communityid: string, isOneTimeUse: boolean, expires: Date) => {
     return await axios.post('/api/v1/invite',
         {
