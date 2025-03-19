@@ -66,7 +66,7 @@ const DashboardHome = () => {
                     Communities you've joined and their services
                 </DashboardPageDescriptionItem>
             </DashboardPageDescription>
-            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 pb-8'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-8 pb-8'>
                 {
                     user.memberships.map((m, i) => {
                         return (
