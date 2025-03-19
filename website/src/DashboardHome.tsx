@@ -127,7 +127,7 @@ const DashboardHome = () => {
                                                 Shares
                                             </h2>
                                         </div>
-                                        <div className='flex flex-col flex-1 overflow-y-scroll px-4 text-lg'>
+                                        <div className='flex flex-col flex-1 overflow-auto px-4 text-lg'>
                                         </div>
                                     </div>
                                 </CommunityCard>
