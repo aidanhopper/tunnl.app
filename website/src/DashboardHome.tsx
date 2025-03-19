@@ -1,14 +1,23 @@
 import {
+    DropdownToggle, DropdownProvider, Dropdown,
+    DropdownGroup, DropdownButton, DropdownAnchor, DropdownLink
+} from './components/Dropdown';
+import { useNavigate } from 'react-router-dom';
+import { TableData } from './components/Table';
+import {
     DashboardPage, DashboardPageHeader, DashboardPageHeaderImage,
     DashboardPageDescription, DashboardPageDescriptionItem, DashboardPageDescriptionLink
 } from './DashboardPage';
+import {
+    PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowSubmit,
+    PopupWindowContainer, PopupWindowBody, PopupWindowForm, PopupWindowInput
+} from './components/PopupWindow';
 import { useUser } from './user';
+import { useNavPath } from './hooks';
 
 const CommunityCard = ({ children }: { children?: React.ReactNode }) => {
     return (
-        <div
-            style={{ scrollbarWidth: 'none' }}
-            className='w-full h-96 bg-neutral-100 rounded-lg text-neutral-600 max-h-96'>
+        <div className='flex flex-col w-full h-[500px] bg-neutral-100 rounded-lg text-neutral-600 shadow'>
             {children}
         </div>
     );
@@ -45,64 +54,90 @@ const CommunityCardMemberCount = ({ children }: { children?: React.ReactNode }) 
 const CommunityCardOptions = ({ children }: { children?: React.ReactNode }) => {
     return (
         <div className='flex pr-2'>
-            <img
-                src='/three-dots.svg'
-                className='w-6 min-w-6 max-w-6 cursor-pointer' />
-            {children}
+            <DropdownProvider>
+                <DropdownAnchor>
+                    <DropdownToggle>
+                        <img
+                            src='/three-dots.svg'
+                            className='w-6 min-w-6 max-w-6 cursor-pointer' />
+                    </DropdownToggle>
+                    {children}
+                </DropdownAnchor>
+            </DropdownProvider>
         </div>
     )
 }
 
 const DashboardHome = () => {
     const { user, setUser } = useUser();
+    const navigate = useNavigate();
+    const path = useNavPath();
+    const shareWindowId = path.length === 4 && path[3] === 'share' ? path[2] : null;
     return !user ? <></> : (
-        <DashboardPage>
-            <DashboardPageHeader>
-                <DashboardPageHeaderImage path='/home-dark.svg' />
-                Memberships
-            </DashboardPageHeader>
-            <DashboardPageDescription>
-                <DashboardPageDescriptionItem>
-                    Communities you've joined and their services
-                </DashboardPageDescriptionItem>
-            </DashboardPageDescription>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-8 pb-8'>
-                {
-                    user.memberships.map((m, i) => {
-                        return (
-                            <CommunityCard key={i}>
-                                <CommunityCardHeader className=''>
-                                    <CommunityCardName>
-                                        {m.community.name}
-                                    </CommunityCardName>
-                                    <CommunityCardMemberCount>
-                                        {m.community.members.length}
-                                    </CommunityCardMemberCount>
-                                    <CommunityCardOptions>
-                                    </CommunityCardOptions>
-                                </CommunityCardHeader>
-                                <div className='flex flex-col mt-4 max-h-[285px]'>
-                                    <div>
-                                        <h2 className=' font-semibold px-4 text-xl'>
-                                            Shares
-                                        </h2>
+        <>
+            {
+                shareWindowId &&
+                <PopupWindowProvider initial>
+                    <PopupWindow onClose={() => navigate('/dashboard')}>
+                        <PopupWindowContainer>
+                            <PopupWindowBody>
+                                {shareWindowId}
+                            </PopupWindowBody>
+                        </PopupWindowContainer>
+                    </PopupWindow>
+                </PopupWindowProvider>
+            }
+            <DashboardPage>
+                <DashboardPageHeader>
+                    <DashboardPageHeaderImage path='/home-dark.svg' />
+                    Memberships
+                </DashboardPageHeader>
+                <DashboardPageDescription>
+                    <DashboardPageDescriptionItem>
+                        Communities you've joined and their services
+                    </DashboardPageDescriptionItem>
+                </DashboardPageDescription>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 '>
+                    {
+                        user.memberships.map((m, i) => {
+                            console.log(m.id)
+                            return (
+                                <CommunityCard key={i}>
+                                    <CommunityCardHeader className=''>
+                                        <CommunityCardName>
+                                            {m.community.name}
+                                        </CommunityCardName>
+                                        <CommunityCardMemberCount>
+                                            {m.community.members.length}
+                                        </CommunityCardMemberCount>
+                                        <CommunityCardOptions>
+                                            <Dropdown offsetX={-60} offsetY={10}>
+                                                <DropdownGroup>
+                                                    <DropdownLink
+                                                        to={`/dashboard/membership/${m.id}/share`}>
+                                                        Share
+                                                    </DropdownLink>
+                                                </DropdownGroup>
+                                            </Dropdown>
+                                        </CommunityCardOptions>
+                                    </CommunityCardHeader>
+                                    <div className='flex flex-col mt-4 flex-1 overflow-hidden pb-4'>
+                                        <div className=''>
+                                            <h2 className=' font-semibold px-4 text-xl'>
+                                                Shares
+                                            </h2>
+                                        </div>
+                                        <div className='flex flex-col flex-1 overflow-y-scroll px-4 text-lg'>
+                                        </div>
                                     </div>
-                                    <div
-                                        className='overflow-y-scroll px-4 text-lg'
-                                    >
-                                        <p className='py-32'>asdf</p>
-                                        <p className='py-32'>asdf</p>
-                                        <p className='py-32'>asdf</p>
-                                        <p className='py-32'>asdf</p>
-                                    </div>
-                                </div>
-                            </CommunityCard>
-                        )
-                    })
-                }
-            </div>
-            <div className='h-32 w-full' />
-        </DashboardPage>
+                                </CommunityCard>
+                            )
+                        })
+                    }
+                </div>
+                <div className='h-32 w-full' />
+            </DashboardPage >
+        </>
     );
 }
 

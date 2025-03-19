@@ -606,6 +606,8 @@ app.patch('/api/v1/user/name', authenticateToken, async (req, res) => {
 
         const { name } = req.body.data;
 
+        if (name && name.length >= 100) throw new Error('Name is too long');
+
         await client.query('UPDATE users SET display_name = $2 WHERE id = $1',
             [req.id, name]);
 
@@ -743,6 +745,8 @@ app.post('/api/v1/community', authenticateToken, async (req, res) => {
         console.log('POST /api/v1/community');
 
         const { name } = req.body.data;
+
+        if (name && name.length >= 100) throw new Error('Name is too long');
 
         await client.query('BEGIN');
 

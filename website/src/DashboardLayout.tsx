@@ -95,7 +95,7 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => {
                                 onClick={(setIsSidebarExpanded) => { if (isSidebarFullWidth) setIsSidebarExpanded(false) }}
                                 to='/dashboard'
                                 imgPath='/home.svg'
-                                active={!page}>
+                                active={!page || page === 'membership'}>
                                 Home
                             </SidebarLink>
                             <SidebarLink

@@ -138,6 +138,9 @@ const DashboardCommunities = () => {
                                 Name
                             </TableHead>
                             <TableHead>
+                                Members
+                            </TableHead>
+                            <TableHead>
                                 Created
                             </TableHead>
                             <TableHead className='w-16' />
@@ -150,6 +153,9 @@ const DashboardCommunities = () => {
                                         <TableRow key={i}>
                                             <TableData>
                                                 {c.name}
+                                            </TableData>
+                                            <TableData>
+                                                {c.members.length}
                                             </TableData>
                                             <TableData>
                                                 {created}
