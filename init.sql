@@ -168,6 +168,7 @@ BEGIN
     'community_updates',
     json_build_object(
       'community', row_to_json(NEW),
+      'members', (SELECT json_agg(user_id) FROM members WHERE community_id = NEW.id),
       'operation', TG_OP
     )::text
   );
@@ -183,6 +184,7 @@ BEGIN
     'community_updates',
     json_build_object(
       'community', row_to_json(OLD),
+      'members', (SELECT json_agg(user_id) FROM members WHERE community_id = OLD.id),
       'operation', 'DELETE'
     )::text
   );
@@ -211,6 +213,46 @@ CREATE TABLE IF NOT EXISTS members (
     FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
     UNIQUE (user_id, community_id)
 );
+
+CREATE OR REPLACE FUNCTION notify_member_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'member_updates',
+    json_build_object(
+      'members', (SELECT json_agg(user_id) FROM members WHERE community_id = NEW.community_id),
+      'operation', TG_OP
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION notify_member_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'member_updates',
+    json_build_object(
+      'members', (SELECT json_agg(user_id) FROM members WHERE community_id = OLD.community_id),
+      'operation', 'DELETE'
+    )::text
+  );
+  
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER member_update_trigger
+AFTER INSERT OR UPDATE ON members
+FOR EACH ROW
+EXECUTE FUNCTION notify_member_update();
+
+CREATE TRIGGER community_member_trigger
+BEFORE DELETE ON members
+FOR EACH ROW
+EXECUTE FUNCTION notify_member_delete();
 
 -- SHARES TABLE
 

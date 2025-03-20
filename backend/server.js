@@ -26,6 +26,7 @@ const daemonio = socketIo(server, { path: '/daemon.sock' });
 
 const daemons = new Map();
 const webclients = new Map();
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -174,12 +175,6 @@ const daemon = (hwid) => {
     const socketid = daemons.get(hwid);
     if (!socketid) return null;
     return daemonio.to(socketid);
-}
-
-const webclient = (userid) => {
-    const socketids = webclients.get(userid);
-    if (!socketids) return [];
-    return socketids.map(id => webio.to(id));
 }
 
 const getDevice = async (id) => {
@@ -402,30 +397,35 @@ const getUser = async (id) => {
     }
 }
 
-const updateShare = async (share) => {
+const updateShare = async (memberid) => {
     try {
-        const memberid = share.member_id;
-
         let r = await client.query(
             'SELECT * FROM members WHERE id = $1', [memberid]);
 
         const communityid = r.rows[0].community_id;
 
         r = await client.query(
-            'SELECT * FROM members WHERE community_id = $1', [communityid]);
+            'SELECT user_id FROM members WHERE community_id = $1', [communityid]);
 
-        const members = r.rows;
+        const members = r.rows.map(m => m.user_id);
 
+        updateMembers(members);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+const updateMembers = async (members) => {
+    try {
         members.forEach(async m => {
-            const user = await getUser(m.user_id);
+            const user = await getUser(m);
             if (!user) return;
-            const clients = webclients.get(m.user_id);
+            const clients = webclients.get(m);
             if (!clients) return;
             for (let i = 0; i < clients.length; i++) {
                 webio.to(clients[i]).emit('user:update', user);
             }
-        })
-
+        });
     } catch (err) {
         console.error(err)
     }
@@ -438,24 +438,38 @@ const startListener = async () => {
         await client.query('LISTEN service_updates');
         await client.query('LISTEN community_updates');
         await client.query('LISTEN share_updates');
+        await client.query('LISTEN member_updates');
+
+        // Need to refactor this listener because it needs to be
+        // used to keep ziti up to date
+
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
             console.log(payload)
 
             if (payload.share) {
-                updateShare(payload.share);
+                updateShare(payload.share.member_id);
+                return;
+            }
+
+            if (payload.members) {
+                updateMembers(payload.members);
                 return;
             }
 
             const id = payload.user ?
                 payload.user.id : payload.device ?
-                    payload.device.user_id : payload.service ?
-                        payload.service.user_id : payload.community ?
-                            payload.community.owner_id : null;
+                    payload.device.user_id : payload.community ?
+                        payload.community.owner_id : payload.service ?
+                            payload.service.user_id : null;
+
+
             const user = await getUser(id);
             if (!user) return;
+
             const clients = webclients.get(id);
             if (!clients) return;
+
             for (let i = 0; i < clients.length; i++) {
                 webio.to(clients[i]).emit('user:update', user);
             }
@@ -922,6 +936,39 @@ app.get('/api/v1/invite/:code', async (req, res) => {
     }
 });
 
+app.post('/api/v1/invite/consume', authenticateToken, async (req, res) => {
+    try {
+        console.log('POST /api/v1/invite');
+        const { code } = req.body.data;
+
+        if (!code) throw new Error('Must include inviteid');
+
+        const response = await client.query(
+            'SELECT * FROM invites WHERE id = $1', [code]);
+
+        if (response.rows.length === 0) throw new Error('Invite does not exist');
+
+        const invite = response.rows[0];
+
+        const now = new Date();
+        if (now > new Date(invite.expires)) {
+            await client.query("DELETE FROM invites WHERE id = $1", [code]);
+            throw new Error('Invite is expired');
+        }
+
+        const communityid = invite.community_id;
+
+        await client.query("DELETE FROM invites WHERE id = $1", [code]);
+        await client.query('INSERT INTO members (user_id, community_id) VALUES ($1, $2)', [req.id, communityid]);
+
+        res.status(201).json({ message: 'Successfully join the community' })
+    } catch (err) {
+        console.error(err);
+        if (err.code === '23505') return res.status(201).json({ message: 'Already in community' });
+        res.status(500).json({ message: 'Failed' });
+    }
+});
+
 app.post('/api/v1/share', authenticateToken, async (req, res) => {
     try {
         console.log('POST /api/v1/share');
@@ -944,6 +991,37 @@ app.post('/api/v1/share', authenticateToken, async (req, res) => {
             'INSERT INTO shares (service_id, member_id) VALUES ($1, $2)', [serviceid, memberid]);
 
         res.status(201).json({ message: 'Successfully created share' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json();
+    }
+});
+
+app.delete('/api/v1/share/:id', authenticateToken, async (req, res) => {
+    try {
+        console.log('/api/v1/share');
+        const shareid = req.params.id;
+
+        let response = await client.query(
+            'SELECT * FROM shares WHERE id = $1', [shareid]);
+
+        if (response.rows.length === 0) throw new Error('Share does not exist')
+
+        const share = response.rows[0];
+
+        response = await client.query(
+            'SELECT * FROM members WHERE id = $1', [share.member_id]);
+
+        if (response.rows.length === 0) throw new Error('Member does not exist')
+
+        const member = response.rows[0];
+
+        if (member.user_id !== req.id) return res.status(401).json({ message: 'Unauthorized' });
+
+        await client.query(
+            'DELETE FROM shares WHERE id = $1', [shareid]);
+
+        res.status(200).json({ message: 'Successfully delete share' });
     } catch (err) {
         console.error(err);
         res.status(500).json();

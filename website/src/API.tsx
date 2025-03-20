@@ -164,3 +164,20 @@ export const deleteMember = async (memberid: string) => {
             }
         });
 }
+
+export const consumeInvite = async (code: string) => {
+    return await axios.post('/api/v1/invite/consume',
+        {
+            withCredentials: true,
+            data: {
+                code: code,
+            }
+        })
+}
+
+export const deleteShare = async (shareid: string) => {
+    return await axios.delete(`/api/v1/share/${encodeURIComponent(shareid)}`,
+        {
+            withCredentials: true,
+        });
+}

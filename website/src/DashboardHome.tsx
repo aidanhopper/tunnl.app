@@ -1,4 +1,4 @@
-import { deleteMember, postService, postShare } from './API';
+import { deleteMember, postService, postShare, deleteShare } from './API';
 import { Share } from './user';
 import {
     DropdownToggle, DropdownProvider, Dropdown,
@@ -158,7 +158,8 @@ const ShareRow = ({ s }: { s: Share }) => {
                                     </DropdownToggle>
                                     <Dropdown offsetX={-70} offsetY={-40}>
                                         <DropdownGroup>
-                                            <DropdownButton 
+                                            <DropdownButton
+                                                onClick={() => deleteShare(s.id)}
                                                 className='hover:bg-red-900'>
                                                 Delete
                                             </DropdownButton>
@@ -169,12 +170,6 @@ const ShareRow = ({ s }: { s: Share }) => {
                             <></>
                     }
                 </div>
-            </div>
-            <h2 className='font-semibold'>
-                Owner
-            </h2>
-            <div className='col-span-3'>
-                {s.service.ownerDisplayName}
             </div>
             <h2 className='font-semibold'>
                 Domain
@@ -219,7 +214,7 @@ const DashboardHome = () => {
                             const shares: Share[] = [];
                             m.community.members.forEach(m => { m.shares.forEach(s => { shares.push(s) }) });
                             const isOwner = user.communities.find(com => com.id === m.community.id) !== undefined;
-                            console.log(shares)
+                            console.log(isOwner)
                             return (
                                 <CommunityCard key={i}>
                                     <CommunityCardHeader className=''>
@@ -232,18 +227,18 @@ const DashboardHome = () => {
                                         <CommunityCardOptions>
                                             <Dropdown offsetX={-60} offsetY={10}>
                                                 <DropdownGroup>
-                                                    <DropdownLink
-                                                        to={`/dashboard/membership/${m.id}/share`}>
-                                                        Share
-                                                    </DropdownLink>
                                                     {
-                                                        isOwner &&
-                                                        <DropdownButton
-                                                            onClick={async () => await deleteMember(m.id)}
-                                                            className='hover:bg-red-900'>
-                                                            Leave
-                                                        </DropdownButton>
+                                                        user.services.length !== 0 &&
+                                                        <DropdownLink
+                                                            to={`/dashboard/membership/${m.id}/share`}>
+                                                            Share
+                                                        </DropdownLink>
                                                     }
+                                                    <DropdownButton
+                                                        onClick={async () => await deleteMember(m.id)}
+                                                        className='hover:bg-red-900'>
+                                                        Leave
+                                                    </DropdownButton>
                                                 </DropdownGroup>
                                             </Dropdown>
                                         </CommunityCardOptions>

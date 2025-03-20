@@ -81,6 +81,7 @@ const Invite = () => {
                     <PopupWindowHeader>
                         Invite Code
                     </PopupWindowHeader>
+                    <p className='px-6 pb-2'>One time use</p>
                     <PopupWindowBody>
                         <div className={`duration-150 flex items-center ${isCopied ? 'bg-neutral-700' : 'bg-neutral-500'} rounded text-lg `}>
                             < div className='p-1'>
