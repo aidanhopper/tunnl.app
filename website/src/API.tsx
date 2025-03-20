@@ -143,3 +143,24 @@ export const isInviteValid = async (code: string) => {
             withCredentials: true,
         });
 }
+
+export const postShare = async (serviceid: string, memberid: string) => {
+    return await axios.post('/api/v1/share',
+        {
+            withCredentials: true,
+            data: {
+                serviceid: serviceid,
+                memberid: memberid
+            }
+        });
+}
+
+export const deleteMember = async (memberid: string) => {
+    return await axios.delete(`/api/v1/member/${encodeURIComponent(memberid)}`,
+        {
+            withCredentials: true,
+            data: {
+                memberid: memberid
+            }
+        });
+}

@@ -21,7 +21,7 @@ const Dashboard = () => {
     return user !== null ? (
         <DashboardLayout>
             <SidebarToggle className='absolute hover:bg-neutral-500 p-1 bg-neutral-600 text-neutral-100
-                rounded-md ml-4 z-0 left-0 top-3 bg-neutral-600'>
+                rounded-md ml-4 z-0 left-0 top-3'>
                 <img src='/menu.svg' className='w-6 z-0' />
             </SidebarToggle>
             <div className='flex w-full h-full justify-center'>

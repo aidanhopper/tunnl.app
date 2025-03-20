@@ -19,7 +19,7 @@ const App = () => {
                             <Route path='/login' element={<Login redirect='/dashboard' />} />
                             <Route path='/login/success' element={<Success />} />
                             <Route path='/dashboard' element={<Dashboard />} />
-                            <Route path='/dashboard/membership/*' element={<Dashboard />} />
+                            <Route path='/dashboard/membership/:id/share' element={<Dashboard />} />
                             <Route path='/dashboard/communities' element={<Dashboard />} />
                             <Route path='/dashboard/communities/invite/:code' element={<Dashboard />} />
                             <Route path='/dashboard/communities/create' element={<Dashboard />} />

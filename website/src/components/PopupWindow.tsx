@@ -108,7 +108,7 @@ export const PopupWindowForm = ({ children, onSubmit = async () => { } }:
     { children?: React.ReactNode, onSubmit?: (closeForm: () => void) => void }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
     return (
-        <form onSubmit={async (e) => {
+        <form className='h-full w-full' onSubmit={async (e) => {
             e.preventDefault();
             onSubmit(() => setIsExpanded(false));
         }}>
@@ -157,9 +157,11 @@ export const PopupWindowInput = ({
     );
 }
 
-export const PopupWindowFormSubmit = () => {
+export const PopupWindowFormSubmit = ({ children }: { children?: React.ReactNode }) => {
     return (
-        <button type='submit' />
+        <button type='submit'>
+            {children}
+        </button>
     );
 }
 
@@ -243,9 +245,9 @@ const usePopupWindowSelect = () => {
     return context;
 }
 
-export const PopupWindowSelectProvider = ({ children }: { children?: React.ReactNode }) => {
+export const PopupWindowSelectProvider = ({ children, initial = false }: { children?: React.ReactNode, initial?: boolean }) => {
     const [popupWindowSelectState, setPopupWindowSelectState] = useState<PopupWindowSelectState>({
-        isExpanded: false,
+        isExpanded: initial,
         width: 0,
         buttonHeight: 0,
     });
@@ -290,7 +292,7 @@ export const PopupWindowSelectToggle = ({ children, onClick = () => { } }:
     );
 }
 
-export const PopupWindowSelectOption = ({ value }: { value: string }) => {
+export const PopupWindowSelectOption = ({ value = '', onClick = () => { } }: { value?: string, onClick?: () => void }) => {
     const { popupWindowSelectState, setPopupWindowSelectState } = usePopupWindowSelect();
     return (
         <li>
@@ -298,12 +300,15 @@ export const PopupWindowSelectOption = ({ value }: { value: string }) => {
                 className='w-full py-2 bg-neutral-800 text-neutral-100 font-semibold hover:bg-neutral-900 duration-150
                 cursor-pointer'
                 type='button'
-                onClick={() => setPopupWindowSelectState({
-                    isExpanded: popupWindowSelectState.isExpanded,
-                    width: popupWindowSelectState.width,
-                    buttonHeight: popupWindowSelectState.buttonHeight,
-                    selectedValue: value.trim()
-                })}>
+                onClick={() => {
+                    onClick();
+                    setPopupWindowSelectState({
+                        isExpanded: popupWindowSelectState.isExpanded,
+                        width: popupWindowSelectState.width,
+                        buttonHeight: popupWindowSelectState.buttonHeight,
+                        selectedValue: value.trim()
+                    })
+                }}>
                 {value.trim()}
             </button>
         </li>
@@ -341,7 +346,6 @@ export const PopupWindowSelect = ({ children, onClose = () => { }, onSubmit = ()
                     <div
                         className='w-full h-full absolute top-0 left-0'
                         onClick={() => {
-                            onClose();
                             setPopupWindowSelectState({
                                 isExpanded: false,
                                 width: popupWindowSelectState.width,
@@ -363,7 +367,7 @@ export const PopupWindowSelect = ({ children, onClose = () => { }, onSubmit = ()
                         >
                             <ul
                                 ref={listRef}
-                                style={{ width: popupWindowSelectState.width }}
+                                style={{ width: popupWindowSelectState.width, scrollbarWidth: 'thin', colorScheme: 'dark' }}
                                 className='flex flex-col justify-end max-h-[300px] rounded-md bg-neutral-800 
                                     overflow-auto [&>*:first-child]:rounded-t [&>*:last-child]:rounded-b shadow-xl'>
                                 {children}

@@ -141,9 +141,11 @@ const authenticateDaemon = async (req, res, next) => {
 
         req.hwid = hwid;
         req.daemon = daemon(hwid);
-        req.daemon.stopTunnel = () => stopTunnel(req.daemon, hwid);
-        req.daemon.startTunnel = () => startTunnel(req.daemon, hwid);
-        req.daemon.setDnsIpRange = (dnsIpRange) => setDnsIpRange(req.daemon, dnsIpRange);
+        if (req.daemon) {
+            req.daemon.stopTunnel = () => stopTunnel(req.daemon, hwid);
+            req.daemon.startTunnel = () => startTunnel(req.daemon, hwid);
+            req.daemon.setDnsIpRange = (dnsIpRange) => setDnsIpRange(req.daemon, dnsIpRange);
+        }
 
         next();
     } catch (err) {
@@ -292,18 +294,49 @@ const getUser = async (id) => {
                 }
             }),
             communities: await Promise.all(dbcommunities.map(async c => {
-                const r = await client.query(
+                let r = await client.query(
                     'SELECT * FROM members WHERE community_id = $1', [c.id]);
+                const members = r.rows;
                 return {
                     id: c.id,
                     name: c.name,
                     createdAt: c.created_at,
-                    members: await Promise.all(r.rows.map(async m => {
-                        const r2 = await client.query(
+                    members: await Promise.all(members.map(async m => {
+                        r = await client.query(
                             'SELECT display_name FROM users WHERE id = $1', [m.user_id]);
+
+                        const displayName = r.rows[0].displayName;
+
+                        r = await client.query(
+                            'SELECT * FROM shares WHERE member_id = $1', [m.id])
+
+                        const shares = r.rows;
+
                         return {
                             id: m.id,
-                            displayName: r2.rows[0].display_name,
+                            displayName: displayName,
+                            shares: await Promise.all(shares.map(async s => {
+                                r = await client.query(
+                                    'SELECT * FROM services WHERE id = $1', [s.service_id]);
+                                const service = r.rows[0];
+
+                                r = await client.query(
+                                    'SELECT * FROM users WHERE id = $1', [service.user_id]);
+                                const ownerDisplayName = r.rows[0].display_name;
+                                const ownerid = r.rows[0].id;
+
+                                return {
+                                    id: s.id,
+                                    service: {
+                                        id: service.id,
+                                        name: service.name,
+                                        domain: service.domain,
+                                        portRange: service.port_range,
+                                        ownerDisplayName: ownerDisplayName,
+                                        ownerid: ownerid,
+                                    }
+                                }
+                            })),
                         }
                     })),
                 };
@@ -317,17 +350,45 @@ const getUser = async (id) => {
                 r = await client.query(
                     'SELECT * FROM members WHERE community_id = $1', [m.community_id])
 
+                const members = r.rows;
+
                 return {
-                    id: c.id,
+                    id: m.id,
                     community: {
                         name: c.name,
                         createdAt: c.created_at,
-                        members: await Promise.all(r.rows.map(async m => {
-                            const r2 = await client.query(
+                        members: await Promise.all(members.map(async m => {
+                            r = await client.query(
                                 'SELECT display_name FROM users WHERE id = $1', [m.user_id]);
+                            const displayName = r.rows[0].display_name;
+                            r = await client.query(
+                                'SELECT * FROM shares WHERE member_id = $1', [m.id])
+                            const shares = r.rows;
                             return {
                                 id: m.id,
-                                displayName: r2.rows[0].display_name,
+                                displayName: displayName,
+                                shares: await Promise.all(shares.map(async s => {
+                                    r = await client.query(
+                                        'SELECT * FROM services WHERE id = $1', [s.service_id]);
+                                    const service = r.rows[0];
+
+                                    r = await client.query(
+                                        'SELECT * FROM users WHERE id = $1', [service.user_id]);
+                                    const ownerDisplayName = r.rows[0].display_name;
+                                    const ownerid = r.rows[0].id;
+
+                                    return {
+                                        id: s.id,
+                                        service: {
+                                            id: service.id,
+                                            name: service.name,
+                                            domain: service.domain,
+                                            portRange: service.port_range,
+                                            ownerDisplayName: ownerDisplayName,
+                                            ownerid: ownerid,
+                                        }
+                                    }
+                                })),
                             }
                         })),
                     }
@@ -335,22 +396,57 @@ const getUser = async (id) => {
             })),
         }
 
-        //console.log(user);
         return user;
     } catch (err) {
         return null;
     }
 }
 
+const updateShare = async (share) => {
+    try {
+        const memberid = share.member_id;
+
+        let r = await client.query(
+            'SELECT * FROM members WHERE id = $1', [memberid]);
+
+        const communityid = r.rows[0].community_id;
+
+        r = await client.query(
+            'SELECT * FROM members WHERE community_id = $1', [communityid]);
+
+        const members = r.rows;
+
+        members.forEach(async m => {
+            const user = await getUser(m.user_id);
+            if (!user) return;
+            const clients = webclients.get(m.user_id);
+            if (!clients) return;
+            for (let i = 0; i < clients.length; i++) {
+                webio.to(clients[i]).emit('user:update', user);
+            }
+        })
+
+    } catch (err) {
+        console.error(err)
+    }
+}
+
 const startListener = async () => {
     try {
-        await client.query('LISTEN user_updates')
-        await client.query('LISTEN device_updates')
-        await client.query('LISTEN service_updates')
-        await client.query('LISTEN community_updates')
+        await client.query('LISTEN user_updates');
+        await client.query('LISTEN device_updates');
+        await client.query('LISTEN service_updates');
+        await client.query('LISTEN community_updates');
+        await client.query('LISTEN share_updates');
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
             console.log(payload)
+
+            if (payload.share) {
+                updateShare(payload.share);
+                return;
+            }
+
             const id = payload.user ?
                 payload.user.id : payload.device ?
                     payload.device.user_id : payload.service ?
@@ -387,7 +483,7 @@ const startTunnel = (daemon, hwid) => {
 }
 
 const stopTunnel = (daemon, hwid) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
         try {
             daemon.timeout(10000).emit('tunneler:stop', async (err, response) => {
                 if (err) reject();
@@ -820,6 +916,64 @@ app.get('/api/v1/invite/:code', async (req, res) => {
         if (response.rows.length === 0) return res.status(404).json();
         const name = response.rows[0].name;
         res.status(200).json({ name: name, id: communityid });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json();
+    }
+});
+
+app.post('/api/v1/share', authenticateToken, async (req, res) => {
+    try {
+        console.log('POST /api/v1/share');
+
+        const { serviceid, memberid } = req.body.data;
+
+        if (!serviceid || !memberid) throw new Error('Invalid body');
+
+        console.log(memberid);
+
+        let response = await client.query('SELECT user_id FROM members WHERE id = $1', [memberid])
+        if (response.rows.length === 0) throw new Error('Member does not exist');
+        if (response.rows[0].user_id !== req.id) return res.status(401).json({ message: 'Unauthorized' });
+
+        response = await client.query('SELECT user_id FROM services WHERE id = $1', [serviceid])
+        if (response.rows.length === 0) throw new Error('Service does not exist');
+        if (response.rows[0].user_id !== req.id) return res.status(401).json({ message: 'Unauthorized' });
+
+        response = await client.query(
+            'INSERT INTO shares (service_id, member_id) VALUES ($1, $2)', [serviceid, memberid]);
+
+        res.status(201).json({ message: 'Successfully created share' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json();
+    }
+});
+
+app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
+    try {
+        console.log('DELETE /api/v1/member');
+
+        const id = req.params.id;
+
+        let response = await client.query(
+            'SELECT * FROM members WHERE id = $1', [id]);
+
+        if (response.rows === 0) res.json({ message: 'Member does not exist' });
+
+        const member = response.rows[0];
+
+        response = await client.query(
+            'SELECT owner_id FROM communities WHERE id = $1', [member.community_id]);
+
+        const ownerid = response.rows[0].owner_id;
+
+        if (ownerid === req.id) throw new Error('Cannot delete your own membership');
+
+        await client.query(
+            'DELETE FROM members WHERE id = $1', [id]);
+
+        res.json({ message: 'Successfully deleted member' })
     } catch (err) {
         console.error(err);
         res.status(500).json();

@@ -215,12 +215,53 @@ CREATE TABLE IF NOT EXISTS members (
 -- SHARES TABLE
 
 CREATE TABLE IF NOT EXISTS shares (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID NOT NULL,
     member_id UUID NOT NULL,
-    PRIMARY KEY (service_id, member_id),
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE, 
-    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
+    UNIQUE (service_id, member_id)
 );
+
+CREATE OR REPLACE FUNCTION notify_share_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'share_updates',
+    json_build_object(
+      'share', row_to_json(NEW),
+      'operation', TG_OP
+    )::text
+  );
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION notify_share_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  PERFORM pg_notify(
+    'share_updates',
+    json_build_object(
+      'share', row_to_json(OLD),
+      'operation', 'DELETE'
+    )::text
+  );
+  
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER share_update_trigger
+AFTER INSERT OR UPDATE ON shares
+FOR EACH ROW
+EXECUTE FUNCTION notify_share_update();
+
+CREATE TRIGGER share_delete_trigger
+BEFORE DELETE ON shares
+FOR EACH ROW
+EXECUTE FUNCTION notify_share_delete();
 
 -- INVITES TABLE
 

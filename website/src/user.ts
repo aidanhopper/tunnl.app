@@ -22,9 +22,18 @@ export type Service = {
     createdAt: string
 }
 
-export type Share = {
+export type PublicService = {
     id: string
     name: string
+    domain: string
+    portRange: string
+    ownerDisplayName: string,
+    ownerid: string
+}
+
+export type Share = {
+    id: string
+    service: PublicService
 }
 
 export type Member = {
