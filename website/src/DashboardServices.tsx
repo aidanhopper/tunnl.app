@@ -296,13 +296,17 @@ const DashboardServices = () => {
                                 Are you sure?
                             </PopupWindowHeader>
                             <PopupWindowBody className='p-0 m-0'>
-                                <PopupWindowForm onSubmit={async (close) => { await deleteService(deleteServiceID); close() }}>
-                                    <PopupWindowSubmit>
+                                <PopupWindowForm onSubmit={async (close) => {
+                                    console.log('sumbit');
+                                    await deleteService(deleteServiceID);
+                                    close();
+                                }}>
+                                    <PopupWindowFormSubmit>
                                         <div className='w-full py-5 px-2 rounded-md my-6 text-center
                                         hover:bg-red-500 font-bold duration-150 cursor-pointer'>
                                             yes
                                         </div>
-                                    </PopupWindowSubmit>
+                                    </PopupWindowFormSubmit>
                                 </PopupWindowForm>
                             </PopupWindowBody>
                         </PopupWindowContainer>

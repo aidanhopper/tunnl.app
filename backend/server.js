@@ -224,8 +224,8 @@ const getService = async (id) => {
 const getUser = async (id) => {
     try {
         let response = await client.query(`
-        SELECT * FROM users WHERE id = $1
-    `, [id]);
+            SELECT * FROM users WHERE id = $1
+        `, [id]);
 
         if (response.rows.length === 0) return null;
 
@@ -397,38 +397,98 @@ const getUser = async (id) => {
     }
 }
 
-const updateShare = async (memberid) => {
-    try {
-        let r = await client.query(
-            'SELECT * FROM members WHERE id = $1', [memberid]);
+const updateUser = async (id) => {
+    const user = await getUser(id);
+    if (!user) return;
 
-        const communityid = r.rows[0].community_id;
+    const clients = webclients.get(id);
+    if (!clients) return;
 
-        r = await client.query(
-            'SELECT user_id FROM members WHERE community_id = $1', [communityid]);
-
-        const members = r.rows.map(m => m.user_id);
-
-        updateMembers(members);
-    } catch (err) {
-        console.error(err);
+    for (let i = 0; i < clients.length; i++) {
+        webio.to(clients[i]).emit('user:update', user);
     }
 }
 
-const updateMembers = async (members) => {
-    try {
-        members.forEach(async m => {
-            const user = await getUser(m);
-            if (!user) return;
-            const clients = webclients.get(m);
-            if (!clients) return;
-            for (let i = 0; i < clients.length; i++) {
-                webio.to(clients[i]).emit('user:update', user);
-            }
-        });
-    } catch (err) {
-        console.error(err)
-    }
+const updateAppShares = async (share) => {
+    const response = await client.query(`
+        SELECT user_id 
+        FROM members
+        WHERE community_id = (
+            SELECT community_id 
+            FROM members
+            WHERE id = $1
+    )
+    `, [share.member_id]);
+
+    const userids = response.rows.map(o => o.user_id);
+
+    userids.forEach(id => updateUser(id));
+}
+
+const updateAppServices = async (service) => {
+    r = await client.query(`
+        (
+            SELECT user_id 
+            FROM members
+            WHERE community_id IN (
+            SELECT community_id 
+                FROM members 
+                WHERE id IN (
+                    SELECT member_id
+                    FROM shares
+                    WHERE service_id = $1
+                )
+            )
+        )
+        UNION
+        (
+            SELECT user_id
+            FROM services
+            WHERE id = $1
+        )
+    `, [service.id]);
+
+    const userids = r.rows.map(row => row.user_id);
+    userids.push(service.user_id);
+    userids.forEach(id => updateUser(id));
+}
+
+const updateAppMembers = async (userids) => userids.forEach(id => updateUser(id));
+
+const handleShareUpdate = async (share) => {
+    updateAppShares(share);
+}
+
+const handleShareInsert = async (share) => {
+    updateAppShares(share);
+}
+
+const handleShareDelete = async (share) => {
+    updateAppShares(share);
+}
+
+const handleServiceUpdate = async (service) => {
+    updateAppServices(service);
+}
+
+const handleServiceInsert = async (service) => {
+    updateAppServices(service);
+}
+
+const handleServiceDelete = async (service) => {
+    updateAppServices(service);
+}
+
+const handleMemberUpdate = async (userids) => {
+    updateAppMembers(userids);
+}
+
+const handleMemberInsert = async (userids) => {
+    updateAppMembers(userids);
+}
+
+const handleMemberDelete = async (userids) => {
+    updateAppMembers(userids);
 }
 
 const startListener = async () => {
@@ -445,33 +505,27 @@ const startListener = async () => {
 
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
-            console.log(payload)
+            console.log(payload);
 
-            if (payload.share) {
-                updateShare(payload.share.member_id);
-                return;
-            }
-
-            if (payload.members) {
-                updateMembers(payload.members);
-                return;
-            }
-
-            const id = payload.user ?
-                payload.user.id : payload.device ?
-                    payload.device.user_id : payload.community ?
-                        payload.community.owner_id : payload.service ?
-                            payload.service.user_id : null;
-
-
-            const user = await getUser(id);
-            if (!user) return;
-
-            const clients = webclients.get(id);
-            if (!clients) return;
-
-            for (let i = 0; i < clients.length; i++) {
-                webio.to(clients[i]).emit('user:update', user);
+            switch (payload.operation) {
+                case 'DELETE':
+                    if (payload.share) handleShareDelete(payload.share);
+                    else if (payload.service) handleServiceDelete(payload.service);
+                    else if (payload.members) handleMemberDelete(payload.members);
+                    else if (payload.user) updateUser(payload.user.id);
+                    break;
+                case 'INSERT':
+                    if (payload.share) handleShareInsert(payload.share);
+                    else if (payload.service) handleServiceInsert(payload.service);
+                    else if (payload.members) handleMemberInsert(payload.members);
+                    else if (payload.user) updateUser(payload.user.id);
+                    break;
+                case 'UPDATE':
+                    if (payload.share) handleShareUpdate(payload.share);
+                    else if (payload.service) handleServiceUpdate(payload.service);
+                    else if (payload.members) handleMemberUpdate(payload.members);
+                    else if (payload.user) updateUser(payload.user.id);
+                    break;
             }
         });
     } catch (err) {

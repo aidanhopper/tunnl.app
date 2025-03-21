@@ -28,7 +28,7 @@ const Dashboard = () => {
                 <div className='flex w-full'>
                     {
                         (
-                            page === '' || /^membership/.test(page)
+                            page === '' || /^membership/.test(page) || /^share/.test(page)
                         ) && <DashboardHome />
                     }
                     {

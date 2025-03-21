@@ -33,7 +33,7 @@ export const PopupWindowToggle = ({ children }: { children?: React.ReactNode }) 
 export const PopupWindowSubmit = ({ children }: { children?: React.ReactNode }) => {
     const { isExpanded, setIsExpanded } = usePopupWindow();
     return (
-        <span onClick={() => setIsExpanded(false)}>
+        <span className='bg-neutral-100' onClick={() => setIsExpanded(false)}>
             {children}
         </span>
     );
@@ -159,7 +159,7 @@ export const PopupWindowInput = ({
 
 export const PopupWindowFormSubmit = ({ children }: { children?: React.ReactNode }) => {
     return (
-        <button type='submit'>
+        <button className='w-full h-full' type='submit'>
             {children}
         </button>
     );

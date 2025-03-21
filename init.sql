@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS services (
     device_id TEXT NOT NULL,
     name TEXT NOT NULL,
     domain TEXT UNIQUE NOT NULL,
-    host INET NOT NULL,
+    host TEXT NOT NULL,
     port_range TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

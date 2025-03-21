@@ -1,4 +1,5 @@
-import { deleteMember, postService, postShare, deleteShare } from './API';
+import { deleteMember, postShare, deleteShare } from './API';
+import AreYouSure from './components/AreYouSure';
 import { Share } from './user';
 import {
     DropdownToggle, DropdownProvider, Dropdown,
@@ -6,10 +7,9 @@ import {
 } from './components/Dropdown';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { TableData } from './components/Table';
 import {
     DashboardPage, DashboardPageHeader, DashboardPageHeaderImage,
-    DashboardPageDescription, DashboardPageDescriptionItem, DashboardPageDescriptionLink
+    DashboardPageDescription, DashboardPageDescriptionItem
 } from './DashboardPage';
 import {
     PopupWindowProvider, PopupWindowToggle, PopupWindow, PopupWindowFormSubmit,
@@ -78,7 +78,6 @@ const ShareWindow = () => {
     const { user, setUser } = useUser();
     const path = useNavPath();
     const shareWindowId = path.length === 4 && path[3] === 'share' ? path[2] : null;
-
     const handleSubmit = async (close: () => void) => {
         if (selectedVal === '' || !user || !shareWindowId) return;
 
@@ -131,59 +130,70 @@ const ShareWindow = () => {
 }
 
 const ShareRow = ({ s }: { s: Share }) => {
+    const navigate = useNavigate();
     const { user, setUser } = useUser();
-    console.log(user);
+    const path = useNavPath();
+    const isAreYouSureOpen = path[1] === 'share' && path[2] === s.id && path[3] === 'delete';
     return !user ? <></> : (
-        <div
-            className='w-full grid grid-cols-4 text-base py-2 px-1
+        <>
+            <AreYouSure
+                title='Delete the share?'
+                isOpen={isAreYouSureOpen}
+                onYes={() => deleteShare(s.id)}
+                onClose={() => navigate('/dashboard')} />
+            <div
+                className='w-full grid grid-cols-4 text-base py-2 px-1
             border-t-[1px] border-neutral-300 hover:bg-neutral-200
             duration-150'>
-            <h2 className='font-semibold'>
-                Name
-            </h2>
-            <div className='col-span-3 flex'>
-                <div className='flex-1'>
-                    {s.service.name}
-                </div>
-                <div className=''>
-                    {
-                        s.service.ownerid === user.id ?
-                            <>
-                                <DropdownProvider>
-                                    <DropdownToggle>
-                                        <img
-                                            src='/three-dots.svg'
-                                            className='w-4 min-w-4 
+                <h2 className='font-semibold'>
+                    Name
+                </h2>
+                <div className='col-span-3 flex'>
+                    <div className='flex-1'>
+                        {s.service.name}
+                    </div>
+                    <div>
+                        {
+                            s.service.ownerid === user.id ?
+                                <>
+                                    <DropdownProvider>
+                                        <DropdownAnchor>
+                                            <DropdownToggle>
+                                                <img
+                                                    src='/three-dots.svg'
+                                                    className='w-4 min-w-4 
                                             max-w-6 cursor-pointer' />
-                                    </DropdownToggle>
-                                    <Dropdown offsetX={-70} offsetY={-40}>
-                                        <DropdownGroup>
-                                            <DropdownButton
-                                                onClick={() => deleteShare(s.id)}
-                                                className='hover:bg-red-900'>
-                                                Delete
-                                            </DropdownButton>
-                                        </DropdownGroup>
-                                    </Dropdown>
-                                </DropdownProvider>
-                            </> :
-                            <></>
-                    }
+                                            </DropdownToggle>
+                                            <Dropdown offsetX={-65} offsetY={5}>
+                                                <DropdownGroup>
+                                                    <DropdownButton
+                                                        onClick={() => navigate(`/dashboard/share/${encodeURIComponent(s.id)}/delete`)}
+                                                        className='hover:bg-red-900'>
+                                                        Delete
+                                                    </DropdownButton>
+                                                </DropdownGroup>
+                                            </Dropdown>
+                                        </DropdownAnchor>
+                                    </DropdownProvider>
+                                </> :
+                                <></>
+                        }
+                    </div>
                 </div>
-            </div>
-            <h2 className='font-semibold'>
-                Domain
-            </h2>
-            <div className='col-span-3'>
-                {s.service.domain}
-            </div>
-            <h2 className='font-semibold'>
-                Ports
-            </h2>
-            <div className='col-span-3'>
-                {s.service.portRange}
-            </div>
-        </div>
+                <h2 className='font-semibold'>
+                    Domain
+                </h2>
+                <div className='col-span-3'>
+                    {s.service.domain}
+                </div>
+                <h2 className='font-semibold'>
+                    Ports
+                </h2>
+                <div className='col-span-3'>
+                    {s.service.portRange}
+                </div>
+            </div >
+        </>
     );
 }
 
@@ -204,7 +214,7 @@ const DashboardHome = () => {
                     Memberships
                 </DashboardPageHeader>
                 <DashboardPageDescription>
-                    <DashboardPageDescriptionItem>
+                    <DashboardPageDescriptionItem className='justify-center sm:justify-start'>
                         Communities you've joined and their services
                     </DashboardPageDescriptionItem>
                 </DashboardPageDescription>
@@ -212,9 +222,9 @@ const DashboardHome = () => {
                     {
                         user.memberships.map((m, i) => {
                             const shares: Share[] = [];
-                            m.community.members.forEach(m => { m.shares.forEach(s => { shares.push(s) }) });
-                            const isOwner = user.communities.find(com => com.id === m.community.id) !== undefined;
-                            console.log(isOwner)
+                            m.community.members.forEach(m => {
+                                m.shares.forEach(s => { shares.push(s) })
+                            });
                             return (
                                 <CommunityCard key={i}>
                                     <CommunityCardHeader className=''>

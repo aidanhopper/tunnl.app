@@ -143,7 +143,7 @@ export const Dropdown = ({ children, offsetX = 0, offsetY = 0, className = '' }:
                         animate={{ scale: 1, opacity: 1 }}
                         className={`absolute shadow-md overflow-hidden rounded-md ${className}`}
                         style={{
-                            top: dropdownState.y + offsetY,
+                            top: dropdownState.y + offsetY - window.scrollY,
                             left: dropdownState.x + offsetX,
                         }}>
                         {children}
