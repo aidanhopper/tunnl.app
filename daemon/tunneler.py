@@ -4,20 +4,28 @@ import signal
 import os
 import platform
 import json
+from pathlib import Path
 
 class Tunneler:
     def __init__(self,
-                 binary_path='ziti/ziti-edge-tunnel-darwin',
+                 hwid,
+                 binary_path='ziti/ziti-edge-tunnel',
                  identities_path='ziti/identities/',
                  dns_ip_range='203.0.113.0/24',
                  log_path='ziti/tunneler.log'): 
 
+        self.hwid = hwid
         self.binary_path = binary_path
         self.identities_path = identities_path
         self._dns_ip_range = dns_ip_range
         self.log_path = log_path
         self.is_win = platform.system().lower() == 'win32'
         self.process = None
+
+    @property
+    def enrolled(self):
+        path = Path(f'{self.identities_path}/{self.hwid}.json')
+        return path.exists()
 
     @property
     def dns_ip_range(self):
@@ -88,3 +96,14 @@ class Tunneler:
         )
         
         return { 'on': True, 'data': json.loads(out) }
+
+    def enroll(self, jwt):
+        args = [
+            self.binary_path,
+            'enroll',
+            '-j',
+            jwt,
+            '-i',
+            f'{self.identities_path}/{self.hwid}.json'
+        ]
+        subprocess.check_output(args)

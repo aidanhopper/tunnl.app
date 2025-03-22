@@ -11,7 +11,7 @@ from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 import requests
 import json
-from tunnler import Tunneler
+from tunneler import Tunneler
 from dotenv import load_dotenv
 import os
 import atexit
@@ -63,8 +63,8 @@ def get_hardware_id():
     return sha256(id.encode()).hexdigest()
 
 token = None
-tunneler = Tunneler()
 hwid = get_hardware_id()
+tunneler = Tunneler(hwid)
 
 atexit.register(tunneler.stop)
 
@@ -85,7 +85,7 @@ def disconnect():
 
 @sio.on('register:request')
 def handle_server_register_request():
-    return { 'hwid': hwid }
+    return { 'hwid': hwid, 'enrolled': tunneler.enrolled }
 
 @sio.on('register:response')
 def handle_register_response(data):
@@ -113,6 +113,11 @@ def handle_tunneler_status_request():
 def handle_set_dns_ip_range(data):
     tunneler.dns_ip_range = data['dns_ip_range']
     return { 'success': True }
+
+@sio.on('tunneler:enroll')
+def handle_enroll(data):
+    jwt = data['jwt']
+    tunneler.enroll(jwt)
 
 def start_socket_client():
     print("Trying to connect to https://tunnl.app")

@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
 const fs = require('fs');
+const ziti = require('./ziti');
 
 dotenv.config({ path: '../.env' });
 
@@ -111,7 +112,8 @@ const authenticateSocketToken = (socket, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
         if (err) return next(new Error('Invalid token'));
 
-        if (payload.type !== 'user token') return next(new Error('Invalid token'));
+        if (payload.type !== 'user token')
+            return next(new Error('Invalid token'));
 
         socket.userid = payload.id
 
@@ -161,7 +163,8 @@ const authenticateService = (req, res, next) => {
 
         getService(serviceid)
             .then(service => {
-                if (!service) return res.status(401).json({ message: 'Unauthorized' });
+                if (!service)
+                    return res.status(401).json({ message: 'Unauthorized' });
                 if (service.userid !== req.id) return res.status(401).json({ message: 'Unauthorized' });
                 req.service = service;
                 next();
@@ -455,6 +458,8 @@ const updateAppServices = async (service) => {
 
 const updateAppMembers = async (userids) => userids.forEach(id => updateUser(id));
 
+// Share table
+
 const handleShareUpdate = async (share) => {
     updateAppShares(share);
 }
@@ -466,6 +471,8 @@ const handleShareInsert = async (share) => {
 const handleShareDelete = async (share) => {
     updateAppShares(share);
 }
+
+// Service table
 
 const handleServiceUpdate = async (service) => {
     updateAppServices(service);
@@ -479,6 +486,8 @@ const handleServiceDelete = async (service) => {
     updateAppServices(service);
 }
 
+// Member table
+
 const handleMemberUpdate = async (userids) => {
     updateAppMembers(userids);
 }
@@ -489,6 +498,20 @@ const handleMemberInsert = async (userids) => {
 
 const handleMemberDelete = async (userids) => {
     updateAppMembers(userids);
+}
+
+// Device table
+
+const handleDeviceUpdate = async (device) => {
+    updateUser(device.user_id);
+}
+
+const handleDeviceInsert = async (device) => {
+    updateUser(device.user_id);
+}
+
+const handleDeviceDelete = async (device) => {
+    updateUser(device.user_id);
 }
 
 const startListener = async () => {
@@ -513,18 +536,21 @@ const startListener = async () => {
                     else if (payload.service) handleServiceDelete(payload.service);
                     else if (payload.members) handleMemberDelete(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
+                    else if (payload.device) handleDeviceDelete(payload.device);
                     break;
                 case 'INSERT':
                     if (payload.share) handleShareInsert(payload.share);
                     else if (payload.service) handleServiceInsert(payload.service);
                     else if (payload.members) handleMemberInsert(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
+                    else if (payload.device) handleDeviceInsert(payload.device);
                     break;
                 case 'UPDATE':
                     if (payload.share) handleShareUpdate(payload.share);
                     else if (payload.service) handleServiceUpdate(payload.service);
                     else if (payload.members) handleMemberUpdate(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
+                    else if (payload.device) handleDeviceUpdate(payload.device);
                     break;
             }
         });
@@ -1112,6 +1138,29 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/ziti', async (req, res) => {
+    let r = await ziti.getIdentity('some random id');
+    if (!r.success) r = await ziti.createIdentity('some random id')
+    if (!r.success) return;
+    const id = r.id;
+
+    r = await ziti.getIdentityJWT(id);
+
+    console.log(r);
+
+    res.json();
+});
+
+const getJWT = async (hwid) => {
+    let r = await ziti.getIdentity(hwid);
+    if (!r.success) r = await ziti.createIdentity(hwid);
+    if (!r.success) return;
+    const id = r.id;
+    r = await ziti.getIdentityJWT(id);
+    if (!r.success) return;
+    return r.jwt;
+}
+
 daemonio.on('connection', socket => {
     console.log('A daemon connected');
 
@@ -1121,25 +1170,50 @@ daemonio.on('connection', socket => {
         daemons.set(data.hwid, socket.id);
 
         try {
-            client.query('UPDATE devices SET is_daemon_online = true, last_login = NOW() WHERE id = $1', [data.hwid]);
+            client.query(`
+                UPDATE devices 
+                SET is_daemon_online = true, 
+                    last_login = NOW()
+                WHERE id = $1`,
+                [data.hwid]
+            );
         } catch { }
 
-        socket.emit('register:response', { token: generateDaemonToken(data.hwid) });
+        socket.emit(
+            'register:response',
+            { token: generateDaemonToken(data.hwid) }
+        );
+
+        if (!data.enrolled) {
+            const jwt = await getJWT(data.hwid);
+            socket.emit(
+                'tunneler:enroll',
+                { jwt: jwt }
+            )
+        }
 
         const device = await getDevice(data.hwid);
         if (!device) return;
+
         const d = daemon(data.hwid);
         await setDnsIpRange(d, device.dnsIpRange);
         await startTunnel(d, data.hwid);
     });
 
     socket.on('disconnect', () => {
-        const hwid = [...daemons.entries()].find(([_, value]) => value === socket.id)?.[0];
+        const hwid = [...daemons.entries()]
+            .find(([_, value]) => value === socket.id)?.[0];
 
         if (!hwid) return;
 
         try {
-            client.query('UPDATE devices SET is_daemon_online = false, is_tunnel_online = false WHERE id = $1', [hwid]);
+            client.query(`
+                UPDATE devices
+                SET is_daemon_online = false, 
+                    is_tunnel_online = false 
+                WHERE id = $1`,
+                [hwid]
+            );
         } catch (err) { }
 
         daemons.delete(hwid);
@@ -1151,13 +1225,16 @@ webio.use(authenticateSocketToken);
 webio.on('connection', socket => {
     console.log('A web client connected')
 
-    const clients = webclients.get(socket.userid) ? webclients.get(socket.userid) : [];
+    const clients = webclients.get(socket.userid) ?
+        webclients.get(socket.userid) : [];
     clients.push(socket.id);
     webclients.set(socket.userid, clients);
 
     socket.on('disconnect', () => {
         console.log('Disconnecting web client')
-        const clients = webclients.get(socket.userid).filter(id => socket.id !== id);
+        const clients = webclients
+            .get(socket.userid)
+            .filter(id => socket.id !== id);
         webclients.set(socket.userid, clients);
     });
 
