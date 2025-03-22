@@ -24,8 +24,7 @@ class Tunneler:
 
     @property
     def enrolled(self):
-        path = Path(f'{self.identities_path}/{self.hwid}.json')
-        return path.exists()
+        return Path(f'{self.identities_path}/{self.hwid}.json').exists()
 
     @property
     def dns_ip_range(self):

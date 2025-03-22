@@ -3,7 +3,6 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const { OAuth2Client } = require('google-auth-library');
-const cors = require('cors');
 const pg = require('pg');
 const http = require('http');
 const cookieParser = require('cookie-parser');
@@ -11,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const socketIo = require('socket.io');
 const fs = require('fs');
 const ziti = require('./ziti');
+const net = require('./net');
 
 dotenv.config({ path: '../.env' });
 
@@ -479,6 +479,8 @@ const handleServiceUpdate = async (service) => {
 }
 
 const handleServiceInsert = async (service) => {
+    net.insertService(service);
+    net.updateDialRoles(service);
     updateAppServices(service);
 }
 
@@ -624,8 +626,7 @@ const testDomain = (domain) => {
     return !/^[a-zA-Z][a-zA-Z0-9]+$/.test(domain)
 }
 const testPortRange = (portRange) => {
-    if (portRange.includes(' ')) return false;
-    const ports = portRange.split(/[;-]/);
+    const ports = portRange.split(/[ -]/).filter(e => e !== '');
     const filteredPorts = ports.filter(p => {
         const n = Number(p);
         return Number.isInteger(n) && n >= 0 && n <= 65535;
@@ -652,7 +653,14 @@ app.post('/api/v1/service/:hwid', authenticateToken, authenticateDaemon, async (
         if (!testPortRange(service.portRange)) throw new Error('Invalid port range');
 
         await client.query(`
-            INSERT INTO services (user_id, device_id, name, domain, host, port_range)
+            INSERT INTO services (
+                user_id,
+                device_id,
+                name,
+                domain,
+                host,
+                port_range
+            )
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
         `, [service.userid, service.deviceid, service.name, service.domain, service.host, service.portRange]);
@@ -1139,26 +1147,34 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
 });
 
 app.get('/ziti', async (req, res) => {
-    let r = await ziti.getIdentity('some random id');
-    if (!r.success) r = await ziti.createIdentity('some random id')
-    if (!r.success) return;
-    const id = r.id;
+    const name = 'a031b8c8b2f20d1a3663d9e716e75897e7fd4d242d22db07ff720bfa6d12f1ea';
 
-    r = await ziti.getIdentityJWT(id);
+    const identity = await ziti.getIdentity(name);
+    const roleAttributes = identity.roleAttributes;
 
-    console.log(r);
+    await ziti.updateIdentity({
+        id: identity.id,
+        data: {
+            roleAttributes: [...roleAttributes, 'asdf-service']
+        },
+    });
 
     res.json();
 });
 
 const getJWT = async (hwid) => {
     let r = await ziti.getIdentity(hwid);
-    if (!r.success) r = await ziti.createIdentity(hwid);
-    if (!r.success) return;
+    if (!r) r = await ziti.createIdentity(hwid);
+    if (!r) return null;
+
     const id = r.id;
+
     r = await ziti.getIdentityJWT(id);
-    if (!r.success) return;
-    return r.jwt;
+    if (!r) return null;
+
+    const jwt = r;
+
+    return jwt;
 }
 
 daemonio.on('connection', socket => {
@@ -1189,7 +1205,7 @@ daemonio.on('connection', socket => {
             socket.emit(
                 'tunneler:enroll',
                 { jwt: jwt }
-            )
+            );
         }
 
         const device = await getDevice(data.hwid);
