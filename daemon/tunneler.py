@@ -30,7 +30,7 @@ class Tunneler:
             lines = deque(log, 500)
 
         with open(self.log_path, 'r') as log:
-            log.writeLines(lines)
+            log.writelines(lines)
 
     @property
     def enrolled(self):

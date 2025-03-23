@@ -565,11 +565,13 @@ const startTunnel = (daemon, hwid) => {
     return new Promise((resolve, reject) => {
         try {
             daemon.timeout(10000).emit('tunneler:start', async (err, response) => {
-                if (err) reject();
-                if (response.length === 0) reject();
-                if (response[0].success)
-                    await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [hwid]);
-                resolve();
+                try {
+                    if (err) reject();
+                    if (response.length === 0) reject();
+                    if (response[0].success)
+                        await client.query('UPDATE devices SET is_tunnel_online = true WHERE id = $1', [hwid]);
+                    resolve();
+                } catch { reject() }
             });
         } catch (err) {
             console.error(err);
