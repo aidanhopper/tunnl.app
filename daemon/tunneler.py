@@ -23,15 +23,6 @@ class Tunneler:
         self.is_win = platform.system().lower() == 'win32'
         self.process = None
 
-    def trim_log_file(self):
-        if not Path(self.log_path).exists():
-            return
-        with open(self.log_path, 'r') as log:
-            lines = deque(log, 500)
-
-        with open(self.log_path, 'r') as log:
-            log.writelines(lines)
-
     @property
     def enrolled(self):
         return Path(f'{self.identities_path}/{self.hwid}.json').exists()
@@ -47,9 +38,6 @@ class Tunneler:
     def start(self):
         if self.is_running():
             return
-
-        # doesnt work for some reason
-        # self.trim_log_file()
 
         args = [
             self.binary_path,
