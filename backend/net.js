@@ -48,7 +48,7 @@ const insertService = async (service) => {
     });
 }
 
-const updateDialRoles = async (service) => {
+const updateServiceRoles = async (service) => {
     const ownerDevicesResponse = await client.query(`
         SELECT id
         FROM devices
@@ -131,9 +131,52 @@ const deleteService = async (service) => {
                 data: { roleAttributes: roleAttributes },
             });
         });
-    } catch (err) {
-        console.error(err);
-    }
+    } catch (err) { console.error(err); }
 }
 
-module.exports = { insertService, updateDialRoles, deleteService }
+const addDeviceRoles = async (device) => {
+    // get every service that this user can access
+    // memberships and the users own services
+
+    const r = await client.query(`
+        (
+            SELECT id
+            FROM services
+            WHERE user_id = $1
+        )
+        UNION
+        (
+            SELECT service_id
+            FROM shares
+            WHERE member_id IN (
+                SELECT id
+                FROM members
+                WHERE community_id IN (
+                    SELECT community_id
+                    FROM members
+                    WHERE user_id = $1
+                )
+            )
+        )
+    `, [device.user_id]);
+
+    const roleAttributes = r.rows.map(({ id }) => ziti.dialRole(id));
+    const identity = await ziti.getIdentity(device.id);
+    await ziti.updateIdentity({
+        id: identity.id,
+        data: { roleAttributes: roleAttributes },
+    });
+}
+
+const removeDeviceRoles = async (deviceId) => {
+    const identity = await ziti.getIdentity(deviceId);
+    await ziti.updateIdentity({
+        id: identity.id,
+        data: { roleAttributes: [] },
+    });
+}
+
+module.exports = {
+    insertService, updateServiceRoles, deleteService, addDeviceRoles,
+    removeDeviceRoles,
+}

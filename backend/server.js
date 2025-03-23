@@ -480,7 +480,7 @@ const handleServiceUpdate = async (service) => {
 
 const handleServiceInsert = async (service) => {
     net.insertService(service);
-    net.updateDialRoles(service);
+    net.updateServiceRoles(service);
     updateAppServices(service);
 }
 
@@ -1155,18 +1155,23 @@ app.get('/ziti', async (req, res) => {
 });
 
 const getJWT = async (hwid) => {
-    let r = await ziti.getIdentity(hwid);
-    if (!r) r = await ziti.createIdentity(hwid);
-    if (!r) return null;
+    try {
+        let r = await ziti.getIdentity(hwid);
+        if (r) await ziti.deleteIdentity(r.id)
 
-    const id = r.id;
+        r = await ziti.createIdentity(hwid);
+        if (!r) return null;
 
-    r = await ziti.getIdentityJWT(id);
-    if (!r) return null;
+        const identity = await ziti.getIdentity(hwid);
+        if (!identity) return;
 
-    const jwt = r;
+        const jwt = identity.enrollment.ott.jwt;
 
-    return jwt;
+        return jwt;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
 }
 
 daemonio.on('connection', socket => {
@@ -1194,25 +1199,32 @@ daemonio.on('connection', socket => {
 
         if (!data.enrolled) {
             const jwt = await getJWT(data.hwid);
-            socket.emit(
-                'tunneler:enroll',
-                { jwt: jwt }
-            );
+            if (jwt) socket.emit('tunneler:enroll', { jwt: jwt });
         }
 
-        const device = await getDevice(data.hwid);
+        const deviceResponse = await client.query(
+            'SELECT * FROM devices WHERE id = $1', [data.hwid])
+        const device = deviceResponse.rows.length === 0 ?
+            null : deviceResponse.rows[0];
         if (!device) return;
 
+        socket.emit('tunneler:is-enrolled', async isEnrolled => {
+            if (!isEnrolled) return;
+            await net.addDeviceRoles(device);
+        });
+
         const d = daemon(data.hwid);
-        await setDnsIpRange(d, device.dnsIpRange);
+        await setDnsIpRange(d, device.dns_ip_range);
         await startTunnel(d, data.hwid);
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
         const hwid = [...daemons.entries()]
             .find(([_, value]) => value === socket.id)?.[0];
 
         if (!hwid) return;
+
+        await net.removeDeviceRoles(hwid);
 
         try {
             client.query(`

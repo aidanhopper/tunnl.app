@@ -96,7 +96,7 @@ const del = async ({ id, route }) => {
     try {
         if (!id) return false;
 
-        const url = `${managementAPI}${route}/${id}`;
+        const url = `${managementAPI}${route}/${encodeURIComponent(id)}`;
         const r = await axios.delete(url,
             {
                 headers: {
@@ -108,8 +108,6 @@ const del = async ({ id, route }) => {
         return true;
     } catch { return false }
 }
-
-const getIdentity = (name) => get({ name: name, route: '/identities' })
 
 const updateIdentity = async ({ id, data }) => {
     try {
@@ -126,23 +124,6 @@ const updateIdentity = async ({ id, data }) => {
     } catch (err) {
         console.error(err.response.data);
     }
-}
-
-const getIdentityJWT = async (id) => {
-    try {
-        const url = `${managementAPI}/identities/${id}/enrollments`;
-
-        const r = await axios.get(url,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'zt-session': await getToken(),
-                },
-            },
-        );
-
-        return r.data.data[0].jwt;
-    } catch { return null }
 }
 
 const createService = async ({ name, configs }) => {
@@ -347,6 +328,10 @@ const createServiceBindPolicy = async ({ name, serviceId, identityId }) => {
 
 const dialRole = (serviceId) => `${serviceId}-dial`;
 
+const getIdentity = (name) => get({ name: name, route: '/identities' })
+
+const deleteIdentity = (id) => del({ id: id, route: '/identities' });
+
 const getService = (name) => get({ name: name, route: '/services' });
 
 const deleteService = (id) => del({ id: id, route: '/services' });
@@ -360,7 +345,7 @@ const getPolicy = async (name) => get({ name: name, route: '/service-policies' }
 const deletePolicy = async (id) => del({ id: id, route: '/service-policies' });
 
 module.exports = {
-    createIdentity, getIdentity, getIdentityJWT, createService, createConfig,
+    createIdentity, getIdentity, createService, createConfig, deleteIdentity,
     getConfigType, createInterceptConfig, createHostConfig, createServicePolicy,
     createServiceDialPolicy, createServiceBindPolicy, updateIdentity, dialRole,
     getService, getConfig, hostConfig, interceptConfig, dialPolicy, getPolicy,

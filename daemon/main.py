@@ -119,6 +119,10 @@ def handle_enroll(data):
     jwt = data['jwt']
     tunneler.enroll(jwt)
 
+@sio.on('tunneler:is-enrolled')
+def handle_is_enrolled():
+    return tunneler.enrolled
+
 def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:
