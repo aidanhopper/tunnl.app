@@ -66,6 +66,7 @@ token = None
 hwid = get_hardware_id()
 tunneler = Tunneler(hwid)
 
+# for some reason the tunneler is not stopping on my linux box
 atexit.register(tunneler.stop)
 
 if hwid is None:

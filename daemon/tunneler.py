@@ -55,7 +55,7 @@ class Tunneler:
                     stdout=log,
                     stderr=log,
                     text=True,
-                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                    # creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
                 )
             else:
                 self.process = subprocess.Popen(
@@ -63,7 +63,7 @@ class Tunneler:
                     stdout=log,
                     stderr=log,
                     text=True,
-                    preexec_fn=os.setsid,
+                    # preexec_fn=os.setsid,
                 )
 
     def stop(self):
