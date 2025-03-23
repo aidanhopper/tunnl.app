@@ -531,7 +531,6 @@ const startListener = async () => {
 
         client.on('notification', async msg => {
             const payload = JSON.parse(msg.payload);
-            console.log(payload);
 
             switch (payload.operation) {
                 case 'DELETE':
@@ -1197,25 +1196,31 @@ daemonio.on('connection', socket => {
             { token: generateDaemonToken(data.hwid) }
         );
 
-        if (!data.enrolled) {
-            const jwt = await getJWT(data.hwid);
-            if (jwt) socket.emit('tunneler:enroll', { jwt: jwt });
-        }
-
         const deviceResponse = await client.query(
             'SELECT * FROM devices WHERE id = $1', [data.hwid])
         const device = deviceResponse.rows.length === 0 ?
             null : deviceResponse.rows[0];
         if (!device) return;
 
-        socket.emit('tunneler:is-enrolled', async isEnrolled => {
-            if (!isEnrolled) return;
-            await net.addDeviceRoles(device);
-        });
+        const sendTunnelerMessages = () => {
+            socket.emit('tunneler:is-enrolled', async isEnrolled => {
+                if (!isEnrolled) return;
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                await net.addDeviceRoles(device);
+                const d = daemon(data.hwid);
+                await setDnsIpRange(d, device.dns_ip_range);
+                console.log('starting tunneler');
+                await startTunnel(d, data.hwid);
+            });
+        }
 
-        const d = daemon(data.hwid);
-        await setDnsIpRange(d, device.dns_ip_range);
-        await startTunnel(d, data.hwid);
+        if (!data.enrolled) {
+            const jwt = await getJWT(data.hwid);
+            if (jwt) socket.emit('tunneler:enroll', { jwt: jwt }, async r => {
+                if (!r.success) return;
+                sendTunnelerMessages();
+            });
+        } else sendTunnelerMessages();
     });
 
     socket.on('disconnect', async () => {

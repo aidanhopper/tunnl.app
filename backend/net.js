@@ -138,7 +138,7 @@ const addDeviceRoles = async (device) => {
     // get every service that this user can access
     // memberships and the users own services
 
-    const r = await client.query(`
+    let r = await client.query(`
         (
             SELECT id
             FROM services
@@ -162,17 +162,57 @@ const addDeviceRoles = async (device) => {
 
     const roleAttributes = r.rows.map(({ id }) => ziti.dialRole(id));
     const identity = await ziti.getIdentity(device.id);
+
+    if (!identity) return;
+
     await ziti.updateIdentity({
         id: identity.id,
         data: { roleAttributes: roleAttributes },
+    });
+
+    r = await client.query(`
+        SELECT *
+        FROM services
+        WHERE device_id = $1
+    `, [device.id]);
+
+    r.rows.forEach(async service => {
+        const bindPolicy = await ziti.getPolicy(ziti.bindPolicy(service.id));
+        if (!bindPolicy) return;
+        await ziti.patchPolicy({
+            id: bindPolicy.id,
+            data: {
+                identityRoles: [`@${identity.id}`],
+            }
+        });
     });
 }
 
 const removeDeviceRoles = async (deviceId) => {
     const identity = await ziti.getIdentity(deviceId);
+
+    if (!identity) return;
+
     await ziti.updateIdentity({
         id: identity.id,
         data: { roleAttributes: [] },
+    });
+
+    const r = await client.query(`
+        SELECT *
+        FROM services
+        WHERE device_id = $1
+    `, [deviceId]);
+
+    r.rows.forEach(async service => {
+        const bindPolicy = await ziti.getPolicy(ziti.bindPolicy(service.id));
+        if (!bindPolicy) return;
+        await ziti.patchPolicy({
+            id: bindPolicy.id,
+            data: {
+                identityRoles: [],
+            }
+        });
     });
 }
 

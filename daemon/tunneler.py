@@ -5,6 +5,7 @@ import os
 import platform
 import json
 from pathlib import Path
+from collections import deque
 
 class Tunneler:
     def __init__(self,
@@ -22,6 +23,15 @@ class Tunneler:
         self.is_win = platform.system().lower() == 'win32'
         self.process = None
 
+    def trim_log_file(self):
+        if not Path(self.log_path).exists():
+            return
+        with open(self.log_path, 'r') as log:
+            lines = deque(log, 500)
+
+        with open(self.log_path, 'r') as log:
+            log.writeLines(lines)
+
     @property
     def enrolled(self):
         return Path(f'{self.identities_path}/{self.hwid}.json').exists()
@@ -37,6 +47,8 @@ class Tunneler:
     def start(self):
         if self.is_running():
             return
+
+        self.trim_log_file()
 
         args = [
             self.binary_path,
@@ -106,3 +118,7 @@ class Tunneler:
             f'{self.identities_path}/{self.hwid}.json'
         ]
         subprocess.check_output(args)
+
+    def restart(self):
+        self.stop()
+        self.start()

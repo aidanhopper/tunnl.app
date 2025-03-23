@@ -118,6 +118,7 @@ def handle_set_dns_ip_range(data):
 def handle_enroll(data):
     jwt = data['jwt']
     tunneler.enroll(jwt)
+    return { 'success': tunneler.enrolled }
 
 @sio.on('tunneler:is-enrolled')
 def handle_is_enrolled():

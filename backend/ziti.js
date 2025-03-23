@@ -92,6 +92,21 @@ const get = async ({ name, route }) => {
     } catch { return null }
 }
 
+const patch = async ({ route, data }) => {
+    try {
+        const url = `${managementAPI}${route}`;
+        await axios.patch(url,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'zt-session': await getToken(),
+                },
+            },
+        );
+    } catch (err) { console.error(err.response.data) }
+}
+
 const del = async ({ id, route }) => {
     try {
         if (!id) return false;
@@ -336,6 +351,8 @@ const getService = (name) => get({ name: name, route: '/services' });
 
 const deleteService = (id) => del({ id: id, route: '/services' });
 
+const patchService = ({ id, data }) => patch({ route: `/services/${id}`, data: data });
+
 const getConfig = (name) => get({ name: name, route: '/configs' });
 
 const deleteConfig = (id) => del({ id: id, route: '/configs' });
@@ -344,10 +361,13 @@ const getPolicy = async (name) => get({ name: name, route: '/service-policies' }
 
 const deletePolicy = async (id) => del({ id: id, route: '/service-policies' });
 
+const patchPolicy = ({ id, data }) => patch({ route: `/service-policies/${id}`, data: data });
+
 module.exports = {
     createIdentity, getIdentity, createService, createConfig, deleteIdentity,
     getConfigType, createInterceptConfig, createHostConfig, createServicePolicy,
     createServiceDialPolicy, createServiceBindPolicy, updateIdentity, dialRole,
     getService, getConfig, hostConfig, interceptConfig, dialPolicy, getPolicy,
-    deleteService, deleteConfig, deletePolicy, bindPolicy,
+    deleteService, deleteConfig, deletePolicy, bindPolicy, patchService,
+    patchPolicy,
 }
