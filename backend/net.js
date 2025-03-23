@@ -79,4 +79,61 @@ const updateDialRoles = async (service) => {
     });
 }
 
-module.exports = { insertService, updateDialRoles }
+const deleteService = async (service) => {
+    try {
+        const name = service.id;
+
+        const srv = await ziti.getService(name);
+        const hostConfig = await ziti.getConfig(ziti.hostConfig(name));
+        const interceptConfig = await ziti.getConfig(ziti.interceptConfig(name));
+        const dialPolicy = await ziti.getPolicy(ziti.dialPolicy(name));
+        const bindPolicy = await ziti.getPolicy(ziti.bindPolicy(name));
+
+        await ziti.deletePolicy(dialPolicy.id);
+        await ziti.deletePolicy(bindPolicy.id);
+        await ziti.deleteConfig(hostConfig.id);
+        await ziti.deleteConfig(interceptConfig.id);
+        await ziti.deleteService(srv.id);
+
+        const r = await client.query(`
+            (
+                SELECT id
+                FROM devices
+                WHERE user_id IN (
+                    SELECT user_id 
+                    FROM members
+                    WHERE community_id IN (
+                    SELECT community_id 
+                        FROM members 
+                        WHERE id IN (
+                            SELECT member_id
+                            FROM shares
+                            WHERE service_id = $1
+                        )
+                    )
+                )
+            )
+            UNION
+            (
+                SELECT id
+                FROM devices
+                WHERE user_id = $2
+            )
+        `, [service.id, service.user_id]);
+
+        r.rows.forEach(async ({ id: deviceId }) => {
+            const identity = await ziti.getIdentity(deviceId);
+            const roleAttributes = identity.roleAttributes ?
+                identity.roleAttributes
+                    .filter(role => role !== ziti.dialRole(service.id)) : [];
+            await ziti.updateIdentity({
+                id: identity.id,
+                data: { roleAttributes: roleAttributes },
+            });
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+module.exports = { insertService, updateDialRoles, deleteService }

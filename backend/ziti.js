@@ -71,9 +71,11 @@ const createIdentity = async (name) => {
     } catch (err) { return null; }
 }
 
-const getIdentity = async (name) => {
+const get = async ({ name, route }) => {
     try {
-        const url = `${managementAPI}/identities`;
+        if (!name) return null;
+
+        const url = `${managementAPI}${route}`;
         const r = await axios.get(url,
             {
                 headers: {
@@ -86,13 +88,28 @@ const getIdentity = async (name) => {
             },
         );
 
-        const data = r.data.data;
-
-        const identity = data[0];
-
-        return identity;
+        return r.data.data[0];
     } catch { return null }
 }
+
+const del = async ({ id, route }) => {
+    try {
+        if (!id) return false;
+
+        const url = `${managementAPI}${route}/${id}`;
+        const r = await axios.delete(url,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'zt-session': await getToken(),
+                },
+            },
+        );
+        return true;
+    } catch { return false }
+}
+
+const getIdentity = (name) => get({ name: name, route: '/identities' })
 
 const updateIdentity = async ({ id, data }) => {
     try {
@@ -244,10 +261,12 @@ const getPortRangeObjs = (portRange) =>
             }
         });
 
+const interceptConfig = (name) => `${name}-intercept-config`
+
 const createInterceptConfig = async ({ name, portRange, address }) => {
     try {
-        const id = await createConfig({
-            name: `${name}-intercept-config`,
+        const config = await createConfig({
+            name: interceptConfig(name),
             configTypeId: await getConfigType('intercept.v1'),
             data: {
                 portRanges: getPortRangeObjs(portRange),
@@ -255,17 +274,19 @@ const createInterceptConfig = async ({ name, portRange, address }) => {
                 protocols: ['tcp', 'udp'],
             }
         });
-        return id;
+        return config;
     } catch (err) {
         console.error(err)
         return null;
     }
 }
 
+const hostConfig = (name) => `${name}-host-config`;
+
 const createHostConfig = async ({ name, portRange, host }) => {
     try {
-        const id = await createConfig({
-            name: `${name}-host-config`,
+        const config = await createConfig({
+            name: hostConfig(name),
             configTypeId: await getConfigType('host.v1'),
             data: {
                 address: host,
@@ -277,17 +298,19 @@ const createHostConfig = async ({ name, portRange, host }) => {
                 portChecks: [],
             }
         });
-        return id;
+        return config;
     } catch (err) {
         console.error(err);
         return null;
     }
 }
 
+const dialPolicy = (name) => `${name}-dial-policy`;
+
 const createServiceDialPolicy = async ({ name, serviceId }) => {
     try {
         await createServicePolicy({
-            name: `${name}-dial-policy`,
+            name: dialPolicy(name),
             semantic: 'AnyOf',
             serviceRoles: [
                 `@${serviceId}`,
@@ -302,11 +325,12 @@ const createServiceDialPolicy = async ({ name, serviceId }) => {
     }
 }
 
+const bindPolicy = (name) => `${name}-bind-policy`;
 
 const createServiceBindPolicy = async ({ name, serviceId, identityId }) => {
     try {
         await createServicePolicy({
-            name: `${name}-bind-policy`,
+            name: bindPolicy(name),
             semantic: 'AnyOf',
             serviceRoles: [
                 `@${serviceId}`,
@@ -321,10 +345,24 @@ const createServiceBindPolicy = async ({ name, serviceId, identityId }) => {
     }
 }
 
-const dialRole = (name) => `${name}-dial`
+const dialRole = (serviceId) => `${serviceId}-dial`;
+
+const getService = (name) => get({ name: name, route: '/services' });
+
+const deleteService = (id) => del({ id: id, route: '/services' });
+
+const getConfig = (name) => get({ name: name, route: '/configs' });
+
+const deleteConfig = (id) => del({ id: id, route: '/configs' });
+
+const getPolicy = async (name) => get({ name: name, route: '/service-policies' });
+
+const deletePolicy = async (id) => del({ id: id, route: '/service-policies' });
 
 module.exports = {
     createIdentity, getIdentity, getIdentityJWT, createService, createConfig,
     getConfigType, createInterceptConfig, createHostConfig, createServicePolicy,
     createServiceDialPolicy, createServiceBindPolicy, updateIdentity, dialRole,
+    getService, getConfig, hostConfig, interceptConfig, dialPolicy, getPolicy,
+    deleteService, deleteConfig, deletePolicy, bindPolicy,
 }

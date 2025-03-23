@@ -485,6 +485,7 @@ const handleServiceInsert = async (service) => {
 }
 
 const handleServiceDelete = async (service) => {
+    net.deleteService(service);
     updateAppServices(service);
 }
 
@@ -1147,17 +1148,8 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
 });
 
 app.get('/ziti', async (req, res) => {
-    const name = 'a031b8c8b2f20d1a3663d9e716e75897e7fd4d242d22db07ff720bfa6d12f1ea';
+    const name = '';
 
-    const identity = await ziti.getIdentity(name);
-    const roleAttributes = identity.roleAttributes;
-
-    await ziti.updateIdentity({
-        id: identity.id,
-        data: {
-            roleAttributes: [...roleAttributes, 'asdf-service']
-        },
-    });
 
     res.json();
 });
