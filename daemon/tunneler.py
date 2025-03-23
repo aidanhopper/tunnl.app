@@ -48,7 +48,8 @@ class Tunneler:
         if self.is_running():
             return
 
-        self.trim_log_file()
+        # doesnt work for some reason
+        # self.trim_log_file()
 
         args = [
             self.binary_path,

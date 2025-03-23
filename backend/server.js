@@ -1206,13 +1206,15 @@ daemonio.on('connection', socket => {
 
         const sendTunnelerMessages = () => {
             socket.emit('tunneler:is-enrolled', async isEnrolled => {
-                if (!isEnrolled) return;
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                await net.addDeviceRoles(device);
-                const d = daemon(data.hwid);
-                await setDnsIpRange(d, device.dns_ip_range);
-                console.log('starting tunneler');
-                await startTunnel(d, data.hwid);
+                try {
+                    if (!isEnrolled) return;
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    await net.addDeviceRoles(device);
+                    const d = daemon(data.hwid);
+                    await setDnsIpRange(d, device.dns_ip_range);
+                    console.log('starting tunneler');
+                    await startTunnel(d, data.hwid);
+                } catch (err) { console.error(err) }
             });
         }
 
