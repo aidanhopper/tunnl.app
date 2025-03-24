@@ -1264,10 +1264,9 @@ daemonio.on('connection', socket => {
             });
         }
 
-        console.log(data);
-
         if (!data.enrolled) {
             const jwt = await getJWT(data.hwid);
+            console.log('jwt', jwt);
             if (jwt) socket.emit('tunneler:enroll', { jwt: jwt }, async r => {
                 if (!r.success) return;
                 sendTunnelerMessages();
