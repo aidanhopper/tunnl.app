@@ -75,7 +75,9 @@ export const updateTunnelAutostart = async (hwid: string, value: boolean) => {
         });
 }
 
-export const postService = async (hwid: string, name: string, domain: string, host: string, portRange: string) => {
+export const postService = async (hwid: string, name: string,
+    domain: string, host: string, portRange: string, forwardPorts: boolean,
+    sourcePort: string, accessPort: string) => {
     return await axios.post(`/api/v1/service/${encodeURIComponent(hwid)}`,
         {
             withCredentials: true,
@@ -84,6 +86,9 @@ export const postService = async (hwid: string, name: string, domain: string, ho
                 domain: domain,
                 host: host,
                 portRange: portRange,
+                forwardPorts: forwardPorts,
+                sourcePort: sourcePort,
+                accessPort: accessPort,
             }
         });
 }

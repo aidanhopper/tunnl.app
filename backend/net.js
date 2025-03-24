@@ -18,16 +18,29 @@ client.connect()
     .catch(err => console.error("Error", err.stack));
 
 const insertService = async (service) => {
-    const zitiInterceptId = await ziti.createInterceptConfig({
-        name: service.id,
-        portRange: service.port_range,
-        address: service.domain,
+    const zitiInterceptId = await ziti.createConfig({
+        name: ziti.interceptConfig(service.id),
+        configTypeId: await ziti.getConfigType('intercept.v1'),
+        data: {
+            portRanges: ziti.getPortRangeObjs(service.are_ports_forwarded ? service.port_range : service.access_port),
+            addresses: [service.domain],
+            protocols: ['tcp', 'udp'],
+        }
     });
 
-    const zitiHostId = await ziti.createHostConfig({
-        name: service.id,
-        portRange: service.port_range,
-        host: service.host,
+    const zitiHostId = await ziti.createConfig({
+        name: ziti.hostConfig(service.id),
+        configTypeId: await ziti.getConfigType('host.v1'),
+        data: {
+            address: service.host,
+            forwardPort: service.are_ports_forwarded ? true : undefined,
+            forwardProtocol: true,
+            allowedPortRanges: service.are_ports_forwarded ? ziti.getPortRangeObjs(service.port_range) : undefined,
+            port: !service.are_ports_forwarded ? Number(service.source_port) : undefined,
+            allowedProtocols: ['tcp', 'udp'],
+            httpChecks: [],
+            portChecks: [],
+        }
     });
 
     const zitiServiceId = await ziti.createService({
@@ -47,6 +60,41 @@ const insertService = async (service) => {
         serviceId: zitiServiceId,
         identityId: identity.id,
     });
+}
+
+const updateService = async (service) => {
+    console.log(service);
+    const interceptConfig = await ziti.getConfig(ziti.interceptConfig(service.id));
+    const hostConfig = await ziti.getConfig(ziti.hostConfig(service.id));
+
+    const interceptId = interceptConfig.id;
+    const hostId = hostConfig.id;
+
+    await ziti.patchConfig({
+        id: hostId,
+        data: {
+            data: {
+                address: service.host,
+                forwardPort: true,
+                forwardProtocol: true,
+                allowedPortRanges: ziti.getPortRangeObjs(service.port_range),
+                allowedProtocols: ['tcp', 'udp'],
+                httpChecks: [],
+                portChecks: [],
+            }
+        }
+    });
+
+    await ziti.patchConfig({
+        id: interceptId,
+        data: {
+            data: {
+                portRanges: ziti.getPortRangeObjs(service.port_range),
+                addresses: [service.domain],
+                protocols: ['tcp', 'udp'],
+            }
+        }
+    })
 }
 
 const deleteService = async (service) => {
@@ -130,11 +178,20 @@ const userServices = async (userId) => {
     return r.rows;
 }
 
-const userDevices = async (userId) => {
+const userOnlineDevices = async (userId) => {
     const r = await client.query(`
         SELECT id
         FROM devices
-        WHERE user_id = $1
+        WHERE user_id = $1 AND is_tunnel_online = true
+    `, [userId]);
+    return r.rows;
+}
+
+const userOfflineDevices = async (userId) => {
+    const r = await client.query(`
+        SELECT id
+        FROM devices
+        WHERE user_id = $1 AND is_tunnel_online = false
     `, [userId]);
     return r.rows;
 }
@@ -142,16 +199,28 @@ const userDevices = async (userId) => {
 const updateRoles = async (userIds) => {
     try {
         userIds.forEach(async userId => {
-            const devices = await userDevices(userId);
+            const onlineDevices = await userOnlineDevices(userId);
+            const offlineDevices = await userOfflineDevices(userId);
             const services = await userServices(userId);
 
-            devices.forEach(async ({ id }) => {
+            onlineDevices.forEach(async ({ id }) => {
                 const identity = await ziti.getIdentity(id);
 
                 await ziti.updateIdentity({
                     id: identity.id,
                     data: {
                         roleAttributes: services.map(s => ziti.dialRole(s.id)),
+                    },
+                });
+            });
+
+            offlineDevices.forEach(async ({ id }) => {
+                const identity = await ziti.getIdentity(id);
+
+                await ziti.updateIdentity({
+                    id: identity.id,
+                    data: {
+                        roleAttributes: [],
                     },
                 });
             });
@@ -171,5 +240,5 @@ const removeDeviceRoles = async (hwid) => {
 }
 
 module.exports = {
-    insertService, deleteService, updateRoles, removeDeviceRoles
+    insertService, deleteService, updateRoles, removeDeviceRoles, updateService,
 }

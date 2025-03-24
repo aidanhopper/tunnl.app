@@ -48,7 +48,7 @@ class Tunneler:
             self._dns_ip_range,
         ]
 
-        with open(self.log_path, 'a') as log:
+        with open(self.log_path, 'w') as log:
             if self.is_win:
                 self.process = subprocess.Popen(
                     args,

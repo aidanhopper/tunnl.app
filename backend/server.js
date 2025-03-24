@@ -424,7 +424,6 @@ const updateAppShares = async (share) => {
     `, [share.member_id]);
 
     const userids = response.rows.map(o => o.user_id);
-    console.log(userids);
 
     userids.forEach(id => updateUser(id));
     return userids;
@@ -461,6 +460,20 @@ const updateAppServices = async (service) => {
 
 const updateAppMembers = async (userids) => userids.forEach(id => updateUser(id));
 
+// Community table
+
+const handleCommunityUpdate = async (community) => {
+    await updateUser(community.user_id);
+}
+
+const handleCommunityInsert = async (community) => {
+    await updateUser(community.user_id);
+}
+
+const handleCommunityDelete = async (community) => {
+    await updateUser(community.user_id);
+}
+
 // Share table
 
 const handleShareUpdate = async (share) => {
@@ -481,6 +494,7 @@ const handleShareDelete = async (share) => {
 // Service table
 
 const handleServiceUpdate = async (service) => {
+    net.updateService(service);
     updateAppServices(service);
 }
 
@@ -551,6 +565,7 @@ const startListener = async () => {
                     else if (payload.members) handleMemberDelete(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
                     else if (payload.device) handleDeviceDelete(payload.device);
+                    else if (payload.community) handleCommunityDelete(payload.community);
                     break;
                 case 'INSERT':
                     if (payload.share) handleShareInsert(payload.share);
@@ -558,6 +573,7 @@ const startListener = async () => {
                     else if (payload.members) handleMemberInsert(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
                     else if (payload.device) handleDeviceInsert(payload.device);
+                    else if (payload.community) handleCommunityInsert(payload.community);
                     break;
                 case 'UPDATE':
                     if (payload.share) handleShareUpdate(payload.share);
@@ -565,6 +581,7 @@ const startListener = async () => {
                     else if (payload.members) handleMemberUpdate(payload.members);
                     else if (payload.user) updateUser(payload.user.id);
                     else if (payload.device) handleDeviceUpdate(payload.device);
+                    else if (payload.community) handleCommunityUpdate(payload.community);
                     break;
             }
         });
@@ -651,7 +668,7 @@ const testPortRange = (portRange) => {
 app.post('/api/v1/service/:hwid', authenticateToken, authenticateDaemon, async (req, res) => {
     try {
         console.log('POST /api/v1/service');
-        const { name, domain, host, portRange } = req.body.data;
+        const { name, domain, host, portRange, forwardPorts, accessPort, sourcePort } = req.body.data;
 
         const service = {
             userid: req.id,
@@ -660,11 +677,23 @@ app.post('/api/v1/service/:hwid', authenticateToken, authenticateDaemon, async (
             domain: domain.trim().toLowerCase(),
             host: host.trim(),
             portRange: portRange.trim(),
+            accessPort: accessPort.trim(),
+            sourcePort: sourcePort.trim(),
+            forwardPorts: forwardPorts
         }
 
         if (!testDomain(service.domain)) throw new Error('Invalid domain');
 
-        if (!testPortRange(service.portRange)) throw new Error('Invalid port range');
+        if (forwardPorts) {
+            if (!testPortRange(service.portRange)) throw new Error('Invalid port range');
+        } else {
+            if (service.accessPort.split(' ').length !== 1) throw new Error('Invalid access port');
+            if (service.sourcePort.split(' ').length !== 1) throw new Error('Invalid source port');
+            const a = Number(service.accessPort);
+            if (!(Number.isInteger(a) && a >= 0 && a <= 65535)) throw new Error('Invalid access port');
+            const s = Number(service.sourcePort);
+            if (!(Number.isInteger(s) && s >= 0 && s <= 65535)) throw new Error('Invalid source port');
+        }
 
         await client.query(`
             INSERT INTO services (
@@ -673,11 +702,24 @@ app.post('/api/v1/service/:hwid', authenticateToken, authenticateDaemon, async (
                 name,
                 domain,
                 host,
-                port_range
+                port_range,
+                are_ports_forwarded,
+                access_port,
+                source_port
             )
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
-        `, [service.userid, service.deviceid, service.name, service.domain, service.host, service.portRange]);
+        `, [
+            service.userid,
+            service.deviceid,
+            service.name,
+            service.domain,
+            service.host,
+            service.forwardPorts ? service.portRange : '',
+            service.forwardPorts,
+            !service.forwardPorts ? service.accessPort : '',
+            !service.forwardPorts ? service.sourcePort : '',
+        ]);
 
         res.status(201).json({ message: 'Successfully inserted service' });
     } catch (err) {
@@ -1160,13 +1202,6 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/ziti', async (req, res) => {
-    const name = '';
-
-
-    res.json();
-});
-
 const getJWT = async (hwid) => {
     try {
         let r = await ziti.getIdentity(hwid);
@@ -1243,8 +1278,6 @@ daemonio.on('connection', socket => {
             .find(([_, value]) => value === socket.id)?.[0];
 
         if (!hwid) return;
-
-        await net.removeDeviceRoles(hwid);
 
         try {
             client.query(`

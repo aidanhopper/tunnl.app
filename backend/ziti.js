@@ -182,10 +182,11 @@ const createConfig = async (data) => {
 
         return r.data.data.id;
     } catch (err) {
+        console.error('ERRROR');
         if (err && err.response && err.response.data)
-            console.log(err.response.data);
+            console.error(err.response.data);
         else
-            console.log(err);
+            console.error(err);
         return null;
     }
 }
@@ -357,6 +358,8 @@ const getConfig = (name) => get({ name: name, route: '/configs' });
 
 const deleteConfig = (id) => del({ id: id, route: '/configs' });
 
+const patchConfig = ({ id, data }) => patch({ route: `/configs/${id}`, data });
+
 const getPolicy = async (name) => get({ name: name, route: '/service-policies' });
 
 const deletePolicy = async (id) => del({ id: id, route: '/service-policies' });
@@ -369,5 +372,5 @@ module.exports = {
     createServiceDialPolicy, createServiceBindPolicy, updateIdentity, dialRole,
     getService, getConfig, hostConfig, interceptConfig, dialPolicy, getPolicy,
     deleteService, deleteConfig, deletePolicy, bindPolicy, patchService,
-    patchPolicy,
+    patchPolicy, patchConfig, getPortRangeObjs
 }

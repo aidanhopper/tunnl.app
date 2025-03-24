@@ -23,7 +23,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useNavPath } from './hooks';
 import { postService, deleteService, updateService } from './API';
 
-const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
+const CreateServiceWindow = ({ isOpen, closeWindow = () => { } }:
     { isOpen: boolean, closeWindow: () => void }) => {
     const { user, setUser } = useUser();
 
@@ -31,19 +31,25 @@ const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
 
     const [deviceSelectorText, setDeviceSelectorText] = useState('');
 
+    const [forwardPorts, setForwardPorts] = useState(false);
+
     const nameRef = useRef<HTMLInputElement>(null);
     const domainRef = useRef<HTMLInputElement>(null);
     const hostRef = useRef<HTMLInputElement>(null);
     const portRef = useRef<HTMLInputElement>(null);
+    const accessPortRef = useRef<HTMLInputElement>(null);
 
     const onSubmit = async (closeForm: () => void) => {
-        if (!nameRef.current || !domainRef.current || !hostRef.current || !portRef.current || !user) return;
+        if (!accessPortRef.current || !nameRef.current || !domainRef.current || !hostRef.current || !portRef.current || !user) return;
 
         const service = {
             name: nameRef.current.value.trim(),
             domain: domainRef.current.value.trim(),
             host: hostRef.current.value.trim(),
-            port: portRef.current.value.trim(),
+            portRange: forwardPorts ? portRef.current.value.trim() : '',
+            sourcePort: !forwardPorts ? portRef.current.value.trim() : '',
+            accessPort: !forwardPorts ? accessPortRef.current.value.trim() : '',
+            arePortsForwarded: forwardPorts,
         }
 
         let good = true;
@@ -78,12 +84,6 @@ const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
             good = false;
         } else hostRef.current.className = nameRef.current.className.replace(errorColor, '');
 
-        if (service.port === '') {
-            portRef.current.className += errorColor;
-            if (!focusRef) focusRef = portRef.current;
-            good = false;
-        } else portRef.current.className = nameRef.current.className.replace(errorColor, '');
-
         if (deviceSelectorText === '') {
             good = false;
         }
@@ -97,7 +97,8 @@ const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
         if (!hwid) return;
 
         try {
-            const response = await postService(hwid, service.name, service.domain, service.host, service.port);
+            const response = await postService(hwid, service.name, service.domain, service.host,
+                service.portRange, service.arePortsForwarded, service.sourcePort, service.accessPort);
             if (response.status === 201) closeForm();
         } catch {
             nameRef.current.focus();
@@ -135,12 +136,39 @@ const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
                                     description='The host of your service relative to the selected device.'
                                     placeholder='eg. 127.0.0.1'
                                 />
+                                <div className='flex flex-col'>
+                                    <h2 className='text-2xl font-semibold'>
+                                        Are ports forwarded?
+                                    </h2>
+                                    <div className='flex text-neutral-800 h-8 w-full mt-1 mb-6'>
+                                        <div
+                                            onClick={() => setForwardPorts(!forwardPorts)}
+                                            className='bg-neutral-100 w-16 h-8 rounded-full mt-2 mb-6 flex items-center'>
+                                            <div
+                                                className={`h-7 w-7 ml-1 rounded-full bg-neutral-500 duration-150
+                                                ${forwardPorts ? 'translate-x-7' : ''}`}
+                                            />
+                                        </div>
+                                        <div className='flex items-center mt-3 ml-8 text-neutral-100 font-bold text-xl'>
+                                            {forwardPorts ? 'Yes' : 'No'}
+                                        </div>
+                                    </div>
+                                </div>
                                 <PopupWindowInput
                                     ref={portRef}
-                                    title='Port'
-                                    description='The port your service is on.'
-                                    placeholder='eg. 25565;80;443;55-100'
+                                    title={forwardPorts ? 'Ports' : 'Source Port'}
+                                    description='The port your service is running on.'
+                                    placeholder={forwardPorts ? 'eg. 25565 80 443 55-100' : 'eg. 3000'}
                                 />
+                                {
+                                    !forwardPorts &&
+                                    <PopupWindowInput
+                                        ref={accessPortRef}
+                                        title='Access Port'
+                                        description='The port your service is accessed on.'
+                                        placeholder='eg. 80'
+                                    />
+                                }
                                 <h1 className='text-2xl font-bold'>Device</h1>
                                 <PopupWindowSelectProvider>
                                     <PopupWindowSelectToggle onClick={() => setIsScrollDisabled(true)}>
@@ -174,7 +202,7 @@ const CreateDeviceWindow = ({ isOpen, closeWindow = () => { } }:
     );
 }
 
-const EditDeviceWindow = ({ isOpen, closeWindow = () => { } }:
+const EditServiceWindow = ({ isOpen, closeWindow = () => { } }:
     { isOpen: boolean, closeWindow: () => void }) => {
     const { user, setUser } = useUser();
     const path = useNavPath();
@@ -242,7 +270,7 @@ const EditDeviceWindow = ({ isOpen, closeWindow = () => { } }:
                                 />
                                 <PopupWindowInput
                                     ref={portRef}
-                                    title='Port'
+                                    title='Ports'
                                     placeholder={service.portRange}
                                 />
                                 <h1 className='text-2xl font-bold'>Device</h1>
@@ -282,8 +310,8 @@ const DashboardServices = () => {
     const { user, setUser } = useUser();
     const navigate = useNavigate();
     const navPath = useNavPath()
-    const isCreateDeviceWindowOpen = navPath.length >= 3 && navPath[2] === 'create';
-    const isEditDeviceWindowOpen = navPath.length === 4 && navPath[2] === 'edit';
+    const isCreateServiceWindowOpen = navPath.length >= 3 && navPath[2] === 'create';
+    const isEditServiceWindowOpen = navPath.length === 4 && navPath[2] === 'edit';
     const [deleteServiceID, setDeleteServiceID] = useState('');
     return !user ? <></> : (
         <>
@@ -313,11 +341,8 @@ const DashboardServices = () => {
                     </PopupWindow>
                 </PopupWindowProvider>
             }
-            <CreateDeviceWindow
-                isOpen={isCreateDeviceWindowOpen}
-                closeWindow={() => navigate('/dashboard/services')} />
-            <EditDeviceWindow
-                isOpen={isEditDeviceWindowOpen}
+            <CreateServiceWindow
+                isOpen={isCreateServiceWindowOpen}
                 closeWindow={() => navigate('/dashboard/services')} />
             <DashboardPage>
                 <DashboardPageHeader>
@@ -399,10 +424,6 @@ const DashboardServices = () => {
                                                     <DropdownAnchor>
                                                         <Dropdown offsetX={-140} offsetY={-100} className='w-38'>
                                                             <DropdownGroup>
-                                                                <DropdownLink
-                                                                    to={`/dashboard/services/edit/${encodeURIComponent(s.id)}`}>
-                                                                    Edit
-                                                                </DropdownLink>
                                                                 <DropdownButton
                                                                     onClick={() => setDeleteServiceID(s.id)}
                                                                     className='hover:bg-red-900'>
