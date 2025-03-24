@@ -1250,7 +1250,6 @@ daemonio.on('connection', socket => {
             'SELECT * FROM devices WHERE id = $1', [data.hwid])
         const device = deviceResponse.rows.length === 0 ?
             null : deviceResponse.rows[0];
-        if (!device) return;
 
         const sendTunnelerMessages = () => {
             socket.emit('tunneler:is-enrolled', async isEnrolled => {
@@ -1270,7 +1269,7 @@ daemonio.on('connection', socket => {
             console.log('jwt', jwt);
             if (jwt) socket.emit('tunneler:enroll', { jwt: jwt }, async r => {
                 if (!r.success) return;
-                sendTunnelerMessages();
+                if (device) sendTunnelerMessages();
             });
         } else sendTunnelerMessages();
     });
