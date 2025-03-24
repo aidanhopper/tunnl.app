@@ -1244,6 +1244,8 @@ daemonio.on('connection', socket => {
 
         if (!hwid) return;
 
+        await net.removeDeviceRoles(hwid);
+
         try {
             client.query(`
                 UPDATE devices

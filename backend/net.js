@@ -159,6 +159,17 @@ const updateRoles = async (userIds) => {
     } catch (err) { console.error(err) }
 }
 
+const removeDeviceRoles = async (hwid) => {
+    const identity = await ziti.getIdentity(hwid);
+
+    await ziti.updateIdentity({
+        id: identity.id,
+        data: {
+            roleAttributes: [],
+        },
+    });
+}
+
 module.exports = {
-    insertService, deleteService, updateRoles,
+    insertService, deleteService, updateRoles, removeDeviceRoles
 }
