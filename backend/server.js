@@ -1211,6 +1211,7 @@ const getJWT = async (hwid) => {
         if (!r) return null;
 
         const identity = await ziti.getIdentity(hwid);
+        console.log(identity)
         if (!identity) return;
 
         const jwt = identity.enrollment.ott.jwt;
