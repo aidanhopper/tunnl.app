@@ -71,7 +71,8 @@ class Tunneler:
             self.process.send_signal(signal.CTRL_BREAK_EVENT)
         else:
             os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
-        self.process.wait()
+        self.process.terminate()
+        self.process.wait(timeout=5)
         self.process = None
 
     def is_running(self):
