@@ -68,7 +68,11 @@ const createIdentity = async (name) => {
         if (r.status !== 201) return null;
 
         return r.data.data.id;
-    } catch (err) { return null; }
+    } catch (err) {
+        if (err.response && err.response.data) console.error(err.response.data);
+        else console.error(err);
+        return null;
+    }
 }
 
 const get = async ({ name, route }) => {

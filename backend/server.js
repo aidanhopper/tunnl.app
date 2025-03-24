@@ -1208,10 +1208,10 @@ const getJWT = async (hwid) => {
         if (r) await ziti.deleteIdentity(r.id)
 
         r = await ziti.createIdentity(hwid);
+        console.log(r)
         if (!r) return null;
 
         const identity = await ziti.getIdentity(hwid);
-        console.log(identity)
         if (!identity) return;
 
         const jwt = identity.enrollment.ott.jwt;
