@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     server: {
-        allowedHosts: ['.ahop.dev'],
+        allowedHosts: ['.ahop.dev', '.tunnl.app'],
         proxy: {
             "/api": {
                 target: "http://localhost:3123",

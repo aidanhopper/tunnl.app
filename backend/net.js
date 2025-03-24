@@ -12,6 +12,7 @@ const client = new pg.Client({
     database: `${process.env.PG_DATABASE}`,
 });
 
+
 client.connect()
     .then(() => console.log("Connected to PostgreSQL DB"))
     .catch(err => console.error("Error", err.stack));
@@ -45,37 +46,6 @@ const insertService = async (service) => {
         name: service.id,
         serviceId: zitiServiceId,
         identityId: identity.id,
-    });
-}
-
-const updateServiceRoles = async (service) => {
-    const ownerDevicesResponse = await client.query(`
-        SELECT id
-        FROM devices
-        WHERE user_id = (
-            SELECT user_id
-            FROM devices
-            WHERE id = $1
-        )
-    `, [service.device_id]);
-
-    const ownerDevices = ownerDevicesResponse.rows;
-
-    ownerDevices.forEach(async ({ id }) => {
-        const identity = await ziti.getIdentity(id);
-
-        const roleAttributes = identity.roleAttributes
-            ? identity.roleAttributes : [];
-
-        await ziti.updateIdentity({
-            id: identity.id,
-            data: {
-                roleAttributes: [
-                    ...roleAttributes,
-                    ziti.dialRole(service.id)
-                ],
-            },
-        });
     });
 }
 
@@ -134,11 +104,8 @@ const deleteService = async (service) => {
     } catch (err) { console.error(err); }
 }
 
-const addDeviceRoles = async (device) => {
-    // get every service that this user can access
-    // memberships and the users own services
-
-    let r = await client.query(`
+const userServices = async (userId) => {
+    const r = await client.query(`
         (
             SELECT id
             FROM services
@@ -158,65 +125,40 @@ const addDeviceRoles = async (device) => {
                 )
             )
         )
-    `, [device.user_id]);
+    `, [userId]);
 
-    const roleAttributes = r.rows.map(({ id }) => ziti.dialRole(id));
-    const identity = await ziti.getIdentity(device.id);
-
-    if (!identity) return;
-
-    await ziti.updateIdentity({
-        id: identity.id,
-        data: { roleAttributes: roleAttributes },
-    });
-
-    r = await client.query(`
-        SELECT *
-        FROM services
-        WHERE device_id = $1
-    `, [device.id]);
-
-    r.rows.forEach(async service => {
-        const bindPolicy = await ziti.getPolicy(ziti.bindPolicy(service.id));
-        if (!bindPolicy) return;
-        await ziti.patchPolicy({
-            id: bindPolicy.id,
-            data: {
-                identityRoles: [`@${identity.id}`],
-            }
-        });
-    });
+    return r.rows;
 }
 
-const removeDeviceRoles = async (deviceId) => {
-    const identity = await ziti.getIdentity(deviceId);
-
-    if (!identity) return;
-
-    await ziti.updateIdentity({
-        id: identity.id,
-        data: { roleAttributes: [] },
-    });
-
+const userDevices = async (userId) => {
     const r = await client.query(`
-        SELECT *
-        FROM services
-        WHERE device_id = $1
-    `, [deviceId]);
+        SELECT id
+        FROM devices
+        WHERE user_id = $1
+    `, [userId]);
+    return r.rows;
+}
 
-    r.rows.forEach(async service => {
-        const bindPolicy = await ziti.getPolicy(ziti.bindPolicy(service.id));
-        if (!bindPolicy) return;
-        await ziti.patchPolicy({
-            id: bindPolicy.id,
-            data: {
-                identityRoles: [],
-            }
+const updateRoles = async (userIds) => {
+    try {
+        userIds.forEach(async userId => {
+            const devices = await userDevices(userId);
+            const services = await userServices(userId);
+
+            devices.forEach(async ({ id }) => {
+                const identity = await ziti.getIdentity(id);
+
+                await ziti.updateIdentity({
+                    id: identity.id,
+                    data: {
+                        roleAttributes: services.map(s => ziti.dialRole(s.id)),
+                    },
+                });
+            });
         });
-    });
+    } catch (err) { console.error(err) }
 }
 
 module.exports = {
-    insertService, updateServiceRoles, deleteService, addDeviceRoles,
-    removeDeviceRoles,
+    insertService, deleteService, updateRoles,
 }

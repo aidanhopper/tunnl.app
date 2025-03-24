@@ -424,8 +424,10 @@ const updateAppShares = async (share) => {
     `, [share.member_id]);
 
     const userids = response.rows.map(o => o.user_id);
+    console.log(userids);
 
     userids.forEach(id => updateUser(id));
+    return userids;
 }
 
 const updateAppServices = async (service) => {
@@ -454,6 +456,7 @@ const updateAppServices = async (service) => {
     const userids = r.rows.map(row => row.user_id);
     userids.push(service.user_id);
     userids.forEach(id => updateUser(id));
+    return userids;
 }
 
 const updateAppMembers = async (userids) => userids.forEach(id => updateUser(id));
@@ -461,15 +464,18 @@ const updateAppMembers = async (userids) => userids.forEach(id => updateUser(id)
 // Share table
 
 const handleShareUpdate = async (share) => {
-    updateAppShares(share);
+    const userIds = await updateAppShares(share);
+    net.updateRoles(userIds);
 }
 
 const handleShareInsert = async (share) => {
-    updateAppShares(share);
+    const userIds = await updateAppShares(share);
+    net.updateRoles(userIds);
 }
 
 const handleShareDelete = async (share) => {
-    updateAppShares(share);
+    const userIds = await updateAppShares(share);
+    net.updateRoles(userIds);
 }
 
 // Service table
@@ -480,13 +486,14 @@ const handleServiceUpdate = async (service) => {
 
 const handleServiceInsert = async (service) => {
     net.insertService(service);
-    net.updateServiceRoles(service);
-    updateAppServices(service);
+    const userIds = await updateAppServices(service);
+    net.updateRoles(userIds);
 }
 
 const handleServiceDelete = async (service) => {
     net.deleteService(service);
-    updateAppServices(service);
+    const userIds = await updateAppServices(service);
+    net.updateRoles(userIds);
 }
 
 // Member table
@@ -497,24 +504,29 @@ const handleMemberUpdate = async (userids) => {
 
 const handleMemberInsert = async (userids) => {
     updateAppMembers(userids);
+    net.updateRoles(userids);
 }
 
 const handleMemberDelete = async (userids) => {
     updateAppMembers(userids);
+    net.updateRoles(userids);
 }
 
 // Device table
 
 const handleDeviceUpdate = async (device) => {
     updateUser(device.user_id);
+    net.updateRoles([device.user_id]);
 }
 
 const handleDeviceInsert = async (device) => {
     updateUser(device.user_id);
+    net.updateRoles([device.user_id]);
 }
 
 const handleDeviceDelete = async (device) => {
     updateUser(device.user_id);
+    net.updateRoles([device.user_id]);
 }
 
 const startListener = async () => {
@@ -1209,10 +1221,9 @@ daemonio.on('connection', socket => {
                 try {
                     if (!isEnrolled) return;
                     await new Promise(resolve => setTimeout(resolve, 5000));
-                    await net.addDeviceRoles(device);
+                    await net.updateRoles([device.user_id]);
                     const d = daemon(data.hwid);
                     await setDnsIpRange(d, device.dns_ip_range);
-                    console.log('starting tunneler');
                     await startTunnel(d, data.hwid);
                 } catch (err) { console.error(err) }
             });
