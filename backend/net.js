@@ -205,6 +205,7 @@ const updateRoles = async (userIds) => {
 
             onlineDevices.forEach(async ({ id }) => {
                 const identity = await ziti.getIdentity(id);
+                if (!identity) return;
 
                 await ziti.updateIdentity({
                     id: identity.id,
@@ -216,6 +217,7 @@ const updateRoles = async (userIds) => {
 
             offlineDevices.forEach(async ({ id }) => {
                 const identity = await ziti.getIdentity(id);
+                if (!identity) return;
 
                 await ziti.updateIdentity({
                     id: identity.id,
