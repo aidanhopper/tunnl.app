@@ -1208,7 +1208,7 @@ app.get('/api/v1/test', async (req, res) => {
             {
                 targets: [
                     {
-                        "vhost": "frog.srv.tunnl.app",
+                        "vhost": "my-tester.srv.tunnl.app",
                         "service": "test",
                         "path": "/",
                         "scheme": "http",
