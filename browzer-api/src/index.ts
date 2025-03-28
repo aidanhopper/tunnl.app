@@ -75,7 +75,9 @@ app.put('/api/v1/targets', authenticate, (req, res) => {
 
 app.get('/api/v1/targets', authenticate, (req, res) => {
     try {
-        res.json({ targets: readTargets() });
+        const targets = readTargets()
+        if (!targets) throw new Error('Failed to read targets')
+        res.json({ targets: targets });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong' });

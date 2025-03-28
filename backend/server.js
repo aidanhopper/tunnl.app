@@ -1204,42 +1204,42 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
 
 app.get('/api/v1/test', async (req, res) => {
     try {
-        //await axios.put('http://127.0.0.1:2222/api/v1/targets',
-        //    {
-        //        targets: [
-        //            {
-        //                "vhost": "frog.srv.tunnl.app",
-        //                "service": "test",
-        //                "path": "/",
-        //                "scheme": "http",
-        //                "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
-        //                "idp_client_id": "browzerBootstrapClient"
-        //            },
-        //            {
-        //                "vhost": "test2-asdf.srv.tunnl.app",
-        //                "service": "test2",
-        //                "path": "/",
-        //                "scheme": "http",
-        //                "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
-        //                "idp_client_id": "browzerBootstrapClient"
-        //            }
-        //        ]
-        //    },
-        //    {
-        //        headers: {
-        //            //'Content-Type': 'application/json',
-        //            'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
-        //        }
-        //    }
-        //);
-
-        const r = await axios.get(`${process.env.BROWZER_API_URL}/api/v1/targets`,
+        const r = await axios.put(`${process.env.BROWZER_API_URL}/api/v1/targets`,
+            {
+                targets: [
+                    {
+                        "vhost": "frog.srv.tunnl.app",
+                        "service": "test",
+                        "path": "/",
+                        "scheme": "http",
+                        "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
+                        "idp_client_id": "browzerBootstrapClient"
+                    },
+                    {
+                        "vhost": "test2-asdf.srv.tunnl.app",
+                        "service": "test2",
+                        "path": "/",
+                        "scheme": "http",
+                        "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
+                        "idp_client_id": "browzerBootstrapClient"
+                    }
+                ]
+            },
             {
                 headers: {
+                    //'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
                 }
             }
         );
+
+        //const r = await axios.get(`${process.env.BROWZER_API_URL}/api/v1/targets`,
+        //    {
+        //        headers: {
+        //            'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
+        //        }
+        //    }
+        //);
 
         console.log(r);
 
