@@ -26,7 +26,7 @@ const restartBrowzer = () => exec(process.env.BROWZER_RESTART_COMMAND);
 
 const dumpTargets = (targets: Target[]) => {
     const content = `
-        ZITI_BROWZER_BOOTSTRAPPER_TARGETS='${JSON.stringify({ targetsArray: targets })}'
+        ZITI_BROWZER_BOOTSTRAPPER_TARGETS='${JSON.stringify({ targetArray: targets })}'
     `.trim() + '\n';
 
     fs.writeFile(targetsPath, content, err => console.error(err));
