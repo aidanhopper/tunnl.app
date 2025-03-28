@@ -6,7 +6,7 @@
     "typescript": "^5.8.2"
   },
   "scripts": {
-    "start": "npx tsx --env-file=.env --watch src/index.ts"
+    "start": "npx tsx --watch src/index.ts"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
