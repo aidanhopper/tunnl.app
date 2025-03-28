@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { exec } from 'child_process';
 import fs from 'fs';
+import { readFile, writeFile } from 'fs/promises';
 
 dotenv.config();
 
@@ -31,10 +32,13 @@ const dumpTargets = (targets: Target[]) => {
     fs.writeFile(targetsPath, content, err => console.error(err));
 }
 
-const buildBrowzerEnv = () => {
-    const cmd = `cat ${apiPath} ${targetsPath} > ${envPath}`;
-    console.log(cmd);
-    exec(cmd, err => console.error(err));
+const buildBrowzerEnv = async () => {
+    const apiContents = await readFile(apiPath, { encoding: 'utf-8' });
+    const targetsContents = await readFile(targetsPath, { encoding: 'utf-8' });
+    console.log('apiContents', apiContents);
+    console.log('targetsContents', targetsContents);
+    writeFile(envPath, `${apiContents}\n${targetsContents}`, 'utf8')
+        .catch(console.error);
 }
 
 const readTargets = () => {
