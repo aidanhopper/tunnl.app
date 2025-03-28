@@ -1202,6 +1202,53 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/v1/test', async (req, res) => {
+    try {
+        //await axios.put('http://127.0.0.1:2222/api/v1/targets',
+        //    {
+        //        targets: [
+        //            {
+        //                "vhost": "frog.srv.tunnl.app",
+        //                "service": "test",
+        //                "path": "/",
+        //                "scheme": "http",
+        //                "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
+        //                "idp_client_id": "browzerBootstrapClient"
+        //            },
+        //            {
+        //                "vhost": "test2-asdf.srv.tunnl.app",
+        //                "service": "test2",
+        //                "path": "/",
+        //                "scheme": "http",
+        //                "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
+        //                "idp_client_id": "browzerBootstrapClient"
+        //            }
+        //        ]
+        //    },
+        //    {
+        //        headers: {
+        //            //'Content-Type': 'application/json',
+        //            'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
+        //        }
+        //    }
+        //);
+
+        await axios.get('http://127.0.0.1:2222/api/v1/targets',
+            {
+                headers: {
+                    //'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
+                }
+            }
+        );
+
+        res.json();
+    } catch (err) {
+        console.error(err);
+        res.status(500).json();
+    }
+});
+
 const getJWT = async (hwid) => {
     try {
         let r = await ziti.getIdentity(hwid);
@@ -1318,7 +1365,7 @@ webio.on('connection', socket => {
 startListener();
 
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'website', 'dist', 'index.html'));
+    res.sendfile(path.join(__dirname, '..', 'website', 'dist', 'index.html'));
 });
 
 server.listen(PORT, () => console.log(`Server listening on ${PORT}`));
