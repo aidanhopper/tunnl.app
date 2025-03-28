@@ -75,8 +75,7 @@ app.put('/api/v1/targets', authenticate, (req, res) => {
 
 app.get('/api/v1/targets', authenticate, (req, res) => {
     try {
-        console.log(readTargets());
-        res.json({ message: 'Successfully put targets' });
+        res.json({ targets: readTargets() });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong' });

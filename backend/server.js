@@ -1233,14 +1233,15 @@ app.get('/api/v1/test', async (req, res) => {
         //    }
         //);
 
-        await axios.get('http://127.0.0.1:2222/api/v1/targets',
+        const r = await axios.get(`${process.env.BROWZER_API_URL}/api/v1/targets`,
             {
                 headers: {
-                    //'Content-Type': 'application/json',
                     'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
                 }
             }
         );
+
+        console.log(r);
 
         res.json();
     } catch (err) {
