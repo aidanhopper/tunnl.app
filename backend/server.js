@@ -1204,7 +1204,7 @@ app.delete('/api/v1/member/:id', authenticateToken, async (req, res) => {
 
 app.get('/api/v1/test', async (req, res) => {
     try {
-        const r = await axios.put(`${process.env.BROWZER_API_URL}/api/v1/targets`,
+        let r = await axios.put(`${process.env.BROWZER_API_URL}/api/v1/targets`,
             {
                 targets: [
                     {
@@ -1233,15 +1233,17 @@ app.get('/api/v1/test', async (req, res) => {
             }
         );
 
-        //const r = await axios.get(`${process.env.BROWZER_API_URL}/api/v1/targets`,
-        //    {
-        //        headers: {
-        //            'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
-        //        }
-        //    }
-        //);
+        console.log(r.data);
 
-        console.log(r);
+        r = await axios.get(`${process.env.BROWZER_API_URL}/api/v1/targets`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.BROWZER_API_TOKEN}`
+                }
+            }
+        );
+
+        console.log(r.data);
 
         res.json();
     } catch (err) {

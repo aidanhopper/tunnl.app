@@ -32,7 +32,9 @@ const dumpTargets = (targets: Target[]) => {
 }
 
 const buildBrowzerEnv = () => {
-    exec(`cat ${apiPath} ${targetsPath} > ${envPath}`, err => console.error(err));
+    const cmd = `cat ${apiPath} ${targetsPath} > ${envPath}`;
+    console.log(cmd);
+    exec(cmd, err => console.error(err));
 }
 
 const readTargets = () => {
