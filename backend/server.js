@@ -1208,21 +1208,13 @@ app.get('/api/v1/test', async (req, res) => {
             {
                 targets: [
                     {
-                        "vhost": "my-tester.srv.tunnl.app",
-                        "service": "test",
+                        "vhost": "my-portfolio.srv.tunnl.app",
+                        "service": "4a781bef-0cb9-4f39-8ccf-c9520010b345",
                         "path": "/",
                         "scheme": "http",
-                        "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
+                        "idp_issuer_base_url": "https://keycloak.tunnl.app/realms/zitirealm",
                         "idp_client_id": "browzerBootstrapClient"
                     },
-                    {
-                        "vhost": "test2-asdf.srv.tunnl.app",
-                        "service": "test2",
-                        "path": "/",
-                        "scheme": "http",
-                        "idp_issuer_base_url": "https://keycloak.tunnl.app:8443/realms/zitirealm",
-                        "idp_client_id": "browzerBootstrapClient"
-                    }
                 ]
             },
             {
