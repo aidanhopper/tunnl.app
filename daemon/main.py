@@ -129,7 +129,7 @@ def start_socket_client():
     print("Trying to connect to https://tunnl.app")
     while True:
         try: 
-            sio.connect(f'{os.getenv('SERVER_URL')}', socketio_path='/daemon.sock')
+            sio.connect(os.getenv('SERVER_URL'), socketio_path='/daemon.sock')
             break
         except socketio.exceptions.ConnectionError:
             time.sleep(5)
