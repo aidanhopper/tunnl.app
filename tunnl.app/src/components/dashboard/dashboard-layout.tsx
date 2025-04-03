@@ -3,19 +3,23 @@ import ThemeSwitcher from "@/components/theme-switcher";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Content from "@/components/content";
 import { ReactNode } from "react";
+import DashboardBreadcrumb from "./dashboard-breadcrumb";
 
 const DashboardLayout = ({ children }: { children?: ReactNode }) => {
     return (
         <SidebarProvider>
             <DashboardSidebar />
             <main>
-                <div className='grid grid-cols-2 py-2 px-4 h-12'>
-                    <SidebarTrigger />
-                    <div className='w-full flex justify-end'>
+                <div className='flex px-4 h-[65px] border-b-1 border-sidebar-border items-center'>
+                    <div className='flex w-full flex-1 items-center gap-8 '>
+                        <SidebarTrigger />
+                        <DashboardBreadcrumb />
+                    </div>
+                    <div className='flex flex-0 justify-end items-center'>
                         <ThemeSwitcher />
                     </div>
                 </div>
-                <Content>
+                <Content className='pt-4'>
                     {children}
                 </Content>
             </main>

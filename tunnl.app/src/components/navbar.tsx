@@ -6,12 +6,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import Link from 'next/link';
 import { BadgeCheck, LogOut } from 'lucide-react';
 import ThemeSwitcher from '@/components/theme-switcher';
-import { useEffect, useState } from 'react';
 import Content from '@/components/content';
 
 const Navbar = () => {
     return (
-        <nav className='w-full h-14 sticky top-0 flex items-center'>
+        <nav className='w-full h-14 top-0 flex items-center bg-background/60 backdrop-blur-3xl sticky'>
             <Content className='grid grid-cols-2'>
                 <div>
                     <span className='flex h-full font-mono items-center text-lg'>
@@ -41,7 +40,7 @@ const Navbar = () => {
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Button variant='outline' className='cursor-pointer' asChild>
-                                <Avatar className="h-8 w-8">
+                                <Avatar className="h-9 w-9">
                                     <AvatarImage />
                                     <AvatarFallback className="rounded-lg">A</AvatarFallback>
                                 </Avatar>

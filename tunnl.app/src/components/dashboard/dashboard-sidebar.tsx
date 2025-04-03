@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 
 import Link from 'next/link';
 
+import { usePathname } from 'next/navigation'
+
 import {
     Sidebar,
     SidebarContent,
@@ -16,6 +18,9 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
@@ -41,7 +46,9 @@ import {
     ChevronsUpDown,
     LogOut,
     Settings,
-    ChevronsRight,
+    Plus,
+    ServerCog,
+    SeparatorHorizontal,
 } from 'lucide-react';
 
 const items = [
@@ -49,56 +56,92 @@ const items = [
         title: 'Home',
         url: '/dashboard',
         icon: Home,
+        subItems: []
     },
     {
         title: 'Communities',
         url: '/dashboard/communities',
         icon: Users,
+        subItems: [
+            {
+                title: 'Create a community',
+                url: '/dashboard/communities/create',
+            },
+            {
+                title: 'Join a community',
+                url: '/dashboard/communities/join',
+            }
+        ]
     },
     {
         title: 'Services',
         url: '/dashboard/services',
         icon: HelpingHand,
+        subItems: [
+            {
+                title: 'Create a service',
+                url: '/dashboard/services/create',
+            }
+        ]
     },
     {
         title: 'Devices',
         url: '/dashboard/devices',
         icon: MonitorSmartphone,
+        subItems: [
+            {
+                title: 'Add a device',
+                url: '/dashboard/devices/add',
+            }
+        ]
     },
 ];
 
 const DashboardSidebar = ({ ...props }) => {
     const { isMobile } = useSidebar();
+    const pathname = usePathname();
     return (
         <Sidebar {...props}>
-            <SidebarHeader>
-                <div className='flex justify-left items-center h-12'>
+            <SidebarHeader className='py-0'>
+                <div className='flex justify-left items-center h-16'>
                     <Button variant='ghost' className='text-xl font-mono font-bold' asChild>
                         <Link href='/'>
-                            <ChevronsRight style={{ scale: 1.5 }} />
                             tunnl.app
                         </Link>
                     </Button>
                 </div>
             </SidebarHeader>
+            <SidebarSeparator />
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {items.map(item => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild isActive={pathname === item.url}>
                                         <Link href={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
+                                    <SidebarMenuSub>
+                                        {item.subItems.map(subItem => (
+                                            <SidebarMenuSubItem key={subItem.title}>
+                                                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
+                                                    <Link href={subItem.url}>
+                                                        <span>{subItem.title}</span>
+                                                    </Link>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        ))}
+                                    </SidebarMenuSub>
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarSeparator />
             <SidebarFooter>
                 <SidebarGroup>
                     <SidebarGroupContent>
