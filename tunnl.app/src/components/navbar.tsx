@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { BadgeCheck, LogOut } from 'lucide-react';
+import { BadgeCheck, DollarSign, Download, LogOut, Terminal } from 'lucide-react';
 import ThemeSwitcher from '@/components/theme-switcher';
 import Content from '@/components/content';
 
@@ -21,17 +21,12 @@ const Navbar = () => {
                     <ThemeSwitcher />
                     <Button
                         variant='ghost'
-                        className='text-muted-foreground cursor-pointer'>
-                        Pricing
-                    </Button>
-                    <Button
-                        variant='ghost'
-                        className='text-muted-foreground cursor-pointer'>
+                        className='text-muted-foreground cursor-pointer hidden md:block'>
                         Download
                     </Button>
                     <Button
                         variant='ghost'
-                        className='cursor-pointer text-muted-foreground'
+                        className='cursor-pointer text-muted-foreground hidden md:block'
                         asChild>
                         <Link href='/dashboard'>
                             Dashboard
@@ -47,13 +42,20 @@ const Navbar = () => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuGroup>
-                                <DropdownMenuItem className='cursor-pointer'>
-                                    <BadgeCheck />
-                                    Account
-                                </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className='cursor-pointer'>
+                                <BadgeCheck />
+                                Account
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer md:hidden' asChild>
+                                <Link href='/dashboard'>
+                                    <Terminal />
+                                    Dashboard
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className='cursor-pointer md:hidden'>
+                                <Download />
+                                Download
+                            </DropdownMenuItem>
                             <DropdownMenuItem className='cursor-pointer'>
                                 <LogOut />
                                 Log Out

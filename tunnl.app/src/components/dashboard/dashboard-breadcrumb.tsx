@@ -13,7 +13,6 @@ import { Fragment } from 'react';
 
 const DashboardBreadcrumb = () => {
     const path = usePathname().split('/').filter(e => e !== '');
-    console.log(path)
     return (
         <Breadcrumb>
             <BreadcrumbList>

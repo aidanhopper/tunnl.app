@@ -12,9 +12,9 @@ const Services = () => {
                     <h1>Services</h1>
                 </div>
                 <div className='flex justify-end items-center'>
-                    <Button className='cursor-pointer' variant='link' asChild>
+                    <Button className='cursor-pointer' variant='ghost' asChild>
                         <Link href='#'>
-                            Create a service
+                            Create
                         </Link>
                     </Button>
                 </div>

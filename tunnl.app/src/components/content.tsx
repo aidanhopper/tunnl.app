@@ -9,7 +9,6 @@ const Content = ({
     children?: React.ReactNode,
     className?: string,
 }) => {
-    console.log(children);
     return (
         <div className={`mx-auto px-4 w-full max-w-6xl ${className}`}>
             {children}

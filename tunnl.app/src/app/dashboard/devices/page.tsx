@@ -26,14 +26,32 @@ import {
     ComputerIcon,
     Settings,
     HelpingHand,
+    Delete,
 } from 'lucide-react';
 import Link from "next/link";
 
 const devices = [
     {
-        name: 'Desktop',
+        device: 'Desktop',
         dns: '100.64.0.0/24',
-        status: 'off'
+        serviceCount: 10,
+        lastLogin: 'Today',
+        created: '10/20/1991',
+        status: {
+            tunnel: true,
+            daemon: true,
+        },
+    },
+    {
+        device: 'Mac',
+        dns: '100.64.0.0/24',
+        serviceCount: 435,
+        lastLogin: 'Today',
+        created: '11/2/2010',
+        status: {
+            tunnel: false,
+            daemon: false,
+        },
     }
 ];
 
@@ -46,6 +64,7 @@ const StatusSymbol = ({ value }: { value: boolean }) => {
 }
 
 const Devices = () => {
+    for (let i = 0; i < 100; i++) devices.push(devices[i % 2]);
     return (
         <DashboardLayout>
             <div className='flex'>
@@ -54,14 +73,14 @@ const Devices = () => {
                     <h1>Devices</h1>
                 </div>
                 <div className='flex justify-end items-center'>
-                    <Button className='cursor-pointer' variant='link' asChild>
+                    <Button className='cursor-pointer' variant='ghost' asChild>
                         <Link href='/dashboard/devices/add'>
-                            Add a device
+                            Add
                         </Link>
                     </Button>
                 </div>
             </div>
-            <Table className='mt-10'>
+            <Table className='mt-10 hidden md:table'>
                 <TableCaption>A list of your authenticated devices.</TableCaption>
                 <TableHeader>
                     <TableRow>
@@ -75,52 +94,52 @@ const Devices = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    <TableRow>
-                        <TableCell>Desktop</TableCell>
-                        <TableCell>100.24.54.11/24</TableCell>
-                        <TableCell>10</TableCell>
-                        <TableCell>Today</TableCell>
-                        <TableCell>10/20/1991</TableCell>
-                        <TableCell className='w-42'>
-                            <div className='grid grid-rows-2 truncate'>
-                                <div className='flex items-center gap-2'>
-                                    <span className='w-16'>Tunnel</span>
-                                    <StatusSymbol value={true} />
+                    {devices.map((item, i) => (
+                        <TableRow key={i}>
+                            <TableCell>{item.device}</TableCell>
+                            <TableCell>{item.dns}</TableCell>
+                            <TableCell>{item.serviceCount}</TableCell>
+                            <TableCell>{item.lastLogin}</TableCell>
+                            <TableCell>{item.created}</TableCell>
+                            <TableCell className='w-42'>
+                                <div className='grid grid-rows-2 truncate'>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='w-16'>Tunnel</span>
+                                        <StatusSymbol value={item.status.tunnel} />
+                                    </div>
+                                    <div className='flex items-center gap-2'>
+                                        <span className='w-16'>Daemon</span>
+                                        <StatusSymbol value={item.status.daemon} />
+                                    </div>
                                 </div>
-                                <div className='flex items-center gap-2'>
-                                    <span className='w-16'>Daemon</span>
-                                    <StatusSymbol value={true} />
-                                </div>
-                                <div className='flex items-center gap-2'>
-                                    <span className='w-16'>Autostart</span>
-                                    <StatusSymbol value={false} />
-                                </div>
-                            </div>
-                        </TableCell>
-                        <TableCell className='w-16'>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant='ghost' className='cursor-pointer'>
-                                        <EllipsisVertical />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>
-                                        Desktop
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuGroup>
-                                        <DropdownMenuItem className='cursor-pointer'>
-                                            <HelpingHand size={16} /> Services
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className='cursor-pointer'>
-                                            <Settings size={16} /> Settings
-                                        </DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
+                            </TableCell>
+                            <TableCell className='w-16'>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant='ghost' className='cursor-pointer'>
+                                            <EllipsisVertical />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>
+                                            {item.device}
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuGroup>
+                                            <DropdownMenuItem className='cursor-pointer'>
+                                                <HelpingHand size={16} /> Services
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className='cursor-pointer'>
+                                                <Settings size={16} /> Settings
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className='cursor-pointer duration-100' variant='destructive'>
+                                                <Delete size={16} /> Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>))}
                 </TableBody>
             </Table>
         </DashboardLayout>

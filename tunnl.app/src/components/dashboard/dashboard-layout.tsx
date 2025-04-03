@@ -19,7 +19,7 @@ const DashboardLayout = ({ children }: { children?: ReactNode }) => {
                         <ThemeSwitcher />
                     </div>
                 </div>
-                <Content className='pt-4'>
+                <Content className='py-4'>
                     {children}
                 </Content>
             </main>

@@ -11,10 +11,15 @@ const Communities = () => {
                     <HelpingHand size={48} />
                     <h1>Communities</h1>
                 </div>
-                <div className='flex justify-end items-center'>
-                    <Button className='cursor-pointer invisible lg:visible' variant='link' asChild>
+                <div className='flex justify-end items-center gap-2'>
+                    <Button className='cursor-pointer invisible lg:visible' variant='ghost' asChild>
                         <Link href='#'>
-                            Create a community
+                            Join
+                        </Link>
+                    </Button>
+                    <Button className='cursor-pointer invisible lg:visible' variant='ghost' asChild>
+                        <Link href='#'>
+                            Create
                         </Link>
                     </Button>
                 </div>

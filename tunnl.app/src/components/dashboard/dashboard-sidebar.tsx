@@ -103,7 +103,7 @@ const DashboardSidebar = ({ ...props }) => {
     return (
         <Sidebar {...props}>
             <SidebarHeader className='py-0'>
-                <div className='flex justify-left items-center h-16'>
+                <div className='flex justify-center items-center h-16'>
                     <Button variant='ghost' className='text-xl font-mono font-bold' asChild>
                         <Link href='/'>
                             tunnl.app
