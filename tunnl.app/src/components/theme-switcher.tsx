@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const ThemeSwitcher = (props: any) => {
+const ThemeSwitcher = () => {
     const [isMounted, setIsMounted] = useState(false);
     const { theme, setTheme } = useTheme();
 
@@ -18,7 +18,7 @@ const ThemeSwitcher = (props: any) => {
     const handleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light')
 
     return !isMounted ? null : (
-        <div {...props}>
+        <div>
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
