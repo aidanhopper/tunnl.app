@@ -23,7 +23,6 @@ import {
 import {
     MonitorSmartphone,
     EllipsisVertical,
-    ComputerIcon,
     Settings,
     HelpingHand,
     Delete,

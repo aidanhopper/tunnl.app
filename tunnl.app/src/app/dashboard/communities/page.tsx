@@ -1,6 +1,6 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
-import { Users, HelpingHand } from "lucide-react";
+import { HelpingHand } from "lucide-react";
 import Link from "next/link";
 
 const Communities = () => {

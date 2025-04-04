@@ -46,9 +46,6 @@ import {
     ChevronsUpDown,
     LogOut,
     Settings,
-    Plus,
-    ServerCog,
-    SeparatorHorizontal,
 } from 'lucide-react';
 
 const items = [

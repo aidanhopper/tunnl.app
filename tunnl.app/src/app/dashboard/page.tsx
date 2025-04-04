@@ -1,7 +1,5 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-import Link from "next/link";
 
 const Dashboard = () => {
     return (

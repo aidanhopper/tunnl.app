@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { BadgeCheck, DollarSign, Download, LogOut, Terminal } from 'lucide-react';
+import { BadgeCheck, Download, LogOut, Terminal } from 'lucide-react';
 import ThemeSwitcher from '@/components/theme-switcher';
 import Content from '@/components/content';
 
