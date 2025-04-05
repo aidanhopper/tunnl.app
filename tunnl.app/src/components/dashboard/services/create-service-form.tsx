@@ -290,7 +290,8 @@ const CreateServiceForm = () => {
                                     </FormControl>
                                     <FormDescription>
                                         This is the port your service is accessed on.
-                                        Think of it as a reverse proxy from the source port to the access port.
+                                        Think of it as a reverse proxy from the source
+                                        port to the access port.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>

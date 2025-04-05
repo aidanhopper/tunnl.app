@@ -1,6 +1,5 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
-
 import {
     Table,
     TableBody,
@@ -33,8 +32,6 @@ import Link from "next/link";
 import {
     Card,
     CardContent,
-    CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
@@ -90,7 +87,7 @@ const Devices = () => {
                     </Button>
                 </div>
             </div>
-            <Table className='mt-10 hidden md:table'>
+            <Table className='mt-10 hidden lg:table'>
                 <TableCaption>A list of your authenticated devices.</TableCaption>
                 <TableHeader>
                     <TableRow>
@@ -152,7 +149,7 @@ const Devices = () => {
                         </TableRow>))}
                 </TableBody>
             </Table>
-            <div className='grid gap-8 md:hidden mt-8'>
+            <div className='grid gap-8 lg:hidden mt-8'>
                 {devices.map((item, i) => (
                     <Card key={i}>
                         <CardHeader className='grid grid-cols-2 items-center'>
