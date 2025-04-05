@@ -27,7 +27,18 @@ import {
     HelpingHand,
     Delete,
 } from 'lucide-react';
+
 import Link from "next/link";
+
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+
 
 const devices = [
     {
@@ -63,7 +74,7 @@ const StatusSymbol = ({ value }: { value: boolean }) => {
 }
 
 const Devices = () => {
-    for (let i = 0; i < 100; i++) devices.push(devices[i % 2]);
+    //for (let i = 0; i < 100; i++) devices.push(devices[i % 2]);
     return (
         <DashboardLayout>
             <div className='flex'>
@@ -141,6 +152,71 @@ const Devices = () => {
                         </TableRow>))}
                 </TableBody>
             </Table>
+            <div className='grid gap-8 md:hidden mt-8'>
+                {devices.map((item, i) => (
+                    <Card key={i}>
+                        <CardHeader className='grid grid-cols-2 items-center'>
+                            <CardTitle>{item.device}</CardTitle>
+                            <DropdownMenu>
+                                <div className='flex justify-end'>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant='ghost' className='cursor-pointer justify-end'>
+                                            <EllipsisVertical />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                </div>
+                                <DropdownMenuContent>
+                                    <DropdownMenuLabel>
+                                        {item.device}
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem className='cursor-pointer'>
+                                            <HelpingHand size={16} /> Services
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className='cursor-pointer'>
+                                            <Settings size={16} /> Settings
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className='cursor-pointer duration-100' variant='destructive'>
+                                            <Delete size={16} /> Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </CardHeader>
+                        <CardContent className='grid gap-4'>
+                            <div className='grid grid-cols-2 w-48'>
+                                <span>DNS</span>
+                                <span>{item.dns}</span>
+                            </div>
+                            <div className='grid grid-cols-2 w-48'>
+                                <span>Services</span>
+                                <span>{item.serviceCount}</span>
+                            </div>
+                            <div className='grid grid-cols-2 w-48'>
+                                <span>Last Seen</span>
+                                <span>{item.lastLogin}</span>
+                            </div>
+                            <div className='grid grid-cols-2 w-48'>
+                                <span>Created</span>
+                                <span>{item.created}</span>
+                            </div>
+                            <div className='grid grid-cols-2 w-48'>
+                                <span>Status</span>
+                                <div>
+                                    <span className='flex items-center gap-2'>
+                                        <span className='w-22'>Tunnel</span>
+                                        <StatusSymbol value={item.status.tunnel} />
+                                    </span>
+                                    <span className='flex items-center gap-2'>
+                                        <span className='w-22'>Daemon</span>
+                                        <StatusSymbol value={item.status.daemon} />
+                                    </span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>))}
+            </div>
         </DashboardLayout>
     )
 }

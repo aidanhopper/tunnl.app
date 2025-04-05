@@ -20,8 +20,8 @@ const CopyDeviceUrl = ({ url }: { url: string }) => {
     };
 
     return (
-        <div className='flex gap-4 items-center h-10'>
-            <span className='flex font-mono text-lg bg-accent px-2 rounded-md h-full items-center'>
+        <div className='flex gap-4 items-center w-full'>
+            <span className='flex font-mono w-full py-1 bg-accent px-2 rounded-md h-full items-center'>
                 {url}
             </span>
             <TooltipProvider>

@@ -133,7 +133,7 @@ p {
 }
 
 h1 {
-  @apply scroll-m-20 text-4xl font-extrabold lg:text-5xl;
+  @apply scroll-m-20 font-extrabold text-5xl;
 }
 
 h2 {
