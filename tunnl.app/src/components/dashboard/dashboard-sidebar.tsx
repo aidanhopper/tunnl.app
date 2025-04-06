@@ -1,13 +1,9 @@
 'use client'
 
 import '@/app/globals.css'
-
 import { Button } from '@/components/ui/button';
-
 import Link from 'next/link';
-
-import { usePathname } from 'next/navigation'
-
+import { usePathname, useRouter } from 'next/navigation'
 import {
     Sidebar,
     SidebarContent,
@@ -24,7 +20,6 @@ import {
     SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,9 +29,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 import {
     Home,
     Users,
@@ -47,6 +40,8 @@ import {
     LogOut,
     Settings,
 } from 'lucide-react';
+import { signOut } from 'next-auth/react';
+import { useLocalSession, clearLocalSession } from '@/lib/hooks';
 
 const items = [
     {
@@ -67,7 +62,7 @@ const items = [
             {
                 title: 'Join a community',
                 url: '/dashboard/communities/join',
-            }
+            },
         ]
     },
     {
@@ -95,8 +90,26 @@ const items = [
 ];
 
 const DashboardSidebar = ({ ...props }) => {
+    const router = useRouter();
+    const { data } = useLocalSession();
     const { isMobile } = useSidebar();
     const pathname = usePathname();
+
+    const UserPanel = () => data?.user ? (
+        <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage src={data.user.image ? data.user.image : ''} />
+                <AvatarFallback className="rounded-lg">
+                    {data.user.name ? data.user.name[0] : null}
+                </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{data.user.name}</span>
+                <span className="truncate text-xs">{data.user.email}</span>
+            </div>
+        </div>
+    ) : <></>;
+
     return (
         <Sidebar {...props}>
             <SidebarHeader className='py-0'>
@@ -162,14 +175,7 @@ const DashboardSidebar = ({ ...props }) => {
                                     size="lg"
                                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                                 >
-                                    <Avatar className="h-8 w-8 rounded-lg">
-                                        <AvatarImage />
-                                        <AvatarFallback className="rounded-lg">A</AvatarFallback>
-                                    </Avatar>
-                                    <div className="grid flex-1 text-left text-sm leading-tight">
-                                        <span className="truncate font-semibold">Aidan</span>
-                                        <span className="truncate text-xs">aidanhop1@gmail.com</span>
-                                    </div>
+                                    <UserPanel />
                                     <ChevronsUpDown className="ml-auto size-4" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
@@ -180,16 +186,7 @@ const DashboardSidebar = ({ ...props }) => {
                                 sideOffset={4}
                             >
                                 <DropdownMenuLabel className="p-0 font-normal">
-                                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                        <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarImage />
-                                            <AvatarFallback className="rounded-lg">A</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid flex-1 text-left text-sm leading-tight">
-                                            <span className="truncate font-semibold">Aidan</span>
-                                            <span className="truncate text-xs">aidanhop1@gmail.com</span>
-                                        </div>
-                                    </div>
+                                    <UserPanel />
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
@@ -199,7 +196,14 @@ const DashboardSidebar = ({ ...props }) => {
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className='cursor-pointer'>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        signOut({ redirect: false });
+                                        clearLocalSession();
+                                        router.push('/');
+                                    }}
+                                    className='cursor-pointer'
+                                >
                                     <LogOut />
                                     Log out
                                 </DropdownMenuItem>

@@ -5,7 +5,7 @@ const CreateService = () => {
     return (
         <DashboardLayout>
             <div className='mx-auto flex flex-col gap-8 max-w-md'>
-                <h1>Create a Service</h1>
+                <span className='text-4xl font-extrabold'>Create a Service</span>
                 <CreateServiceForm />
             </div>
         </DashboardLayout>
