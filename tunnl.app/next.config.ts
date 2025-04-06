@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     async redirects() {
         return [
             {
-                source: '/**',
+                source: '/*',
                 has: [
                     {
                         type: 'host',
