@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
                         value: 'www.tunnl.app',
                     },
                 ],
-                destination: 'https://tunnl.app',
+                destination: 'https://tunnl.app/:path*',
                 permanent: true,
             }
         ]
