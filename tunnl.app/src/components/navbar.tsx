@@ -7,13 +7,14 @@ import Link from 'next/link';
 import { BadgeCheck, Download, LogOut, Terminal } from 'lucide-react';
 import ThemeSwitcher from '@/components/theme-switcher';
 import Content from '@/components/content';
-import { clearLocalSession, useLocalSession } from '@/lib/hooks';
+import { clearLocalSession, useCachedImage, useLocalSession } from '@/lib/hooks';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 const Navbar = () => {
     const { data } = useLocalSession();
     const router = useRouter();
+    const cachedAvatar = useCachedImage(data?.user?.image);
 
     return (
         <nav className='w-full h-14 top-0 flex items-center bg-background/60 backdrop-blur-3xl sticky'>
@@ -43,8 +44,8 @@ const Navbar = () => {
                             <DropdownMenuTrigger>
                                 <Button variant='outline' className='cursor-pointer' asChild>
                                     <Avatar className="h-9 w-9 p-0">
-                                        <AvatarImage 
-                                            src={data.user.image ? data.user.image : ''} 
+                                        <AvatarImage
+                                            src={cachedAvatar ?? ''}
                                         />
                                         <AvatarFallback className="rounded-lg">A</AvatarFallback>
                                     </Avatar>

@@ -54,3 +54,34 @@ export const useLocalSession = () => {
 export const clearLocalSession = () => {
     localStorage.removeItem(LOCAL_SESSION_KEY);
 }
+
+export const useCachedImage = (url: string | null | undefined) => {
+    const [image, setImage] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!url) return;
+
+        const key = `cached-image:${url}`;
+        const cached = sessionStorage.getItem(key);
+
+        if (cached) {
+            setImage(cached);
+            return;
+        }
+
+        fetch(url)
+            .then(res => res.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result as string;
+                    sessionStorage.setItem(key, base64);
+                    setImage(base64);
+                }
+                reader.readAsDataURL(blob);
+            })
+            .catch(err => console.error('Error caching image:', err));
+    }, [url]);
+
+    return image;
+}

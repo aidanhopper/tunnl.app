@@ -23,11 +23,10 @@ const ThemeSwitcher = () => {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            className='p-2'
+                            className='p-2 cursor-pointer select-none'
                             variant='outline'
                             size='icon'
                             onClick={handleTheme}
-                            style={{ cursor: 'pointer' }}
                             asChild
                         >
                             {

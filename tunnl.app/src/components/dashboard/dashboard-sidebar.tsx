@@ -41,7 +41,7 @@ import {
     Settings,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { useLocalSession, clearLocalSession } from '@/lib/hooks';
+import { useLocalSession, clearLocalSession, useCachedImage } from '@/lib/hooks';
 
 const items = [
     {
@@ -90,11 +90,12 @@ const DashboardSidebar = ({ ...props }) => {
     const { data } = useLocalSession();
     const { isMobile } = useSidebar();
     const pathname = usePathname();
+    const cachedAvatar = useCachedImage(data?.user?.image);
 
     const UserPanel = () => data?.user ? (
         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={data.user.image ? data.user.image : ''} />
+                <AvatarImage src={cachedAvatar ?? ''} />
                 <AvatarFallback className="rounded-lg">
                     {data.user.name ? data.user.name[0] : null}
                 </AvatarFallback>
@@ -163,6 +164,7 @@ const DashboardSidebar = ({ ...props }) => {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
+                <DropdownMenuSeparator className='my-0' />
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <DropdownMenu>

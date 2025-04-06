@@ -20,7 +20,7 @@ const CopyDeviceUrl = ({ url }: { url: string }) => {
     };
 
     return (
-        <div className='flex gap-4 items-center w-full'>
+        <div className='flex gap-4 items-center'>
             <span className='flex font-mono w-full py-1 bg-accent px-2 rounded-md h-full items-center'>
                 {url}
             </span>
