@@ -59,10 +59,6 @@ const items = [
                 title: 'Create a community',
                 url: '/dashboard/communities/create',
             },
-            {
-                title: 'Join a community',
-                url: '/dashboard/communities/join',
-            },
         ]
     },
     {

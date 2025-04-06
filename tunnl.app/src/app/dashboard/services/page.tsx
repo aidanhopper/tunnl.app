@@ -92,30 +92,33 @@ const Services = () => {
                             <div className='flex'>
                                 <span className='w-24'>Ports</span>
                                 <div className='flex flex-col'>
-                                    <span className='flex'>
-                                        <span className='flex w-24'>
-                                            Type
-                                        </span>
-                                        <span>
-                                            {item.ports.forwardPorts ? 'Ports Forwarded' : 'Proxied'}
-                                        </span>
-                                    </span>
-                                    <span className='flex'>
-                                        <span className='flex w-24'>
-                                            Source Port
-                                        </span>
-                                        <span>
-                                            {item.ports.sourcePort}
-                                        </span>
-                                    </span>
-                                    <span className='flex'>
-                                        <span className='flex w-24'>
-                                            Access Port
-                                        </span>
-                                        <span>
-                                            {item.ports.accessPort}
-                                        </span>
-                                    </span>
+                                    {!item.ports.forwardPorts ?
+                                        <>
+                                            <span className='flex'>
+                                                <span className='flex w-24'>
+                                                    Type
+                                                </span>
+                                                <span>
+                                                    {item.ports.forwardPorts ? 'Ports Forwarded' : 'Proxied'}
+                                                </span>
+                                            </span>
+                                            <span className='flex'>
+                                                <span className='flex w-24'>
+                                                    Source Port
+                                                </span>
+                                                <span>
+                                                    {item.ports.sourcePort}
+                                                </span>
+                                            </span>
+                                            <span className='flex'>
+                                                <span className='flex w-24'>
+                                                    Access Port
+                                                </span>
+                                                <span>
+                                                    {item.ports.accessPort}
+                                                </span>
+                                            </span>
+                                        </> : <></>}
                                 </div>
                             </div>
                         </CardContent>

@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 const Navbar = () => {
     const { data } = useLocalSession();
     const router = useRouter();
+
     return (
         <nav className='w-full h-14 top-0 flex items-center bg-background/60 backdrop-blur-3xl sticky'>
             <Content className='grid grid-cols-2'>
