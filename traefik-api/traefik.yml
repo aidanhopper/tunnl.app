@@ -8,6 +8,8 @@ providers:
   http:
     endpoint: "http://host.docker.internal:4000"
     pollInterval: "10s"
+    headers:
+      Authorization: "Bearer ${TRAEFIK_API_TOKEN}"
 
 certificatesResolvers:
   letsencrypt:

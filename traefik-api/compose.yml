@@ -10,9 +10,14 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
-      - ./traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik.yml:/etc/traefik/traefik-template.yml
     command:
-      - --configFile=/etc/traefik/traefik.yml
+      - /bin/sh
+      - -c
+      - |
+        awk '{gsub(/\$\{TRAEFIK_API_TOKEN\}/, ENVIRON["TRAEFIK_API_TOKEN"]); print}' \
+        /etc/traefik/traefik-template.yml > /etc/traefik/traefik.yml && 
+        traefik --configFile=/etc/traefik/traefik.yml
     env_file:
       - .env
   whoami:
