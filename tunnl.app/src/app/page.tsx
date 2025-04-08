@@ -18,7 +18,7 @@ const Home = () => {
               <p>Easily share private services with your friends.</p>
             </div>
             <div className='flex gap-8 flex-col justify-end items-center text-muted-foreground text-xl text-center md:text-left'>
-              <p>Tunnl is the only app you need sharing private services with your friends without a hassel.</p>
+              <p>Tunnl is the only app you need for sharing private services with your friends without a hassel securely over the internet.</p>
               <Button asChild>
                 <Link href='/login' className='w-full'>
                   Start here &rarr;

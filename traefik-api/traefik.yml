@@ -1,0 +1,19 @@
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+providers:
+  http:
+    endpoint: "http://host.docker.internal:4000"
+    pollInterval: "10s"
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: aidanhop1@gmail.com
+      storage: /letsencrypt/acme.json
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 0

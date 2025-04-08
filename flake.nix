@@ -25,6 +25,7 @@
             python312
             netcat
             inetutils
+            certbot
             typescript
           ] ++ (with python312Packages; [
             python-socketio

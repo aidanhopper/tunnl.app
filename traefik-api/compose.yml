@@ -1,0 +1,21 @@
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:v3.3
+    restart: unless-stopped 
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+      - ./traefik.yml:/etc/traefik/traefik.yml
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    env_file:
+      - .env
+  whoami:
+    image: traefik/whoami
+    labels:
+      - "traefik.enable=false"
