@@ -20,6 +20,14 @@ services:
         traefik --configFile=/etc/traefik/traefik.yml
     env_file:
       - .env
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    volumes:
+      - ./.env:/api/.env
+      - ./dynamic.json:/api/dynamic.json
   whoami:
     image: traefik/whoami
     labels:
