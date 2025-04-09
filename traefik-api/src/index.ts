@@ -21,8 +21,8 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
 
 app.post('/', authenticate, async (req: Request, res: Response) => {
     try {
+        console.log('POST /');
         if (!req.body) throw new Error('Request requires body');
-        console.log(req.body);
         await fs.writeFile('dynamic.json', JSON.stringify(req.body));
         res.status(201).json({ message: 'Success' });
     } catch (err) {
@@ -33,7 +33,9 @@ app.post('/', authenticate, async (req: Request, res: Response) => {
 
 app.get('/', authenticate, async (req: Request, res: Response) => {
     try {
-        res.json(JSON.parse(await fs.readFile('dynamic.json', { encoding: 'utf-8' })));
+        console.log('GET /');
+        const data = JSON.parse(await fs.readFile('dynamic.json', { encoding: 'utf-8' }));
+        res.json(data);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong' });

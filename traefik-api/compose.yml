@@ -1,8 +1,18 @@
 services:
+  api:
+    build: .
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    volumes:
+      - ./.env:/api/.env
+      - ./dynamic.json:/api/dynamic.json
   traefik:
     container_name: traefik
     image: traefik:v3.3
     restart: unless-stopped 
+    links:
+      - api:api
     ports:
       - 80:80
       - 443:443
@@ -20,15 +30,14 @@ services:
         traefik --configFile=/etc/traefik/traefik.yml
     env_file:
       - .env
-  api:
-    build: .
-    restart: unless-stopped
-    ports:
-      - 4000:4000
-    volumes:
-      - ./.env:/api/.env
-      - ./dynamic.json:/api/dynamic.json
   whoami:
     image: traefik/whoami
     labels:
       - "traefik.enable=false"
+  ziti:
+    container_name: ziti
+    image: openziti/ziti-edge-tunnel:latest
+    privileged: true
+    volumes:
+      - ./identities:/ziti-edge-tunnel
+    network_mode: service:traefik
