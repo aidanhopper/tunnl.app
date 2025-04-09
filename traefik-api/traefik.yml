@@ -19,3 +19,6 @@ certificatesResolvers:
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 0
+
+log:
+  level: DEBUG
