@@ -67,6 +67,7 @@ services:
     volumes:
       - redis:/data
   server:
+    container_name: authentik_server
     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.2.4}
     restart: unless-stopped
     command: server
