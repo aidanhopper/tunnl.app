@@ -6,3 +6,4 @@ ziti-edge-tunnel
 certs
 custom-templates
 media
+postgres_data

@@ -44,7 +44,7 @@ services:
     networks:
       - 'zitadel'
     image: 'ghcr.io/zitadel/zitadel:latest'
-    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
+    command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode external'
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: db
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
@@ -58,8 +58,9 @@ services:
       ZITADEL_EXTERNALSECURE: true
       ZITADEL_EXTERNALDOMAIN: auth.tunnl.app
       ZITADEL_EXTERNALPORT: 443
-    db:
-      condition: 'service_healthy'
+    depends_on:
+      db:
+        condition: 'service_healthy'
   db:
     restart: 'always'
     image: postgres:17-alpine
@@ -74,5 +75,7 @@ services:
       timeout: '30s'
       retries: 5
       start_period: '20s'
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
 networks:
   zitadel:
