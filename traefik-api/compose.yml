@@ -81,6 +81,8 @@ services:
     image: quay.io/oauth2-proxy/oauth2-proxy
     container_name: oauth2-proxy
     restart: unless-stopped
+    networks:
+      - 'zitadel'
     env_file:
       - .env
 networks:
