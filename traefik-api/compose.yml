@@ -77,5 +77,11 @@ services:
       start_period: '20s'
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy
+    container_name: oauth2-proxy
+    restart: unless-stopped
+    env_file:
+      - .env
 networks:
   zitadel:
