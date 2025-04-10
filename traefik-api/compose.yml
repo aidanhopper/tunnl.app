@@ -38,6 +38,7 @@ services:
     network_mode: service:traefik
   zitadel:
     restart: 'always'
+    container_name: zitadel
     networks:
       - 'zitadel'
     image: 'ghcr.io/zitadel/zitadel:latest'
