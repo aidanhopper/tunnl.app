@@ -56,9 +56,10 @@ services:
       ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: postgres
       ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
       ZITADEL_EXTERNALSECURE: true
-    depends_on:
-      db:
-        condition: 'service_healthy'
+      ZITADEL_EXTERNALDOMAIN: auth.tunnl.app
+      ZITADEL_EXTERNALPORT: 443
+    db:
+      condition: 'service_healthy'
   db:
     restart: 'always'
     image: postgres:17-alpine
