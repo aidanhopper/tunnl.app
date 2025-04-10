@@ -13,7 +13,6 @@ services:
     restart: unless-stopped 
     links:
       - api:api
-      - zitadel:zitadel
     ports:
       - 80:80
       - 443:443
@@ -30,6 +29,8 @@ services:
         traefik --configFile=/etc/traefik/traefik.yml
     env_file:
       - .env
+    networks:
+      - 'zitadel'
   ziti:
     container_name: ziti
     image: openziti/ziti-edge-tunnel:latest
