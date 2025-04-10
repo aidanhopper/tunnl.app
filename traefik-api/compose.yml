@@ -12,9 +12,8 @@ services:
     image: traefik:v3.3
     restart: unless-stopped 
     links:
-      - zitadel:zitadel
-    links:
       - api:api
+      - zitadel:zitadel
     ports:
       - 80:80
       - 443:443
