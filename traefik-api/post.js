@@ -12,6 +12,19 @@ fetch('https://traefik.api.tunnl.app:8443', {
     body: JSON.stringify({
         http: {
             routers: {
+                authentikRouter: {
+                    rule: 'HOST(`authentik.tunnl.app`)',
+                    service: 'authentikService',
+                    entryPoints: ['websecure'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
                 portfolioRouter: {
                     rule: 'HOST(`portfolio.tunnl.app`)',
                     service: 'portfolioService',
@@ -36,6 +49,15 @@ fetch('https://traefik.api.tunnl.app:8443', {
                         ]
                     }
                 },
+                authentikService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://authentik:9000'
+                            }
+                        ]
+                    }
+                }
             }
         }
     })
