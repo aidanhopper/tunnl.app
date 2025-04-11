@@ -12,32 +12,6 @@ fetch('https://traefik.api.tunnl.app:8443', {
     body: JSON.stringify({
         http: {
             routers: {
-                traefikDashboardRouter: {
-                    rule: 'HOST(`traefik-dashboard.tunnl.app`)',
-                    service: 'traefikDashboardService',
-                    entryPoints: ['websecure'],
-                    tls: {
-                        certResolver: 'letsencrypt',
-                        domains: [
-                            {
-                                main: "*.tunnl.app",
-                            },
-                        ]
-                    }
-                },
-                zitadelRouter: {
-                    rule: 'HOST(`auth.tunnl.app`)',
-                    service: 'zitadelService',
-                    entryPoints: ['websecure'],
-                    tls: {
-                        certResolver: 'letsencrypt',
-                        domains: [
-                            {
-                                main: "*.tunnl.app",
-                            },
-                        ]
-                    }
-                },
                 portfolioRouter: {
                     rule: 'HOST(`portfolio.tunnl.app`)',
                     service: 'portfolioService',
@@ -53,15 +27,6 @@ fetch('https://traefik.api.tunnl.app:8443', {
                 }
             },
             services: {
-                oauthService: {
-                    loadBalancer: {
-                        servers: [
-                            {
-                                url: 'http://oauth2-proxy:4180'
-                            }
-                        ]
-                    }
-                },
                 portfolioService: {
                     loadBalancer: {
                         servers: [
@@ -71,15 +36,6 @@ fetch('https://traefik.api.tunnl.app:8443', {
                         ]
                     }
                 },
-                zitadelService: {
-                    loadBalancer: {
-                        servers: [
-                            {
-                                url: 'h2c://zitadel:8080'
-                            }
-                        ]
-                    }
-                }
             }
         }
     })
