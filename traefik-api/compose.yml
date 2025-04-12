@@ -51,3 +51,6 @@ services:
       - ./keycloak_data:/data:rw
     depends_on:
       - postgres
+  whoami:
+    container_name: whoami
+    image: traefik/whoami
