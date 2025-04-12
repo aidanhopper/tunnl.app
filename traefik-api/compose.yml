@@ -51,10 +51,3 @@ services:
       - ./keycloak_data:/data:rw
     depends_on:
       - postgres
-  postgres:
-    container_name: keycloak-postgres
-    image: postgres:latest
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
