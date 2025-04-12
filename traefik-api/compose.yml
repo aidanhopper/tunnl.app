@@ -51,6 +51,10 @@ services:
       - ./keycloak_data:/data:rw
     depends_on:
       - postgres
+  oauth2-proxy:
+    container_name: oauth2-proxy
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.2
   whoami:
     container_name: whoami
     image: traefik/whoami
+

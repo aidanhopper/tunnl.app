@@ -12,6 +12,19 @@ fetch('https://traefik.api.tunnl.app:8443', {
     body: JSON.stringify({
         http: {
             routers: {
+                whoamiRouter: {
+                    rule: 'HOST(`whoami.tunnl.app`)',
+                    service: 'whoamiService',
+                    entryPoints: ['websecure'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
                 authRouter: {
                     rule: 'HOST(`auth.tunnl.app`)',
                     service: 'authService',
@@ -40,6 +53,15 @@ fetch('https://traefik.api.tunnl.app:8443', {
                 },
             },
             services: {
+                whoamiService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://whoami:80'
+                            }
+                        ]
+                    }
+                },
                 portfolioService: {
                     loadBalancer: {
                         servers: [
