@@ -10,7 +10,7 @@ services:
   traefik:
     container_name: traefik
     image: traefik:v3.3
-    restart: unless-stopped 
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
@@ -23,7 +23,7 @@ services:
       - -c
       - |
         awk '{gsub(/\$\{TRAEFIK_API_TOKEN\}/, ENVIRON["TRAEFIK_API_TOKEN"]); print}' \
-        /etc/traefik/traefik-template.yml > /etc/traefik/traefik.yml && 
+        /etc/traefik/traefik-template.yml > /etc/traefik/traefik.yml &&
         traefik --configFile=/etc/traefik/traefik.yml
     env_file:
       - .env
@@ -40,11 +40,11 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     env_file:
-      - .env  
+      - .env
   keycloak:
     container_name: keycloak-server
     image: quay.io/keycloak/keycloak:latest
-    command: start-dev
+    command: start
     env_file:
       - .env
     volumes:
@@ -53,10 +53,12 @@ services:
       - postgres
   oauth2-proxy:
     container_name: oauth2-proxy
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.2
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    volumes:
+      - ./conf/oauth2-proxy/templates:/templates:ro
     env_file:
       - .env
+    restart: unless-stopped
   whoami:
     container_name: whoami
     image: traefik/whoami
-

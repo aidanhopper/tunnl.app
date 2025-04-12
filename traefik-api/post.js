@@ -11,11 +11,54 @@ fetch('https://traefik.api.tunnl.app:8443', {
     },
     body: JSON.stringify({
         http: {
+            middlewares: {
+                oauth: {
+                    chain: {
+                        middlewares: ['oauthSignIn', 'oauthVerify']
+                    }
+                },
+                oauthVerify: {
+                    forwardAuth: {
+                        address: "http://oauth2-proxy:4180/oauth2/auth"
+                    }
+                },
+                oauthPortfolio: {
+                    chain: {
+                        middlewares: ['oauthSignIn', 'oauthVerifyPortfolio']
+                    }
+                },
+                oauthVerifyPortfolio: {
+                    forwardAuth: {
+                        address: "http://oauth2-proxy:4180/oauth2/auth?allowed_emails=aidanhop1@gmail.com,snekisgood@gmail.com"
+                    }
+                },
+                oauthSignIn: {
+                    errors: {
+                        service: 'authProxyService',
+                        status: '401',
+                        query: '/oauth2/sign_in'
+                    }
+                }
+            },
             routers: {
+                authProxyRouter: {
+                    rule: '(Host(`auth.tunnl.app`) && PathPrefix(`/oauth2/`)) || (PathPrefix(`/oauth2/`))',
+                    service: 'authProxyService',
+                    entryPoints: ['websecure'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
                 whoamiRouter: {
                     rule: 'HOST(`whoami.tunnl.app`)',
                     service: 'whoamiService',
                     entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
                     tls: {
                         certResolver: 'letsencrypt',
                         domains: [
@@ -42,6 +85,7 @@ fetch('https://traefik.api.tunnl.app:8443', {
                     rule: 'HOST(`portfolio.tunnl.app`)',
                     service: 'portfolioService',
                     entryPoints: ['websecure'],
+                    middlewares: ['oauthPortfolio'],
                     tls: {
                         certResolver: 'letsencrypt',
                         domains: [
@@ -53,6 +97,15 @@ fetch('https://traefik.api.tunnl.app:8443', {
                 },
             },
             services: {
+                authProxyService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://oauth2-proxy:4180'
+                            }
+                        ]
+                    }
+                },
                 whoamiService: {
                     loadBalancer: {
                         servers: [
