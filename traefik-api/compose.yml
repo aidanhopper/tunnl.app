@@ -31,6 +31,7 @@ services:
     container_name: traefik
     image: traefik:v3.3
     restart: unless-stopped
+    network_mode: service:ziti
     ports:
       - 80:80
       - 443:443
@@ -53,7 +54,6 @@ services:
     privileged: true
     volumes:
       - ./identities:/ziti-edge-tunnel
-    network_mode: service:traefik
   postgres:
     container_name: keycloak-postgres
     image: postgres:latest
