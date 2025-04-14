@@ -6,3 +6,4 @@ certs
 custom-templates
 media
 postgres_data
+traefik.yml
