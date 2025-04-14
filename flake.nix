@@ -27,15 +27,8 @@
             inetutils
             certbot
             typescript
-          ] ++ (with python312Packages; [
-            python-socketio
-            requests
-            websocket-client
-            fastapi
-            uvicorn
-            pyinstaller
-            python-dotenv
-          ]); 
+            dbmate
+          ]; 
         };
       });
     };

@@ -1,8 +1,10 @@
 entryPoints:
   web:
     address: ":80"
+    reusePort: true
   websecure:
     address: ":443"
+    reusePort: true
 
 providers:
   http:

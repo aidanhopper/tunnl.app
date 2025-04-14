@@ -15,10 +15,10 @@ const Login = () => {
                             Login to your <span className='font-semibold'>tunnl.app</span> account
                         </p>
                         <Button
-                            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                            onClick={() => signIn('keycloak', { callbackUrl: '/dashboard' })}
                             variant="outline"
                             className="w-64 cursor-pointer">
-                            Continue with Google
+                            Login
                         </Button>
                     </div>
                 </CardContent>

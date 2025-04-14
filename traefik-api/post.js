@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import { stringify } from 'querystring';
 
 dotenv.config();
 
@@ -41,7 +40,21 @@ fetch('https://traefik.api.tunnl.app:8443', {
                 }
             },
             routers: {
-                authProxyRouter: {
+                leethootRouter: {
+                    rule: 'HOST(`leethoot.tunnl.app`)',
+                    service: 'leethootService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
+                authTunnlProxyRouter: {
                     rule: '(Host(`auth.tunnl.app`) && PathPrefix(`/oauth2/`)) || (PathPrefix(`/oauth2/`))',
                     service: 'authProxyService',
                     entryPoints: ['websecure'],
@@ -55,7 +68,7 @@ fetch('https://traefik.api.tunnl.app:8443', {
                     }
                 },
                 whoamiRouter: {
-                    rule: 'HOST(`whoami.tunnl.app`)',
+                    rule: 'HOST(`whoami.srv.ahop.dev`)',
                     service: 'whoamiService',
                     entryPoints: ['websecure'],
                     middlewares: ['oauth'],
@@ -68,7 +81,7 @@ fetch('https://traefik.api.tunnl.app:8443', {
                         ]
                     }
                 },
-                authRouter: {
+                authTunnlRouter: {
                     rule: 'HOST(`auth.tunnl.app`)',
                     service: 'authService',
                     entryPoints: ['websecure'],
@@ -95,8 +108,45 @@ fetch('https://traefik.api.tunnl.app:8443', {
                         ]
                     }
                 },
+                jellyfinRouter: {
+                    rule: 'HOST(`jellyfin.tunnl.app`)',
+                    service: 'jellyfinService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
+                portfolioAhopRouter: {
+                    rule: 'HOST(`portfolio.srv.ahop.dev`)',
+                    service: 'portfolioService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauthPortfolio'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.srv.ahop.dev",
+                            },
+                        ]
+                    }
+                },
             },
             services: {
+                leethootService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://leethoot.service:80'
+                            }
+                        ]
+                    }
+                },
                 authProxyService: {
                     loadBalancer: {
                         servers: [
@@ -129,6 +179,15 @@ fetch('https://traefik.api.tunnl.app:8443', {
                         servers: [
                             {
                                 url: 'http://keycloak-server:8080'
+                            }
+                        ]
+                    }
+                },
+                jellyfinService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://jellyfin.service:80'
                             }
                         ]
                     }

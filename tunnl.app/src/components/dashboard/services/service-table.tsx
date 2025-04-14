@@ -13,20 +13,16 @@ import {
 } from "@/components/ui/table"
 import { Service } from "@/lib/types"
 import { Delete, EllipsisVertical, Settings } from "lucide-react"
-import Link from "next/link"
 
 const ServicesTable = ({ services }: { services: Service[] }) => {
     return (
-        <Table className='mt-10 hidden lg:table'>
+        <Table className='mt-10'>
             <TableCaption>A list of your services.</TableCaption>
             <TableHeader>
                 <TableRow>
                     <TableHead>Service</TableHead>
-                    <TableHead>Device</TableHead>
-                    <TableHead>Domain</TableHead>
-                    <TableHead>Host</TableHead>
-                    <TableHead>Ports</TableHead>
-                    <TableHead>Public Share</TableHead>
+                    <TableHead>Private Domain</TableHead>
+                    <TableHead>Identity</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead />
                 </TableRow>
@@ -35,51 +31,8 @@ const ServicesTable = ({ services }: { services: Service[] }) => {
                 {services.map(item => (
                     <TableRow key={item.service}>
                         <TableCell>{item.service}</TableCell>
-                        <TableCell>{item.device}</TableCell>
                         <TableCell>{item.domain}</TableCell>
-                        <TableCell>{item.host}</TableCell>
-                        <TableCell>
-                            <div className='flex flex-col'>
-                                <span className='flex'>
-                                    <span className='flex w-24'>
-                                        Type
-                                    </span>
-                                    <span>
-                                        {item.ports.forwardPorts ? 'Ports Forwarded' : 'Proxied'}
-                                    </span>
-                                </span>
-                                {item.ports.forwardPorts ?
-                                    <>
-                                    </> :
-                                    <>
-                                        <span className='flex'>
-                                            <span className='flex w-24'>
-                                                Source Port
-                                            </span>
-                                            <span>
-                                                {item.ports.sourcePort}
-                                            </span>
-                                        </span>
-                                        <span className='flex'>
-                                            <span className='flex w-24'>
-                                                Access Port
-                                            </span>
-                                            <span>
-                                                {item.ports.accessPort}
-                                            </span>
-                                        </span>
-                                    </>}
-                            </div>
-                        </TableCell>
-                        <TableCell>
-                            {item.publicShare ?
-                                <Button variant='link' asChild className='p-0'>
-                                    <Link href={item.publicShare}>
-                                        {item.publicShare}
-                                    </Link>
-                                </Button> :
-                                <>None</>}
-                        </TableCell>
+                        <TableCell>{item.device}</TableCell>
                         <TableCell>{item.created}</TableCell>
                         <TableCell className='w-16'>
                             <DropdownMenu>
@@ -95,7 +48,7 @@ const ServicesTable = ({ services }: { services: Service[] }) => {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
                                         <DropdownMenuItem className='cursor-pointer'>
-                                            <Settings size={16} /> Settings
+                                            <Settings size={16} /> Config
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className='cursor-pointer duration-100'

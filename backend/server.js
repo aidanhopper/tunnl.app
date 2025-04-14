@@ -23,6 +23,7 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const server = http.createServer(app);
 
 const webio = socketIo(server, { path: '/web.sock' });
+// const webio = socketIo(server);
 const daemonio = socketIo(server, { path: '/daemon.sock' });
 
 const daemons = new Map();

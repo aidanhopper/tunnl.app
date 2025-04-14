@@ -51,37 +51,22 @@ const items = [
         subItems: []
     },
     {
-        title: 'Communities',
-        url: '/dashboard/communities',
+        title: 'Shares',
+        url: '/dashboard/shares',
         icon: Users,
-        subItems: [
-            {
-                title: 'Create a community',
-                url: '/dashboard/communities/create',
-            },
-        ]
+        subItems: []
     },
     {
         title: 'Services',
         url: '/dashboard/services',
         icon: HelpingHand,
-        subItems: [
-            {
-                title: 'Create a service',
-                url: '/dashboard/services/create',
-            }
-        ]
+        subItems: []
     },
     {
-        title: 'Devices',
-        url: '/dashboard/devices',
+        title: 'Identities',
+        url: '/dashboard/identities',
         icon: MonitorSmartphone,
-        subItems: [
-            {
-                title: 'Add a device',
-                url: '/dashboard/devices/add',
-            }
-        ]
+        subItems: []
     },
 ];
 
@@ -109,15 +94,6 @@ const DashboardSidebar = ({ ...props }) => {
 
     return (
         <Sidebar {...props}>
-            <SidebarHeader className='py-0'>
-                <div className='flex justify-center items-center h-16'>
-                    <Button variant='ghost' className='text-xl font-mono font-bold' asChild>
-                        <Link href='/'>
-                            tunnl.app
-                        </Link>
-                    </Button>
-                </div>
-            </SidebarHeader>
             <SidebarSeparator />
             <SidebarContent>
                 <SidebarGroup>
@@ -131,17 +107,6 @@ const DashboardSidebar = ({ ...props }) => {
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
-                                    <SidebarMenuSub>
-                                        {item.subItems.map(subItem => (
-                                            <SidebarMenuSubItem key={subItem.title}>
-                                                <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                                                    <Link href={subItem.url}>
-                                                        <span>{subItem.title}</span>
-                                                    </Link>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        ))}
-                                    </SidebarMenuSub>
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>

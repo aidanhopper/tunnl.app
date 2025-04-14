@@ -15,13 +15,13 @@ const communities = [
     }
 ]
 
-const Communities = () => {
+const Shares = () => {
     return (
         <DashboardLayout>
             <div className='flex'>
                 <div className='flex flex-1 w-full items-center gap-8'>
                     <Users size={48} />
-                    <h1>Communities</h1>
+                    <h1>Shares</h1>
                 </div>
                 <div className='flex justify-end items-center gap-2'>
                     <Button className='cursor-pointer invisible lg:visible' variant='ghost' asChild>
@@ -101,4 +101,4 @@ const Communities = () => {
     )
 }
 
-export default Communities;
+export default Shares;

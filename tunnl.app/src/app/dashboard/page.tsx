@@ -2,7 +2,7 @@ import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import HomeSkeleton from "@/components/dashboard/home/skeleton";
 import { Home } from "lucide-react";
 
-const Dashboard = () => {
+const Dashboard = async () => {
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>
