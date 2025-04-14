@@ -45,6 +45,7 @@ app.post('/', authenticate, async (req: Request, res: Response) => {
 app.get('/', authenticate, async (req: Request, res: Response) => {
     try {
         console.log('GET /');
+        console.log(dynamicConfigData);
         res.json(dynamicConfigData);
     } catch (err) {
         console.error(err);
