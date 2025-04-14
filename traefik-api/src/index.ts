@@ -15,7 +15,7 @@ const writeDynamicConfigData = async (data: object) => {
     await fs.writeFile('dynamic.json', JSON.stringify(data));
 }
 
-let dynamicConfigData = loadDynamicConfigData();
+let dynamicConfigData = await loadDynamicConfigData();
 
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -45,7 +45,6 @@ app.post('/', authenticate, async (req: Request, res: Response) => {
 app.get('/', authenticate, async (req: Request, res: Response) => {
     try {
         console.log('GET /');
-        console.log(dynamicConfigData);
         res.json(dynamicConfigData);
     } catch (err) {
         console.error(err);
