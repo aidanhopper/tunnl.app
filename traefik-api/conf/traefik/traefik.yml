@@ -4,7 +4,7 @@ entryPoints:
     reusePort: true
     transport:
       lifeCycle:
-        requestAccept: 20
+        requestAcceptGraceTimeout: 20
         graceTimeOut: 20
   websecure:
     address: ":443"
