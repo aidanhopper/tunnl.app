@@ -12,9 +12,6 @@ services:
     image: traefik:v3.3
     restart: unless-stopped
     network_mode: service:ziti
-    ports:
-      - 80:80
-      - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
@@ -33,9 +30,6 @@ services:
     image: traefik:v3.3
     restart: unless-stopped
     network_mode: service:ziti
-    ports:
-      - 80:80
-      - 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt:ro
@@ -53,6 +47,9 @@ services:
     container_name: ziti
     image: openziti/ziti-edge-tunnel:latest
     privileged: true
+    ports:
+      - 80:80
+      - 443:443
     volumes:
       - ./identities:/ziti-edge-tunnel
   postgres:
