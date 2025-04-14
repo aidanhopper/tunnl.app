@@ -6,7 +6,6 @@ services:
       - 4000:4000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    volumes:
       - ./.env:/api/.env
       - ./dynamic.json:/api/dynamic.json
       - ./traefik.yml:/api/traefik.yml
