@@ -8,7 +8,7 @@ services:
       - ./.env:/api/.env
       - ./dynamic.json:/api/dynamic.json
   traefik1:
-    container_name: traefik
+    container_name: traefik1
     image: traefik:v3.3
     restart: unless-stopped
     network_mode: service:ziti
@@ -29,7 +29,7 @@ services:
     env_file:
       - .env
   traefik2:
-    container_name: traefik
+    container_name: traefik2
     image: traefik:v3.3
     restart: unless-stopped
     network_mode: service:ziti
