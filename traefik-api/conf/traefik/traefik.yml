@@ -2,6 +2,10 @@ entryPoints:
   web:
     address: ":80"
     reusePort: true
+    transport:
+      lifeCycle:
+        requestAccept: 20
+        graceTimeOut: 20
   websecure:
     address: ":443"
     reusePort: true
