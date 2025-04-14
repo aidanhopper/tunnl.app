@@ -112,7 +112,7 @@ fetch('https://traefik.api.tunnl.app:8443', {
                     rule: 'HOST(`jellyfin.tunnl.app`)',
                     service: 'jellyfinService',
                     entryPoints: ['websecure'],
-                    middlewares: ['oauth'],
+                    middlewares: ['oauthPortfolio'],
                     tls: {
                         certResolver: 'letsencrypt',
                         domains: [

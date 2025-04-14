@@ -7,7 +7,7 @@ services:
     volumes:
       - ./.env:/api/.env
       - ./dynamic.json:/api/dynamic.json
-  traefik:
+  traefik1:
     container_name: traefik
     image: traefik:v3.3
     restart: unless-stopped
@@ -17,7 +17,27 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./letsencrypt:/letsencrypt
-      - ./traefik.yml:/etc/traefik/traefik-template.yml
+      - ./conf/traefik/traefik.yml:/etc/traefik/traefik-template.yml:ro
+    command:
+      - /bin/sh
+      - -c
+      - |
+        awk '{gsub(/\$\{TRAEFIK_API_TOKEN\}/, ENVIRON["TRAEFIK_API_TOKEN"]); print}' \
+        /etc/traefik/traefik-template.yml > /etc/traefik/traefik.yml &&
+        traefik --configFile=/etc/traefik/traefik.yml
+    env_file:
+      - .env
+  traefik2:
+    container_name: traefik
+    image: traefik:v3.3
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt:ro
+      - ./conf/traefik/traefik.yml:/etc/traefik/traefik-template.yml:ro
     command:
       - /bin/sh
       - -c
