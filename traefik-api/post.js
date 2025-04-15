@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 
 dotenv.config();
 
-fetch('https://traefik.api.tunnl.app:8443/dynamic-config', {
+fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
     method: 'POST',
     headers: {
         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
@@ -196,46 +196,26 @@ fetch('https://traefik.api.tunnl.app:8443/dynamic-config', {
                 }
             }
         },
-        tcp: {
-            routers: {
-                minecraftRouter: {
-                    entryPoints: ['minecraft'],
-                    rule: 'HostSNI(`*`)',
-                    service: 'minecraftService',
-                },
-            },
-            services: {
-                minecraftService: {
-                    loadBalancer: {
-                        servers: [
-                            {
-                                address: 'my.minecraft.server:25565'
-                            }
-                        ]
-                    }
-                },
-            }
-        },
-        udp: {
-            routers: {
-                minecraftRouter: {
-                    entryPoints: ['minecraft'],
-                    rule: 'HostSNI(`*`)',
-                    service: 'minecraftService',
-                },
-            },
-            services: {
-                minecraftService: {
-                    loadBalancer: {
-                        servers: [
-                            {
-                                address: 'my.minecraft.server:25565'
-                            }
-                        ]
-                    }
-                },
-            }
-        }
+        // tcp: {
+        //     routers: {
+        //         minecraftRouter: {
+        //             entryPoints: ['minecraft'],
+        //             rule: 'HostSNI(`*`)',
+        //             service: 'minecraftService',
+        //         },
+        //     },
+        //     services: {
+        //         minecraftService: {
+        //             loadBalancer: {
+        //                 servers: [
+        //                     {
+        //                         address: 'my.minecraft.server:25565'
+        //                     }
+        //                 ]
+        //             }
+        //         },
+        //     }
+        // },
     })
 });
 
@@ -253,33 +233,3 @@ await fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
 //     },
 //     body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
 // });
-
-// await fetch('http://127.0.0.1:4000', {
-//     method: 'POST',
-//     headers: {
-//         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
-//         'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify({
-//         http: {
-//             routers: {
-//                 portfolioRouter: {
-//                     rule: 'HOST(`web.ziti`)',
-//                     service: 'portfolioService',
-//                     entryPoints: ['web'],
-//                 }
-//             },
-//             services: {
-//                 portfolioService: {
-//                     loadBalancer: {
-//                         servers: [
-//                             {
-//                                 url: 'http://my.portfolio:80'
-//                             }
-//                         ]
-//                     }
-//                 }
-//             }
-//         }
-//     })
-// })

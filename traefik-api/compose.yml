@@ -38,7 +38,7 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 25565:25565
+      - 64545:64545
     volumes:
       - ./identities:/ziti-edge-tunnel
   postgres:
