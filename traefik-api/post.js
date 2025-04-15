@@ -195,18 +195,64 @@ fetch('https://traefik.api.tunnl.app:8443/dynamic-config', {
                     }
                 }
             }
+        },
+        tcp: {
+            routers: {
+                minecraftRouter: {
+                    entryPoints: ['minecraft'],
+                    rule: 'HostSNI(`*`)',
+                    service: 'minecraftService',
+                },
+            },
+            services: {
+                minecraftService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                address: 'my.minecraft.server:25565'
+                            }
+                        ]
+                    }
+                },
+            }
+        },
+        udp: {
+            routers: {
+                minecraftRouter: {
+                    entryPoints: ['minecraft'],
+                    rule: 'HostSNI(`*`)',
+                    service: 'minecraftService',
+                },
+            },
+            services: {
+                minecraftService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                address: 'my.minecraft.server:25565'
+                            }
+                        ]
+                    }
+                },
+            }
         }
     })
 });
 
-fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
-    method: 'POST',
+await fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
     headers: {
         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
-});
+    }
+}).then(r => r.json()).then(d => console.log(d));
+
+// fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
+//     method: 'POST',
+//     headers: {
+//         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
+//         'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
+// });
 
 // await fetch('http://127.0.0.1:4000', {
 //     method: 'POST',

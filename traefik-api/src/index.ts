@@ -51,6 +51,7 @@ app.post('/traefik/dynamic-config', authenticate, async (req: Request, res: Resp
         if (!req.body) throw new Error('Request requires body');
         writeDynamicConfigData(req.body);
         dynamicConfigData = req.body;
+        console.log(dynamicConfigData)
         res.status(201).json({ message: 'Success' });
     } catch (err) {
         console.error(err);
@@ -95,7 +96,7 @@ app.post('/traefik/static-config', authenticate, async (req: Request, res: Respo
 
 app.get('/traefik/dynamic-config', authenticate, async (req: Request, res: Response) => {
     try {
-        console.log('GET /dynamic-config');
+        console.log('GET /traefik/dynamic-config');
         res.json(dynamicConfigData);
     } catch (err) {
         console.error(err);
@@ -105,7 +106,7 @@ app.get('/traefik/dynamic-config', authenticate, async (req: Request, res: Respo
 
 app.get('/traefik/static-config', authenticate, async (req: Request, res: Response) => {
     try {
-        console.log('GET /');
+        console.log('GET /traefik/static-config');
         res.json(await loadStaticConfigData());
     } catch (err) {
         console.error(err);
