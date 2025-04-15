@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
+import yaml from 'js-yaml';
+import fs from 'fs/promises';
 
 dotenv.config();
 
-fetch('https://traefik.api.tunnl.app:8443', {
+fetch('https://traefik.api.tunnl.app:8443/dynamic-config', {
     method: 'POST',
     headers: {
         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
@@ -197,15 +199,14 @@ fetch('https://traefik.api.tunnl.app:8443', {
     })
 });
 
-fetch('https://traefik.api.tunnl.app:8443', {
-    method: 'GET',
+fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
+    method: 'POST',
     headers: {
         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
+        'Content-Type': 'application/json'
     },
-})
-    .then(r => r.json())
-    .then(d => console.log(d));
-
+    body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
+});
 
 // await fetch('http://127.0.0.1:4000', {
 //     method: 'POST',

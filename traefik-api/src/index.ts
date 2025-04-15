@@ -23,9 +23,9 @@ const writeDynamicConfigData = async (data: object) => {
     await fs.writeFile('dynamic.json', JSON.stringify(data));
 }
 
-// const loadStaticConfigData = async () => {
-//     return yaml.load(await fs.readFile('traefik.yml', { encoding: 'utf-8' }));
-// }
+const loadStaticConfigData = async () => {
+    return yaml.load(await fs.readFile('traefik.yml', { encoding: 'utf-8' }));
+}
 
 const writeStaticConfigData = async (data: object) => {
     await fs.writeFile('traefik.yml', yaml.dump(data));
@@ -93,10 +93,20 @@ app.post('/traefik/static-config', authenticate, async (req: Request, res: Respo
     }
 });
 
-app.get('/', authenticate, async (req: Request, res: Response) => {
+app.get('/traefik/dynamic-config', authenticate, async (req: Request, res: Response) => {
+    try {
+        console.log('GET /dynamic-config');
+        res.json(dynamicConfigData);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+});
+
+app.get('/traefik/static-config', authenticate, async (req: Request, res: Response) => {
     try {
         console.log('GET /');
-        res.json(dynamicConfigData);
+        res.json(await loadStaticConfigData());
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Something went wrong' });
