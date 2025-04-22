@@ -16,11 +16,8 @@ import {
 import { Input } from "@/components/ui/input"
 import createIdentity from '@/lib/actions/create-identity';
 import identitySchema from '@/lib/form-schemas/create-identity-form-schema';
-import { useSession } from 'next-auth/react';
 
 const CreateIdentityForm = () => {
-    const { data } = useSession();
-
     const form = useForm<z.infer<typeof identitySchema>>({
         resolver: zodResolver(identitySchema),
         defaultValues: {

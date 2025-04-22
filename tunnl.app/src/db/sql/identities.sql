@@ -40,3 +40,19 @@ WHERE user_id = (
     FROM users
     WHERE email = :email
 ) AND name = :name;
+
+/* @name deleteIdentityByEmail */
+DELETE FROM identities
+WHERE user_id = (
+    SELECT id
+    FROM users
+    WHERE email = :email
+) AND name = :name;
+
+/* @name getIdentityBySlug */
+SELECT * 
+FROM identities 
+WHERE slug = :slug
+LIMIT 1;
+
+/* @

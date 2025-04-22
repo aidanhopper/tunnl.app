@@ -25,14 +25,14 @@ const DashboardBreadcrumb = () => {
                                     asChild
                                     className='capitalize'>
                                     <Link
-                                        href={'/' + path.slice(0, i + 1).join('/')}
-                                    >
+                                        href={'/' + path.slice(0, i + 1).join('/')}>
                                         {e}
                                     </Link>
                                 </BreadcrumbLink> :
                                 <BreadcrumbPage
                                     className='capitalize'>
-                                    {e}
+                                    {e.split('-').length === 1 ?
+                                        e : e.split('-').slice(0, -1).join(' ')}
                                 </BreadcrumbPage>}
                         </BreadcrumbItem>
                         {i !== path.length - 1 ? <BreadcrumbSeparator /> : null}

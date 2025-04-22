@@ -21,27 +21,26 @@ import {
 import {
     MonitorSmartphone,
     EllipsisVertical,
-    Settings,
-    HelpingHand,
-    Delete,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import CreateIdentityForm from "@/components/dashboard/identities/create-identity-form";
+import { getServerSession } from 'next-auth';
+import { getIdentitiesByEmail } from "@/db/types/identities.queries";
+import client from '@/lib/db';
+import DeleteIdentityDropdownButton from "@/components/dashboard/identities/delete-identity-dropdown-button";
+import Link from "next/link";
 
-const devices = [
-    {
-        identity: 'Desktop',
-        serviceCount: 10,
-        created: '10/20/1991',
-    },
-    {
-        identity: 'Mac',
-        serviceCount: 435,
-        created: '11/2/2010',
-    }
-];
+const Identities = async () => {
+    const session = await getServerSession();
+    const email = session?.user?.email;
 
-const Identities = () => {
+    const identities = await getIdentitiesByEmail.run(
+        {
+            email: email
+        },
+        client
+    );
+
     return (
         <DashboardLayout>
             <div className='flex'>
@@ -70,22 +69,20 @@ const Identities = () => {
                     </Dialog>
                 </div>
             </div>
-            <Table className='mt-10 hidden lg:table'>
+            <Table className='mt-10'>
                 <TableCaption>A list of your authenticated devices.</TableCaption>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Identity</TableHead>
-                        <TableHead>Services</TableHead>
                         <TableHead>Created</TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {devices.map((item, i) => (
+                    {identities.map((item, i) => (
                         <TableRow key={i}>
-                            <TableCell>{item.identity}</TableCell>
-                            <TableCell>{item.serviceCount}</TableCell>
-                            <TableCell>{item.created}</TableCell>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.created?.toLocaleDateString()}</TableCell>
                             <TableCell className='w-16'>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -94,20 +91,13 @@ const Identities = () => {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuLabel>
-                                            {item.identity}
-                                        </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild className='cursor-pointer'>
+                                            <Link href={`/dashboard/identities/${item.slug}`}>
+                                                {item.name}
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem className='cursor-pointer'>
-                                                <HelpingHand size={16} /> Services
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className='cursor-pointer'>
-                                                <Settings size={16} /> Settings
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem className='cursor-pointer duration-100' variant='destructive'>
-                                                <Delete size={16} /> Delete
-                                            </DropdownMenuItem>
+                                            <DeleteIdentityDropdownButton name={item.name} />
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

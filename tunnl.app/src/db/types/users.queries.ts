@@ -57,3 +57,35 @@ const updateUserLoginIR: any = {"usedParamSet":{"email":true},"params":[{"name":
 export const updateUserLogin = new PreparedQuery<IUpdateUserLoginParams,IUpdateUserLoginResult>(updateUserLoginIR);
 
 
+/** 'GetUserByEmail' parameters type */
+export interface IGetUserByEmailParams {
+  email?: string | null | void;
+}
+
+/** 'GetUserByEmail' return type */
+export interface IGetUserByEmailResult {
+  email: string;
+  id: string;
+  last_login: Date | null;
+}
+
+/** 'GetUserByEmail' query type */
+export interface IGetUserByEmailQuery {
+  params: IGetUserByEmailParams;
+  result: IGetUserByEmailResult;
+}
+
+const getUserByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":39}]}],"statement":"SELECT *\nFROM users\nWHERE email = :email\nLIMIT 1"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM users
+ * WHERE email = :email
+ * LIMIT 1
+ * ```
+ */
+export const getUserByEmail = new PreparedQuery<IGetUserByEmailParams,IGetUserByEmailResult>(getUserByEmailIR);
+
+

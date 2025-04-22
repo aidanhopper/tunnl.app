@@ -177,3 +177,68 @@ const getIdentityByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":tr
 export const getIdentityByNameAndEmail = new PreparedQuery<IGetIdentityByNameAndEmailParams,IGetIdentityByNameAndEmailResult>(getIdentityByNameAndEmailIR);
 
 
+/** 'DeleteIdentityByEmail' parameters type */
+export interface IDeleteIdentityByEmailParams {
+  email?: string | null | void;
+  name?: string | null | void;
+}
+
+/** 'DeleteIdentityByEmail' return type */
+export type IDeleteIdentityByEmailResult = void;
+
+/** 'DeleteIdentityByEmail' query type */
+export interface IDeleteIdentityByEmailQuery {
+  params: IDeleteIdentityByEmailParams;
+  result: IDeleteIdentityByEmailResult;
+}
+
+const deleteIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":88,"b":93}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":108,"b":112}]}],"statement":"DELETE FROM identities\nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n) AND name = :name"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM identities
+ * WHERE user_id = (
+ *     SELECT id
+ *     FROM users
+ *     WHERE email = :email
+ * ) AND name = :name
+ * ```
+ */
+export const deleteIdentityByEmail = new PreparedQuery<IDeleteIdentityByEmailParams,IDeleteIdentityByEmailResult>(deleteIdentityByEmailIR);
+
+
+/** 'GetIdentityBySlug' parameters type */
+export interface IGetIdentityBySlugParams {
+  slug?: string | null | void;
+}
+
+/** 'GetIdentityBySlug' return type */
+export interface IGetIdentityBySlugResult {
+  created: Date | null;
+  id: string;
+  name: string;
+  slug: string;
+  user_id: string;
+}
+
+/** 'GetIdentityBySlug' query type */
+export interface IGetIdentityBySlugQuery {
+  params: IGetIdentityBySlugParams;
+  result: IGetIdentityBySlugResult;
+}
+
+const getIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":40,"b":44}]}],"statement":"SELECT * \nFROM identities \nWHERE slug = :slug\nLIMIT 1"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT * 
+ * FROM identities 
+ * WHERE slug = :slug
+ * LIMIT 1
+ * ```
+ */
+export const getIdentityBySlug = new PreparedQuery<IGetIdentityBySlugParams,IGetIdentityBySlugResult>(getIdentityBySlugIR);
+
+

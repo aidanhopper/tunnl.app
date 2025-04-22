@@ -6,6 +6,8 @@ import slugify from '@/lib/slugify';
 import client from '@/lib/db';
 import { insertIdentityByEmail } from '@/db/types/identities.queries';
 import { getServerSession } from 'next-auth';
+import { postIdentity } from '@/lib/ziti/identities'
+import { PostIdentityData } from '@/lib/ziti/types'
 
 const formDataToObject = (formData: FormData): Record<string, FormDataEntryValue> => {
     const obj: Record<string, FormDataEntryValue> = {};
@@ -30,7 +32,16 @@ const createIdentity = async (formData: FormData) => {
     const name = formParse.data.name;
     const slug = slugify(name);
 
-    console.log(email, name, slug);
+    const data: PostIdentityData = {
+        name: slug,
+        type: 'Default',
+        isAdmin: false,
+        enrollment: {
+            ott: true,
+        }
+    }
+
+    if (!(await postIdentity(data))) return;
 
     try {
         await insertIdentityByEmail.run(
@@ -46,7 +57,7 @@ const createIdentity = async (formData: FormData) => {
         return;
     }
 
-    redirect(`/dashboard/identities`);
+    redirect(`/dashboard/identities/${slug}`);
 }
 
 export default createIdentity;
