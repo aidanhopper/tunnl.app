@@ -17,7 +17,13 @@ import { Input } from "@/components/ui/input"
 import createIdentity from '@/lib/actions/create-identity';
 import identitySchema from '@/lib/form-schemas/create-identity-form-schema';
 
+// const RefreshOnSuccess = ({ success }: { success: boolean | null }) => {
+//     const router = useRouter();
+//
+// }
+
 const CreateIdentityForm = () => {
+
     const form = useForm<z.infer<typeof identitySchema>>({
         resolver: zodResolver(identitySchema),
         defaultValues: {

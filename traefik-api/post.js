@@ -42,20 +42,6 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                 }
             },
             routers: {
-                leethootRouter: {
-                    rule: 'HOST(`leethoot.tunnl.app`)',
-                    service: 'leethootService',
-                    entryPoints: ['websecure'],
-                    middlewares: ['oauth'],
-                    tls: {
-                        certResolver: 'letsencrypt',
-                        domains: [
-                            {
-                                main: "*.tunnl.app",
-                            },
-                        ]
-                    }
-                },
                 authTunnlProxyRouter: {
                     rule: '(Host(`auth.tunnl.app`) && PathPrefix(`/oauth2/`)) || (PathPrefix(`/oauth2/`))',
                     service: 'authProxyService',
@@ -110,11 +96,38 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         ]
                     }
                 },
+                jellyseerrLoginRouter: {
+                    rule: "Host(`jellyseerr.tunnl.app`) && PathRegexp(`/api/v1/auth*`)",
+                    service: "jellyseerrService",
+                    entryPoints: ['websecure'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
+                jellyseerrRouter: {
+                    rule: 'HOST(`jellyseerr.tunnl.app`) && !PathRegexp(`/api/v1/auth*`)',
+                    service: 'jellyseerrService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
                 jellyfinRouter: {
                     rule: 'HOST(`jellyfin.tunnl.app`)',
                     service: 'jellyfinService',
                     entryPoints: ['websecure'],
-                    middlewares: ['oauthPortfolio'],
+                    middlewares: ['oauth'],
                     tls: {
                         certResolver: 'letsencrypt',
                         domains: [
@@ -128,7 +141,7 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                     rule: 'HOST(`portfolio.srv.ahop.dev`)',
                     service: 'portfolioService',
                     entryPoints: ['websecure'],
-                    middlewares: ['oauthPortfolio'],
+                    middlewares: ['oauth'],
                     tls: {
                         certResolver: 'letsencrypt',
                         domains: [
@@ -138,13 +151,50 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         ]
                     }
                 },
+                delugeRouter: {
+                    rule: 'HOST(`deluge.tunnl.app`)',
+                    service: 'delugeService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
+                bluemapRouter: {
+                    rule: 'HOST(`bluemap.tunnl.app`)',
+                    service: 'bluemapService',
+                    entryPoints: ['websecure'],
+                    middlewares: ['oauth'],
+                    tls: {
+                        certResolver: 'letsencrypt',
+                        domains: [
+                            {
+                                main: "*.tunnl.app",
+                            },
+                        ]
+                    }
+                },
             },
             services: {
-                leethootService: {
+                bluemapService: {
                     loadBalancer: {
                         servers: [
                             {
-                                url: 'http://leethoot.service:80'
+                                url: 'http://bluemap.service:80'
+                            }
+                        ]
+                    }
+                },
+                delugeService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://deluge.service:80'
                             }
                         ]
                     }
@@ -185,6 +235,15 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         ]
                     }
                 },
+                jellyseerrService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                url: 'http://jellyseerr.service:80'
+                            }
+                        ]
+                    }
+                },
                 jellyfinService: {
                     loadBalancer: {
                         servers: [
@@ -194,28 +253,28 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         ]
                     }
                 }
+            },
+        },
+        tcp: {
+            routers: {
+                minecraftRouter: {
+                    entryPoints: ['minecraft'],
+                    rule: 'HostSNI(`*`)',
+                    service: 'minecraftService',
+                },
+            },
+            services: {
+                minecraftService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                address: 'my.minecraft.server:25565'
+                            }
+                        ]
+                    }
+                },
             }
         },
-        // tcp: {
-        //     routers: {
-        //         minecraftRouter: {
-        //             entryPoints: ['minecraft'],
-        //             rule: 'HostSNI(`*`)',
-        //             service: 'minecraftService',
-        //         },
-        //     },
-        //     services: {
-        //         minecraftService: {
-        //             loadBalancer: {
-        //                 servers: [
-        //                     {
-        //                         address: 'my.minecraft.server:25565'
-        //                     }
-        //                 ]
-        //             }
-        //         },
-        //     }
-        // },
     })
 });
 
@@ -223,7 +282,13 @@ await fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
     headers: {
         Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
     }
-}).then(r => r.json()).then(d => console.log(d));
+}).then(r => r.json()).then(d => console.log(JSON.stringify(d)));
+
+await fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
+    headers: {
+        Authorization: `Bearer ${process.env.TRAEFIK_API_TOKEN}`,
+    }
+}).then(r => r.json()).then(d => console.log(JSON.stringify(d)));
 
 // fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
 //     method: 'POST',

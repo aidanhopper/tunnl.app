@@ -25,8 +25,3 @@ export const deleteIdentity = async (name: string) => {
     const id = identity.id;
     return await del({ route: `/identities/${encodeURIComponent(id)}` });
 }
-
-// TODO Change this to delete the identity and then create the identity again with the same name
-export const resetIdentityEnrollment = async (name: string) => {
-
-}
