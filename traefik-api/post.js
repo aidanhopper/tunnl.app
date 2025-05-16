@@ -262,6 +262,11 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                     rule: 'HostSNI(`*`)',
                     service: 'minecraftService',
                 },
+                vanillaMinecraftRouter: {
+                    entryPoints: ['vanillaMinecraft'],
+                    rule: 'HostSNI(`*`)',
+                    service: 'vanillaMinecraftService',
+                },
             },
             services: {
                 minecraftService: {
@@ -269,6 +274,15 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         servers: [
                             {
                                 address: 'my.minecraft.server:25565'
+                            }
+                        ]
+                    }
+                },
+                vanillaMinecraftService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                address: 'vanilla.minecraft.server:25565'
                             }
                         ]
                     }

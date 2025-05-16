@@ -28,6 +28,7 @@
             certbot
             typescript
             dbmate
+            go
           ]; 
         };
       });
