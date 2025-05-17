@@ -16,11 +16,16 @@
     "@types/node": "^22.14.0"
   },
   "dependencies": {
+    "@types/chokidar": "^1.7.5",
     "@types/dockerode": "^3.3.38",
     "@types/js-yaml": "^4.0.9",
+    "@types/ws": "^8.18.1",
+    "chokidar": "^4.0.3",
     "dockerode": "^4.0.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "ws": "^8.18.2",
+    "wscat": "^6.1.0"
   }
 }
