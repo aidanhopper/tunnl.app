@@ -27,6 +27,8 @@ export const configureWsEvents = (conn: WebSocketServer) => {
         });
     });
 
+    console.log(`WATCHING LOG FILE ${LOG_FILE}`);
+
     watch(LOG_FILE, { awaitWriteFinish: false }).on('change', filePath => {
         const stat = fs.statSync(filePath);
 

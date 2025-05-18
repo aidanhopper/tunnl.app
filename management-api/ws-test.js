@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 console.log('token', process.env.MANAGEMENT_API_TOKEN)
-const ws = new WebSocket(`http://localhost:4000/ws/events?token=${process.env.MANAGEMENT_API_TOKEN}`);
+const ws = new WebSocket(`https://traefik.api.tunnl.app:8443/ws/events?token=${process.env.MANAGEMENT_API_TOKEN}`);
 
 ws.on('open', () => {
     console.log('Connected to server');
