@@ -29,6 +29,7 @@
             typescript
             dbmate
             go
+            tree
           ]; 
         };
       });
