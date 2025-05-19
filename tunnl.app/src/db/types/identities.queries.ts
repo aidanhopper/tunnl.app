@@ -86,6 +86,8 @@ export interface IGetIdentityByIdParams {
 export interface IGetIdentityByIdResult {
   created: Date | null;
   id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
   name: string;
   slug: string;
   user_id: string;
@@ -118,6 +120,8 @@ export interface IGetIdentitiesByEmailParams {
 export interface IGetIdentitiesByEmailResult {
   created: Date | null;
   id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
   name: string;
   slug: string;
   user_id: string;
@@ -157,6 +161,8 @@ export interface IGetIdentityByNameAndEmailParams {
 export interface IGetIdentityByNameAndEmailResult {
   created: Date | null;
   id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
   name: string;
   slug: string;
   user_id: string;
@@ -226,6 +232,8 @@ export interface IGetIdentityBySlugParams {
 export interface IGetIdentityBySlugResult {
   created: Date | null;
   id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
   name: string;
   slug: string;
   user_id: string;

@@ -1,9 +1,23 @@
 import { WebSocket } from 'ws';
 import fs from 'fs/promises';
 import { Client } from 'pg';
+import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+
+type Payload = {
+    topics: string[],
+    iat: string,
+    exp: string
+}
 
 const client = new Client({
     connectionString: process.env.DATABASE_URL,
+});
+
+const io = new Server(Number(process.env.PUBLISHER_PORT || 1234), {
+    cors: {
+        origin: "*",
+    },
 });
 
 const readDataFile = async (path: string) => {
@@ -20,6 +34,19 @@ const readDataFile = async (path: string) => {
         })
         .filter(e => e != null);
     return jsonLines;
+}
+
+const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
+    try {
+        await client.query(`
+        UPDATE identities
+        SET is_online = $1,
+            last_seen = NOW()
+        WHERE ziti_id = $2
+    `, [is_online, ziti_id]);
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 // to be inserted into the events table the event needs
@@ -73,12 +100,21 @@ const transformEvent = (e: any) => {
     }
 }
 
+const subscribers = new Map<string, RegExp[]>()
+
 const publishEvent = async (topic: string, payload: object) => {
     try {
-        await client.query(
-            'INSERT INTO events (topic, payload) VALUES ($1, $2)',
-            [topic, payload]
-        );
+        console.log({
+            topic: topic,
+            payload: payload
+        })
+
+        subscribers.forEach((topics, socketId) => {
+            topics.forEach(topicRegex => {
+                if (topicRegex.test(topic))
+                    io.to(socketId).emit('event', payload);
+            });
+        });
     } catch (err) {
         console.error(err);
     }
@@ -104,13 +140,32 @@ const main = async () => {
 
         if (isFilteredEvent) return;
         const topic = `${payload.namespace}:${payload.entityType}:${payload.id}`;
-        await publishEvent(topic, payload);
+
+        if (payload.namespace === 'sdk')
+            updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
+
+        publishEvent(topic, payload);
     });
 
-    client.on('notification', msg => console.log(msg.payload ? JSON.parse(msg.payload) : ''));
+    io.on("connection", (socket) => {
+        const { token } = socket.handshake.auth;
 
-    await client.query('LISTEN events');
+        try {
+            const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET || 'no') as {} as Payload;
 
+            console.log(payload.topics)
+            subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
+
+            socket.on("disconnect", () => {
+                subscribers.delete(socket.id);
+                console.log('disconnect');
+            });
+        } catch (err) {
+            console.error(err)
+            socket.disconnect();
+            return;
+        }
+    });
 }
 
 main();
