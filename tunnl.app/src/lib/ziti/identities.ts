@@ -1,7 +1,7 @@
 import { get, post, del } from './methods';
 import { EnrollmentListResponse, IdentityListResponse, PostIdentityData } from './types';
 
-export const getIdentity = async (name: string) => {
+export const getIdentityByName = async (name: string) => {
     const r = await get<IdentityListResponse>({
         route: '/identities',
         filter: `name="${name}"`
@@ -19,9 +19,13 @@ export const postIdentity = async (data: PostIdentityData) => {
     });
 }
 
-export const deleteIdentity = async (name: string) => {
-    const identity = await getIdentity(name);
+export const deleteIdentityByName = async (name: string) => {
+    const identity = await getIdentityByName(name);
     if (!identity) return true;
     const id = identity.id;
     return await del({ route: `/identities/${encodeURIComponent(id)}` });
+}
+
+export const deleteIdentity = async (ziti_id: string) => {
+    return await del({ route: `/identities/${encodeURIComponent(ziti_id)}` });
 }

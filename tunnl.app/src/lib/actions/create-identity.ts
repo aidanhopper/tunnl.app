@@ -6,7 +6,7 @@ import slugify from '@/lib/slugify';
 import client from '@/lib/db';
 import { insertIdentityByEmail } from '@/db/types/identities.queries';
 import { getServerSession } from 'next-auth';
-import { postIdentity } from '@/lib/ziti/identities'
+import { getIdentityByName, postIdentity } from '@/lib/ziti/identities'
 import { PostIdentityData } from '@/lib/ziti/types'
 
 const formDataToObject = (formData: FormData): Record<string, FormDataEntryValue> => {
@@ -17,7 +17,6 @@ const formDataToObject = (formData: FormData): Record<string, FormDataEntryValue
 }
 
 const createIdentity = async (formData: FormData) => {
-
     const formParse = identitySchema.safeParse(formDataToObject(formData));
 
     if (!formParse.success) {
@@ -42,13 +41,17 @@ const createIdentity = async (formData: FormData) => {
     }
 
     if (!(await postIdentity(data))) return;
+    
+    const zitiIdentity = await getIdentityByName(slug)
+    if (!zitiIdentity) return;
 
     try {
         await insertIdentityByEmail.run(
             {
                 email: email,
                 name: name,
-                slug: slug
+                slug: slug,
+                ziti_id: zitiIdentity.id
             },
             client
         )

@@ -12,9 +12,7 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuLabel,
     DropdownMenuTrigger,
-    DropdownMenuSeparator,
     DropdownMenuGroup,
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
@@ -33,7 +31,6 @@ import Link from "next/link";
 const Identities = async () => {
     const session = await getServerSession();
     const email = session?.user?.email;
-
     const identities = await getIdentitiesByEmail.run(
         {
             email: email

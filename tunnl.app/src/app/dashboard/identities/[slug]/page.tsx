@@ -7,7 +7,6 @@ import { getServerSession } from 'next-auth';
 import { notFound, forbidden, unauthorized } from 'next/navigation';
 import * as ziti from '@/lib/ziti/identities';
 import EnrollIdentityDialog from '@/components/dashboard/identities/enroll-identity-dialog';
-import { Button } from '@/components/ui/button';
 import ResetIdentityEnrollmentButton from '@/components/dashboard/identities/reset-identity-enrollment-button';
 
 const Identity = async ({ params }: { params: { slug: string } }) => {
@@ -37,7 +36,10 @@ const Identity = async ({ params }: { params: { slug: string } }) => {
 
     if (user.id !== identity.user_id) forbidden();
 
-    const zitiIdentity = await ziti.getIdentity(slug);
+    const zitiIdentity = await ziti.getIdentityByName(slug);
+
+    console.log('ziti_id', identity.ziti_id);
+
     const expires = zitiIdentity?.enrollment.ott?.expiresAt;
     const isExpired = expires ? new Date(expires) <= new Date() : null;
 

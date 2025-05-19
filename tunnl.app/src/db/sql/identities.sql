@@ -2,22 +2,26 @@
 INSERT INTO identities (
     user_id,
     name,
-    slug 
+    slug,
+    ziti_id
 ) VALUES (
     :user_id,
     :name,
-    :slug
+    :slug,
+    :ziti_id
 );
 
 /* @name insertIdentityByEmail */
 INSERT INTO identities (
     user_id,
     name,
-    slug
+    slug,
+    ziti_id
 ) VALUES (
     (SELECT id FROM users WHERE email = :email),
     :name,
-    :slug
+    :slug,
+    :ziti_id
 );
 
 /* @name getIdentityById */
@@ -54,5 +58,3 @@ SELECT *
 FROM identities 
 WHERE slug = :slug
 LIMIT 1;
-
-/* @

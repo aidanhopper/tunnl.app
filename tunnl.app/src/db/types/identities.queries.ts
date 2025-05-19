@@ -6,6 +6,7 @@ export interface IInsertIdentityParams {
   name?: string | null | void;
   slug?: string | null | void;
   user_id?: string | null | void;
+  ziti_id?: string | null | void;
 }
 
 /** 'InsertIdentity' return type */
@@ -17,7 +18,7 @@ export interface IInsertIdentityQuery {
   result: IInsertIdentityResult;
 }
 
-const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":73,"b":80}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":87,"b":91}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":98,"b":102}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug \n) VALUES (\n    :user_id,\n    :name,\n    :slug\n)"};
+const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug":true,"ziti_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":85,"b":92}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":99,"b":103}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":110,"b":114}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":128}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug,\n    ziti_id\n) VALUES (\n    :user_id,\n    :name,\n    :slug,\n    :ziti_id\n)"};
 
 /**
  * Query generated from SQL:
@@ -25,11 +26,13 @@ const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug"
  * INSERT INTO identities (
  *     user_id,
  *     name,
- *     slug 
+ *     slug,
+ *     ziti_id
  * ) VALUES (
  *     :user_id,
  *     :name,
- *     :slug
+ *     :slug,
+ *     :ziti_id
  * )
  * ```
  */
@@ -41,6 +44,7 @@ export interface IInsertIdentityByEmailParams {
   email?: string | null | void;
   name?: string | null | void;
   slug?: string | null | void;
+  ziti_id?: string | null | void;
 }
 
 /** 'InsertIdentityByEmail' return type */
@@ -52,7 +56,7 @@ export interface IInsertIdentityByEmailQuery {
   result: IInsertIdentityByEmailResult;
 }
 
-const insertIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true,"slug":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":108,"b":113}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":125}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":132,"b":136}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug\n) VALUES (\n    (SELECT id FROM users WHERE email = :email),\n    :name,\n    :slug\n)"};
+const insertIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true,"slug":true,"ziti_id":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":126}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":134,"b":138}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":145,"b":149}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":156,"b":163}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug,\n    ziti_id\n) VALUES (\n    (SELECT id FROM users WHERE email = :email),\n    :name,\n    :slug,\n    :ziti_id\n)"};
 
 /**
  * Query generated from SQL:
@@ -60,11 +64,13 @@ const insertIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true,"
  * INSERT INTO identities (
  *     user_id,
  *     name,
- *     slug
+ *     slug,
+ *     ziti_id
  * ) VALUES (
  *     (SELECT id FROM users WHERE email = :email),
  *     :name,
- *     :slug
+ *     :slug,
+ *     :ziti_id
  * )
  * ```
  */
@@ -83,6 +89,7 @@ export interface IGetIdentityByIdResult {
   name: string;
   slug: string;
   user_id: string;
+  ziti_id: string;
 }
 
 /** 'GetIdentityById' query type */
@@ -114,6 +121,7 @@ export interface IGetIdentitiesByEmailResult {
   name: string;
   slug: string;
   user_id: string;
+  ziti_id: string;
 }
 
 /** 'GetIdentitiesByEmail' query type */
@@ -152,6 +160,7 @@ export interface IGetIdentityByNameAndEmailResult {
   name: string;
   slug: string;
   user_id: string;
+  ziti_id: string;
 }
 
 /** 'GetIdentityByNameAndEmail' query type */
@@ -220,6 +229,7 @@ export interface IGetIdentityBySlugResult {
   name: string;
   slug: string;
   user_id: string;
+  ziti_id: string;
 }
 
 /** 'GetIdentityBySlug' query type */
