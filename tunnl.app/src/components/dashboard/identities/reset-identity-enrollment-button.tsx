@@ -14,7 +14,9 @@ const ResetIdentityEnrollmentButton = ({ name }: { name: string }) => {
 
     return (
         <Button
+            disabled
             className='cursor-pointer'
+            variant='ghost'
             onClick={onClick}>
             Reset Enrollment
         </Button>

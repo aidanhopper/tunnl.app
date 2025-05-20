@@ -134,7 +134,7 @@ export interface IGetIdentitiesByEmailQuery {
   result: IGetIdentitiesByEmailResult;
 }
 
-const getIdentitiesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":97}]}],"statement":"SELECT * \nFROM identities \nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)"};
+const getIdentitiesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":97}]}],"statement":"SELECT * \nFROM identities \nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)\noRDER BY created DESC"};
 
 /**
  * Query generated from SQL:
@@ -146,6 +146,7 @@ const getIdentitiesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"n
  *     FROM users
  *     WHERE email = :email
  * )
+ * oRDER BY created DESC
  * ```
  */
 export const getIdentitiesByEmail = new PreparedQuery<IGetIdentitiesByEmailParams,IGetIdentitiesByEmailResult>(getIdentitiesByEmailIR);

@@ -10,6 +10,9 @@ import EnrollIdentityDialog from '@/components/dashboard/identities/enroll-ident
 import ResetIdentityEnrollmentButton from '@/components/dashboard/identities/reset-identity-enrollment-button';
 import SubscribeProvider from '@/components/subscribe-provider';
 import generateToken from '@/lib/subscribe/generate-token';
+import RefreshOnEnrollment from '@/components/dashboard/identities/refresh-on-enrollment';
+import IdentityStatusCard from '@/components/dashboard/identities/identity-status-card';
+import RefreshOnStatusChange from '@/components/dashboard/identities/refresh-on-status-change';
 
 const Identity = async ({ params }: { params: { slug: string } }) => {
     const slug = params.slug;
@@ -45,54 +48,60 @@ const Identity = async ({ params }: { params: { slug: string } }) => {
     const expires = zitiIdentity.enrollment.ott?.expiresAt;
     const isExpired = expires ? new Date(expires) <= new Date() : null;
 
-    const token = generateToken({ topics: [
-        zitiIdentity.id
-    ]});
+    const token = generateToken({
+        topics: [
+            zitiIdentity.id,
+            zitiIdentity.enrollment.ott ?? ''
+        ]
+    });
 
     return (
         <DashboardLayout>
             <SubscribeProvider token={token}>
-                <div className='flex'>
-                    <div className='flex flex-1 items-center gap-8'>
-                        <Monitor size={48} />
-                        <h1>{identity.name}</h1>
+                <RefreshOnEnrollment>
+                    <div className='flex'>
+                        <div className='flex flex-1 items-center gap-8'>
+                            <Monitor size={48} />
+                            <h1>{identity.name}</h1>
+                        </div>
                     </div>
-                </div>
-                <div className='mt-12'>
-                    {zitiIdentity?.enrollment.ott?.jwt ?
-                        <div>
-                            {!isExpired ?
-                                <div className='flex items-center'>
-                                    <div className='flex-1'>
-                                        <span className='font-bold'>Enrollment expires</span>:
-                                        <span className='ml-2'>
-                                            {expires ? (new Date(expires)).toLocaleString() : null}
-                                        </span>
-                                    </div>
-                                    <div className='flex justify-end'>
-                                        <EnrollIdentityDialog
-                                            fileName={`${slug}.jwt`}
-                                            value={zitiIdentity.enrollment.ott.jwt} />
-                                    </div>
-                                </div> : <div className='flex items-center'>
-                                    <div className='font-bold flex-1'>
-                                        Enrollment expired
-                                    </div>
-                                    <div className='flex justify-end'>
-                                        <ResetIdentityEnrollmentButton name={slug} />
-                                    </div>
-                                </div>}
-                        </div> : <div className='flex items-center'>
-                            <div className='font-bold flex-1 w-full'>
-                                Enrolled
-                            </div>
-                            <div className='flex justify-end'>
-                                <ResetIdentityEnrollmentButton name={slug} />
-                            </div>
-                        </div>}
-                </div>
+                    <div className='mt-12'>
+                        {zitiIdentity?.enrollment.ott?.jwt ?
+                            <div>
+                                {!isExpired ?
+                                    <div className='flex items-center'>
+                                        <div className='flex-1'>
+                                            <span className='font-bold'>Enrollment expires</span>:
+                                            <span className='ml-2'>
+                                                {expires ? (new Date(expires)).toLocaleString() : null}
+                                            </span>
+                                        </div>
+                                        <div className='flex justify-end'>
+                                            <EnrollIdentityDialog
+                                                fileName={`${slug}.jwt`}
+                                                value={zitiIdentity.enrollment.ott.jwt} />
+                                        </div>
+                                    </div> : <div className='flex items-center'>
+                                        <div className='font-bold flex-1'>
+                                            Enrollment expired
+                                        </div>
+                                        <div className='flex justify-end'>
+                                            <ResetIdentityEnrollmentButton name={slug} />
+                                        </div>
+                                    </div>}
+                            </div> :
+                            <div className='grid gap-12'>
+                                <div>
+                                    <ResetIdentityEnrollmentButton name={slug} />
+                                </div>
+                                <RefreshOnStatusChange>
+                                    <IdentityStatusCard identity={identity} />
+                                </RefreshOnStatusChange>
+                            </div>}
+                    </div>
+                </RefreshOnEnrollment>
             </SubscribeProvider>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }
 

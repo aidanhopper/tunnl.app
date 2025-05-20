@@ -100,7 +100,7 @@ const transformEvent = (e: any) => {
     }
 }
 
-const subscribers = new Map<string, RegExp[]>()
+const subscribers = new Map<string, RegExp[]>();
 
 const publishEvent = async (topic: string, payload: object) => {
     try {
@@ -111,8 +111,10 @@ const publishEvent = async (topic: string, payload: object) => {
 
         subscribers.forEach((topics, socketId) => {
             topics.forEach(topicRegex => {
-                if (topicRegex.test(topic))
+                if (topicRegex.test(topic)) {
                     io.to(socketId).emit('event', payload);
+                    console.log('sending', payload, 'to', socketId);
+                }
             });
         });
     } catch (err) {
@@ -152,8 +154,8 @@ const main = async () => {
 
         try {
             const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET || 'no') as {} as Payload;
+            console.log('connect');
 
-            console.log(payload.topics)
             subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
 
             socket.on("disconnect", () => {
