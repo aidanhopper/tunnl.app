@@ -2,7 +2,6 @@ import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { HelpingHand } from "lucide-react";
 import ServicesTable from "@/components/dashboard/services/service-table";
-import { Service } from "@/lib/types";
 import {
     Dialog,
     DialogContent,
@@ -12,23 +11,24 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import CreateServiceForm from "@/components/dashboard/services/create-service-form";
-const services: Service[] = [
-    {
-        service: 'Portfolio',
-        device: 'VPS-1',
-        domain: 'my.portfolio',
-        host: '127.0.0.1',
-        ports: {
-            forwardPorts: false,
-            sourcePort: '3000',
-            accessPort: '80'
-        },
-        publicShare: 'https://my-portfolio.srv.tunnl.app',
-        created: '10/23/2025',
-    },
-]
+import { getServicesByEmail } from "@/db/types/services.queries";
+import client from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { unauthorized } from "next/navigation";
 
-const Services = () => {
+const Services = async () => {
+    const session = await getServerSession();
+    const email = session?.user?.email;
+
+    if (!email) unauthorized();
+
+    getServicesByEmail.run(
+        {
+            email: email,
+        },
+        client
+    );
+
     return (
         <DashboardLayout>
             <div className='flex'>
@@ -57,7 +57,7 @@ const Services = () => {
                     </Dialog>
                 </div>
             </div>
-            <ServicesTable services={services} />
+            <ServicesTable />
         </DashboardLayout >
     );
 }

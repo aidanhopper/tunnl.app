@@ -35,7 +35,7 @@ WHERE user_id = (
     FROM users
     WHERE email = :email
 )
-oRDER BY created DESC;
+ORDER BY created DESC;
 
 /* @name getIdentityByNameAndEmail */
 SELECT * 

@@ -29,7 +29,7 @@ import DeleteIdentityDropdownButton from "@/components/dashboard/identities/dele
 import Link from "next/link";
 import SubscribeProvider from "@/components/subscribe-provider";
 import generateToken from "@/lib/subscribe/generate-token";
-import RefreshOnStatusChange from "@/components/dashboard/identities/refresh-on-status-change";
+import RefreshOnEvent from "@/components/dashboard/refresh-on-event";
 
 const Identities = async () => {
     const session = await getServerSession();
@@ -46,7 +46,12 @@ const Identities = async () => {
     return (
         <DashboardLayout>
             <SubscribeProvider token={token}>
-                <RefreshOnStatusChange>
+                <RefreshOnEvent onEvent={async (payload) => {
+                    'use server'
+                    return payload.namespace === 'sdk'
+                        && (payload.eventType === 'sdk-online'
+                            || payload.eventType === 'sdk-offline')
+                }}>
                     <div className='flex'>
                         <div className='flex flex-1 items-center gap-8'>
                             <MonitorSmartphone size={48} />
@@ -88,7 +93,21 @@ const Identities = async () => {
                                 <TableRow key={i}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.created?.toLocaleDateString()}</TableCell>
-                                    <TableCell>{item.is_online ? <>Online</> : <>Offline</>}</TableCell>
+                                    <TableCell>
+                                        {item.is_online ?
+                                            <div className='flex gap-4 items-center'>
+                                                <div className='w-10'>
+                                                    Online
+                                                </div>
+                                                <div className='rounded-full bg-green-400 w-2 h-2' />
+                                            </div> :
+                                            <div className='flex gap-4 items-center'>
+                                                <div className='w-10'>
+                                                    Offline
+                                                </div>
+                                                <div className='rounded-full bg-red-400 w-2 h-2' />
+                                            </div>}
+                                    </TableCell>
                                     <TableCell className='w-16'>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -111,7 +130,7 @@ const Identities = async () => {
                                 </TableRow>))}
                         </TableBody>
                     </Table>
-                </RefreshOnStatusChange>
+                </RefreshOnEvent>
             </SubscribeProvider>
         </DashboardLayout>
     );

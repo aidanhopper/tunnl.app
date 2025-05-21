@@ -1,7 +1,6 @@
 'use client'
 
 import '@/app/globals.css'
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -10,13 +9,9 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
     SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
@@ -68,6 +63,12 @@ const items = [
         icon: MonitorSmartphone,
         subItems: []
     },
+    {
+        title: 'Domains',
+        url: '/dashboard/domains',
+        icon: null,
+        subItems: []
+    }
 ];
 
 const DashboardSidebar = ({ ...props }) => {
@@ -103,7 +104,7 @@ const DashboardSidebar = ({ ...props }) => {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild isActive={pathname === item.url}>
                                         <Link href={item.url}>
-                                            <item.icon />
+                                            {item.icon ? <item.icon /> : null}
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>

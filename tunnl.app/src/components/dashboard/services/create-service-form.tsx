@@ -14,30 +14,16 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const formSchema = z.object({
-    name: z.string().min(4),
-    privateDomain: z.string().min(4).refine((s) => {
-        return s.split(' ').reduce((acc, v) => {
-            const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i;
-            if (s === '') return false;
-            if (!domainRegex.test(v)) return false;
-            return acc && true;
-        }, true);
-    }, { message: 'Private domain must be a valid domain.' }),
-    identity: z.string().nonempty({ message: 'Must select an Identity'})
+    name: z.string().min(4).max(100),
 })
-
-const identities = ['VPS-1', 'Macbook', 'Linux Desktop']
 
 const CreateServiceForm = () => {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
-            privateDomain: '',
-            identity: ''
         },
     });
 
@@ -64,57 +50,10 @@ const CreateServiceForm = () => {
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name='privateDomain'
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Private Domain</FormLabel>
-                            <FormControl>
-                                <Input placeholder='eg. my.jellyfin.server' {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                Your services private access point over the Ziti network. Technically it can be anything,
-                                but its best to make sure its not a real FQDN to avoid conflicts.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name='identity'
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Identity</FormLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                                defaultValue={field.value}
-                            >
-                                <FormControl>
-                                    <SelectTrigger className='w-full'>
-                                        <SelectValue placeholder='Identity' />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {identities.map(v => (
-                                        <Button variant='ghost' key={v} asChild>
-                                            <SelectItem value={v} className='w-full' >
-                                                {v}
-                                            </SelectItem>
-                                        </Button>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormDescription>
-                                The identity that can host the service.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <Button type='submit' variant='outline' className='w-full cursor-pointer'>
+                <Button
+                    type='submit'
+                    variant='outline'
+                    className='w-full cursor-pointer'>
                     Submit
                 </Button>
             </form>
