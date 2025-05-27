@@ -6,7 +6,7 @@ import slugify from '@/lib/slugify';
 import client from '@/lib/db';
 import { insertIdentityByEmail } from '@/db/types/identities.queries';
 import { getServerSession } from 'next-auth';
-import { getIdentityByName, postIdentity } from '@/lib/ziti/identities'
+import { deleteIdentityByName, getIdentityByName, postIdentity } from '@/lib/ziti/identities'
 import { PostIdentityData } from '@/lib/ziti/types'
 import { z } from 'zod';
 
@@ -28,7 +28,7 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     }
 
     if (!(await postIdentity(data))) return;
-    
+
     const zitiIdentity = await getIdentityByName(slug)
     if (!zitiIdentity) return;
 
@@ -43,6 +43,7 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
             client
         )
     } catch (err) {
+        await deleteIdentityByName(slug);
         console.error(err);
         return;
     }

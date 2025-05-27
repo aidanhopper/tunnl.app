@@ -43,12 +43,6 @@ interface Links {
     [key: string]: Link;
 }
 
-interface Link {
-    comment?: string;
-    href: string;
-    method?: string;
-}
-
 interface Tags {
     [key: string]: string | boolean | null;
 }
@@ -135,64 +129,126 @@ interface PostIdentityEnrollments {
 }
 
 export interface PostIdentityData {
-  appData?: Tags | null;
-  authPolicyId?: string | null;
-  defaultHostingCost?: number; // [0 .. 65535]
-  defaultHostingPrecedence?: "default" | "required" | "failed";
-  enrollment?: PostIdentityEnrollments;
-  externalId?: string | null;
-  isAdmin: boolean;
-  name: string;
-  roleAttributes?: string[] | null;
-  serviceHostingCosts?: Record<string, number>; // integer (0..65535)
-  serviceHostingPrecedences?: Record<string, "default" | "required" | "failed">;
-  tags?: Tags | null;
-  type: "User" | "Device" | "Service" | "Router" | "Default";
+    appData?: Tags | null;
+    authPolicyId?: string | null;
+    defaultHostingCost?: number; // [0 .. 65535]
+    defaultHostingPrecedence?: "default" | "required" | "failed";
+    enrollment?: PostIdentityEnrollments;
+    externalId?: string | null;
+    isAdmin: boolean;
+    name: string;
+    roleAttributes?: string[] | null;
+    serviceHostingCosts?: Record<string, number>; // integer (0..65535)
+    serviceHostingPrecedences?: Record<string, "default" | "required" | "failed">;
+    tags?: Tags | null;
+    type: "User" | "Device" | "Service" | "Router" | "Default";
 }
 
 type AppDataValue = string | boolean | null;
 
 interface Link {
-  comment?: string;
-  href: string; // URI
-  method?: string;
+    comment?: string;
+    href: string; // URI
+    method?: string;
 }
 
 interface EntityRef {
-  _links: Links;
-  entity: string;
-  id: string;
-  name: string;
+    _links: Links;
+    entity: string;
+    id: string;
+    name: string;
 }
 
 interface Enrollment {
-  _links: Links;
-  comment?: string;
-  createdAt: string; // date-time string
-  id: string;
-  tags?: Record<string, AppDataValue> | null;
-  updatedAt: string; // date-time string
-  caId?: string | null;
-  edgeRouter?: EntityRef;
-  edgeRouterId?: string;
-  expiresAt: string; // date-time string
-  identity?: EntityRef;
-  identityId?: string;
-  jwt?: string;
-  method: string;
-  token: string;
-  transitRouter?: EntityRef;
-  transitRouterId?: string;
-  username?: string;
+    _links: Links;
+    comment?: string;
+    createdAt: string; // date-time string
+    id: string;
+    tags?: Record<string, AppDataValue> | null;
+    updatedAt: string; // date-time string
+    caId?: string | null;
+    edgeRouter?: EntityRef;
+    edgeRouterId?: string;
+    expiresAt: string; // date-time string
+    identity?: EntityRef;
+    identityId?: string;
+    jwt?: string;
+    method: string;
+    token: string;
+    transitRouter?: EntityRef;
+    transitRouterId?: string;
+    username?: string;
 }
 
 interface Pagination {
-  limit: number;
-  offset: number;
-  totalCount: number;
+    limit: number;
+    offset: number;
+    totalCount: number;
 }
 
 export interface EnrollmentListResponse {
-  data: Enrollment[];
+    data: Enrollment[];
+    meta: Meta;
+}
+
+export interface PostServiceData {
+    name: string;
+    encryptionRequired: boolean;
+    maxIdleTimeMillis?: number;
+    roleAttributes?: string[];
+    configs?: string[];
+    tags?: {
+        [key: string]: string | boolean | null;
+    } | null;
+    terminatorStrategy?: string;
+}
+
+export interface ServiceListResponse {
+  data: Service[];
+  _links: Record<string, Link>;
   meta: Meta;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  encryptionRequired: boolean;
+  maxIdleTimeMillis: number;
+  roleAttributes: string[] | null;
+  configs: string[];
+  config: Record<string, object>; // map of config type -> config object
+  permissions: ("Dial" | "Bind" | "Invalid")[];
+  postureQueries: PostureQuery[];
+  tags: Record<string, string | boolean | null> | null;
+  terminatorStrategy: string;
+  createdAt: string; // ISO date-time
+  updatedAt: string; // ISO date-time
+  _links: Record<string, Link>;
+}
+
+interface Link {
+  href: string;
+  comment?: string;
+  method?: string;
+}
+
+interface PostureQuery {
+  id: string;
+  policyId: string;
+  policyType?: "Dial" | "Bind" | "Invalid";
+  queryType: "OS" | "PROCESS" | "DOMAIN" | "MAC" | "MFA" | "PROCESS_MULTI";
+  timeout: number;
+  timeoutRemaining: number;
+  isPassing: boolean;
+  process?: PostureQueryProcess;
+  processes?: PostureQueryProcess[];
+  tags?: Record<string, string | boolean | null>;
+  createdAt: string;
+  updatedAt: string;
+  _links: Record<string, Link>;
+}
+
+interface PostureQueryProcess {
+  osType: "Windows" | "WindowsServer" | "Android" | "iOS" | "Linux" | "macOS";
+  path: string;
 }

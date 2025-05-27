@@ -16,7 +16,7 @@ import Link from "next/link"
 
 const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) => {
     return (
-        <Table className='mt-10'>
+        <Table>
             <TableCaption>A list of your services.</TableCaption>
             <TableHeader>
                 <TableRow>

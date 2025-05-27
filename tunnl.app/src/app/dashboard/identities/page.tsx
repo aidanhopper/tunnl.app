@@ -30,6 +30,7 @@ import Link from "next/link";
 import SubscribeProvider from "@/components/subscribe-provider";
 import generateToken from "@/lib/subscribe/generate-token";
 import RefreshOnEvent from "@/components/dashboard/refresh-on-event";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Identities = async () => {
     const session = await getServerSession();
@@ -78,58 +79,62 @@ const Identities = async () => {
                             </Dialog>
                         </div>
                     </div>
-                    <Table className='mt-10'>
-                        <TableCaption>A list of your authenticated devices.</TableCaption>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Identity</TableHead>
-                                <TableHead>Created</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead />
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {identities.map((item, i) => (
-                                <TableRow key={i}>
-                                    <TableCell>{item.name}</TableCell>
-                                    <TableCell>{item.created?.toLocaleDateString()}</TableCell>
-                                    <TableCell>
-                                        {item.is_online ?
-                                            <div className='flex gap-4 items-center'>
-                                                <div className='w-10'>
-                                                    Online
-                                                </div>
-                                                <div className='rounded-full bg-green-400 w-2 h-2' />
-                                            </div> :
-                                            <div className='flex gap-4 items-center'>
-                                                <div className='w-10'>
-                                                    Offline
-                                                </div>
-                                                <div className='rounded-full bg-red-400 w-2 h-2' />
-                                            </div>}
-                                    </TableCell>
-                                    <TableCell className='w-16'>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant='ghost' className='cursor-pointer'>
-                                                    <EllipsisVertical />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem asChild className='cursor-pointer'>
-                                                    <Link href={`/dashboard/identities/${item.slug}`}>
-                                                        {item.name}
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuGroup>
-                                                    <DeleteIdentityDropdownButton name={item.name} />
-                                                </DropdownMenuGroup>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>))}
-                        </TableBody>
-                    </Table>
+                    <Card className='mt-10'>
+                        <CardContent>
+                            <Table>
+                                <TableCaption>A list of your authenticated devices.</TableCaption>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Identity</TableHead>
+                                        <TableHead>Created</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead />
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {identities.map((item, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell>{item.name}</TableCell>
+                                            <TableCell>{item.created?.toLocaleDateString()}</TableCell>
+                                            <TableCell>
+                                                {item.is_online ?
+                                                    <div className='flex gap-4 items-center'>
+                                                        <div className='w-10'>
+                                                            Online
+                                                        </div>
+                                                        <div className='rounded-full bg-green-400 w-2 h-2' />
+                                                    </div> :
+                                                    <div className='flex gap-4 items-center'>
+                                                        <div className='w-10'>
+                                                            Offline
+                                                        </div>
+                                                        <div className='rounded-full bg-red-400 w-2 h-2' />
+                                                    </div>}
+                                            </TableCell>
+                                            <TableCell className='w-16'>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant='ghost' className='cursor-pointer'>
+                                                            <EllipsisVertical />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem asChild className='cursor-pointer'>
+                                                            <Link href={`/dashboard/identities/${item.slug}`}>
+                                                                {item.name}
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuGroup>
+                                                            <DeleteIdentityDropdownButton name={item.name} />
+                                                        </DropdownMenuGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
                 </RefreshOnEvent>
             </SubscribeProvider>
         </DashboardLayout>

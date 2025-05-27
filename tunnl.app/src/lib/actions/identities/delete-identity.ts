@@ -20,15 +20,19 @@ const deleteIdentity = async (name: string) => {
         client
     );
 
-    await ziti.deleteIdentity(identity[0].ziti_id);
+    try {
+        await deleteIdentityByEmail.run(
+            {
+                name: name,
+                email: email
+            },
+            client
+        );
+        await ziti.deleteIdentity(identity[0].ziti_id);
 
-    await deleteIdentityByEmail.run(
-        {
-            name: name,
-            email: email
-        },
-        client
-    );
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 export default deleteIdentity;

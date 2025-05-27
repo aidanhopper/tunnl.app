@@ -15,6 +15,7 @@ import { getServicesByEmail } from "@/db/types/services.queries";
 import client from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { unauthorized } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Services = async () => {
     const session = await getServerSession();
@@ -57,7 +58,11 @@ const Services = async () => {
                     </Dialog>
                 </div>
             </div>
-            <ServicesTable services={services}/>
+            <Card className='mt-10'>
+                <CardContent>
+                    <ServicesTable services={services} />
+                </CardContent>
+            </Card>
         </DashboardLayout >
     );
 }

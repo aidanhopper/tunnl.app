@@ -60,7 +60,10 @@ export const get = async <T>({ route, filter }: { route: string, filter?: string
             },
         );
         return r.data as T;
-    } catch { return null }
+    } catch (err) {
+        console.error(err)
+        return null
+    }
 }
 
 export const post = async ({ route, data }: { route: string, data?: object }) => {
@@ -78,7 +81,7 @@ export const post = async ({ route, data }: { route: string, data?: object }) =>
         return r.status === 201;
     } catch (err) {
         console.error(err);
-        return false 
+        return false
     }
 }
 
