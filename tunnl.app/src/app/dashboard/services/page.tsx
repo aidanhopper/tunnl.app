@@ -22,7 +22,7 @@ const Services = async () => {
 
     if (!email) unauthorized();
 
-    getServicesByEmail.run(
+    const services = await getServicesByEmail.run(
         {
             email: email,
         },
@@ -57,7 +57,7 @@ const Services = async () => {
                     </Dialog>
                 </div>
             </div>
-            <ServicesTable />
+            <ServicesTable services={services}/>
         </DashboardLayout >
     );
 }

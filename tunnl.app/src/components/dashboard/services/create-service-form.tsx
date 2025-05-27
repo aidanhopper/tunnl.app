@@ -1,7 +1,6 @@
 'use client'
 
 import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from "@/components/ui/button"
 import {
@@ -14,26 +13,22 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-
-const formSchema = z.object({
-    name: z.string().min(4).max(100),
-})
+import serviceSchema from '@/lib/form-schemas/create-service-form-schema';
+import createService from '@/lib/actions/services/create-service';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const CreateServiceForm = () => {
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof serviceSchema>>({
+        resolver: zodResolver(serviceSchema),
         defaultValues: {
             name: '',
         },
     });
 
-    const onSubmit = (values: z.infer<typeof formSchema>) => {
-        console.log('values', values);
-    }
-
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+            <form onSubmit={form.handleSubmit(createService)} className='space-y-8'>
                 <FormField
                     control={form.control}
                     name='name'
@@ -45,6 +40,40 @@ const CreateServiceForm = () => {
                             </FormControl>
                             <FormDescription>
                                 Your services public display name.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="protocol"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className='mb-1'>Protocol Family</FormLabel>
+                            <FormControl>
+                                <RadioGroup
+
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-col"
+                                >
+                                    <FormItem className="flex items-center space-x-2">
+                                        <FormControl>
+                                            <RadioGroupItem value="http" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">HTTP</FormLabel>
+                                    </FormItem>
+                                    <FormItem className="flex items-center space-x-2">
+                                        <FormControl>
+                                            <RadioGroupItem value="tcp/udp" />
+                                        </FormControl>
+                                        <FormLabel className="font-normal">TCP/UDP</FormLabel>
+                                    </FormItem>
+                                </RadioGroup>
+                            </FormControl>
+                            <FormDescription>
+                                Select the protocol that best fits your service. The protocol effects the way your service can be exposed publicly if you choose to do so.
                             </FormDescription>
                             <FormMessage />
                         </FormItem>

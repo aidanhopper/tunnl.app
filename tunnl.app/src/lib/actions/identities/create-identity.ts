@@ -8,27 +8,14 @@ import { insertIdentityByEmail } from '@/db/types/identities.queries';
 import { getServerSession } from 'next-auth';
 import { getIdentityByName, postIdentity } from '@/lib/ziti/identities'
 import { PostIdentityData } from '@/lib/ziti/types'
+import { z } from 'zod';
 
-const formDataToObject = (formData: FormData): Record<string, FormDataEntryValue> => {
-    const obj: Record<string, FormDataEntryValue> = {};
-    for (const [key, value] of formData.entries())
-        obj[key] = value;
-    return obj;
-}
-
-const createIdentity = async (formData: FormData) => {
-    const formParse = identitySchema.safeParse(formDataToObject(formData));
-
-    if (!formParse.success) {
-        console.log(formParse.error);
-        return;
-    }
-
+const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const session = await getServerSession();
     if (!session?.user?.email) return;
 
     const email = session.user.email;
-    const name = formParse.data.name;
+    const name = formData.name
     const slug = slugify(name);
 
     const data: PostIdentityData = {

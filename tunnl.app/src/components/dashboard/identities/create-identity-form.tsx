@@ -14,16 +14,10 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import createIdentity from '@/lib/actions/create-identity';
+import createIdentity from '@/lib/actions/identities/create-identity';
 import identitySchema from '@/lib/form-schemas/create-identity-form-schema';
 
-// const RefreshOnSuccess = ({ success }: { success: boolean | null }) => {
-//     const router = useRouter();
-//
-// }
-
 const CreateIdentityForm = () => {
-
     const form = useForm<z.infer<typeof identitySchema>>({
         resolver: zodResolver(identitySchema),
         defaultValues: {
@@ -33,7 +27,7 @@ const CreateIdentityForm = () => {
 
     return (
         <Form {...form}>
-            <form action={createIdentity} className='space-y-8'>
+            <form onSubmit={form.handleSubmit(createIdentity)} className='space-y-8'>
                 <FormField
                     control={form.control}
                     name='name'
