@@ -25,7 +25,7 @@ const deleteService = async (name: string) => {
     const service = serviceList[0];
 
     ziti.getService(service.ziti_id)
-    
+
     try {
         deleteServiceByNameAndEmail.run(
             {

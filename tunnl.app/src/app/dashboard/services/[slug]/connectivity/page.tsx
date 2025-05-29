@@ -1,9 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import client from "@/lib/db";
 import { notFound } from "next/navigation";
 
-const ServiceInformation = async ({ params }: { params: { slug: string } }) => {
+const DashboardServiceConnectvity = async ({ params }: { params: { slug: string } }) => {
     const slug = (await params).slug;
 
     const serviceList = await getServiceBySlug.run(
@@ -19,13 +19,14 @@ const ServiceInformation = async ({ params }: { params: { slug: string } }) => {
         <Card>
             <CardHeader>
                 <CardDescription>
-                    General settings for {service.name}
+                    Connectitivy settings for {service.name}
                 </CardDescription>
             </CardHeader>
             <CardContent className='h-96'>
+                connectitivy
             </CardContent >
         </Card>
     );
 }
 
-export default ServiceInformation;
+export default DashboardServiceConnectvity;

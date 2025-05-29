@@ -17,7 +17,7 @@ import { getServerSession } from 'next-auth';
 import { unauthorized } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 
-const Services = async () => {
+const Services = async ({ params }: { params: { slug: string } }) => {
     const session = await getServerSession();
     const email = session?.user?.email;
 

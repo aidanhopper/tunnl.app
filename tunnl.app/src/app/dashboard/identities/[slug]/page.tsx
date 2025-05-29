@@ -14,7 +14,7 @@ import IdentityStatusCard from '@/components/dashboard/identities/identity-statu
 import RefreshOnEvent from '@/components/dashboard/refresh-on-event';
 
 const Identity = async ({ params }: { params: { slug: string } }) => {
-    const slug = params.slug;
+    const slug = (await params).slug;
 
     const session = await getServerSession();
 

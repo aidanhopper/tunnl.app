@@ -204,51 +204,51 @@ export interface PostServiceData {
 }
 
 export interface ServiceListResponse {
-  data: Service[];
-  _links: Record<string, Link>;
-  meta: Meta;
+    data: Service[];
+    _links: Record<string, Link>;
+    meta: Meta;
 }
 
 export interface Service {
-  id: string;
-  name: string;
-  encryptionRequired: boolean;
-  maxIdleTimeMillis: number;
-  roleAttributes: string[] | null;
-  configs: string[];
-  config: Record<string, object>; // map of config type -> config object
-  permissions: ("Dial" | "Bind" | "Invalid")[];
-  postureQueries: PostureQuery[];
-  tags: Record<string, string | boolean | null> | null;
-  terminatorStrategy: string;
-  createdAt: string; // ISO date-time
-  updatedAt: string; // ISO date-time
-  _links: Record<string, Link>;
+    id: string;
+    name: string;
+    encryptionRequired: boolean;
+    maxIdleTimeMillis: number;
+    roleAttributes: string[] | null;
+    configs: string[];
+    config: Record<string, object>; // map of config type -> config object
+    permissions: ("Dial" | "Bind" | "Invalid")[];
+    postureQueries: PostureQuery[];
+    tags: Record<string, string | boolean | null> | null;
+    terminatorStrategy: string;
+    createdAt: string; // ISO date-time
+    updatedAt: string; // ISO date-time
+    _links: Record<string, Link>;
 }
 
 interface Link {
-  href: string;
-  comment?: string;
-  method?: string;
+    href: string;
+    comment?: string;
+    method?: string;
 }
 
 interface PostureQuery {
-  id: string;
-  policyId: string;
-  policyType?: "Dial" | "Bind" | "Invalid";
-  queryType: "OS" | "PROCESS" | "DOMAIN" | "MAC" | "MFA" | "PROCESS_MULTI";
-  timeout: number;
-  timeoutRemaining: number;
-  isPassing: boolean;
-  process?: PostureQueryProcess;
-  processes?: PostureQueryProcess[];
-  tags?: Record<string, string | boolean | null>;
-  createdAt: string;
-  updatedAt: string;
-  _links: Record<string, Link>;
+    id: string;
+    policyId: string;
+    policyType?: "Dial" | "Bind" | "Invalid";
+    queryType: "OS" | "PROCESS" | "DOMAIN" | "MAC" | "MFA" | "PROCESS_MULTI";
+    timeout: number;
+    timeoutRemaining: number;
+    isPassing: boolean;
+    process?: PostureQueryProcess;
+    processes?: PostureQueryProcess[];
+    tags?: Record<string, string | boolean | null>;
+    createdAt: string;
+    updatedAt: string;
+    _links: Record<string, Link>;
 }
 
 interface PostureQueryProcess {
-  osType: "Windows" | "WindowsServer" | "Android" | "iOS" | "Linux" | "macOS";
-  path: string;
+    osType: "Windows" | "WindowsServer" | "Android" | "iOS" | "Linux" | "macOS";
+    path: string;
 }
