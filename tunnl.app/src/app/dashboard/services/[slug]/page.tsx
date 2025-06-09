@@ -3,7 +3,7 @@ import { getServiceBySlug } from "@/db/types/services.queries";
 import client from "@/lib/db";
 import { notFound } from "next/navigation";
 
-const ServiceInformation = async ({ params }: { params: { slug: string } }) => {
+const ServiceGeneral = async ({ params }: { params: { slug: string } }) => {
     const slug = (await params).slug;
 
     const serviceList = await getServiceBySlug.run(
@@ -28,4 +28,4 @@ const ServiceInformation = async ({ params }: { params: { slug: string } }) => {
     );
 }
 
-export default ServiceInformation;
+export default ServiceGeneral;
