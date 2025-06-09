@@ -1,7 +1,6 @@
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getIdentitiesByEmail } from "@/db/types/identities.queries";
@@ -52,21 +51,9 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                         <CardDescription>Connectivity settings for {service.name}</CardDescription>
                     </div>
                     <div className='justify-end grid items-center'>
-                        <Dialog>
-                            <Button className='cursor-pointer' variant='ghost' asChild>
-                                <DialogTrigger>
-                                    Create
-                                </DialogTrigger>
-                            </Button>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>
-                                        Create a binding
-                                    </DialogTitle>
-                                </DialogHeader>
-                                <CreateBindingForm identities={identities} />
-                            </DialogContent>
-                        </Dialog>
+                        <CreateBindingForm
+                            serviceSlug={slug}
+                            identities={identities} />
                     </div>
                 </div>
             </CardHeader>

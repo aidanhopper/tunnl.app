@@ -5,7 +5,7 @@ CREATE TABLE ziti_intercepts (
     name VARCHAR(128) NOT NULL,
     port_ranges TEXT NOT NULL CHECK (is_valid_port_range_list(port_ranges)),
     protocol protocol NOT NULL CHECK (protocol IN ('tcp', 'udp', 'tcp/udp')),
-    source_ip INET
+    addresses  VARCHAR(128)[] NOT NULL
 );
 
 -- migrate:down

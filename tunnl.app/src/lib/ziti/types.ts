@@ -252,3 +252,34 @@ interface PostureQueryProcess {
     osType: "Windows" | "WindowsServer" | "Android" | "iOS" | "Linux" | "macOS";
     path: string;
 }
+
+export interface PostConfigData {
+    configTypeId: string;
+    name: string;
+    data: object;
+    tags?: Tags | null
+}
+
+export interface ConfigTypeListResponse {
+    data: ConfigType[];
+    _links: Links
+    meta: {
+        apiEnrollmentVersion: string;
+        apiVersion: string;
+        filterableFields: string[];
+        pagination: {
+            limit: number;
+            offset: number;
+            totalCount: number;
+        };
+    };
+};
+
+interface ConfigType {
+    createdAt: string; // ISO date-time
+    updatedAt: string; // ISO date-time
+    id: string;
+    name: string;
+    tags?: Tags
+    schema: Record<string, object>; // schema is a JSON schema object, shape is dynamic
+};

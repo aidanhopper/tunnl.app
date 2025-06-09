@@ -1,35 +1,32 @@
 'use client'
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
+import createTunnelBinding from "@/lib/actions/services/create-tunnel-binding";
+import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
+import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-type BindingType = 'tunnel' | 'proxied' | 'port' | null
+type BindingType = 'tunnel' | 'proxy' | 'port' | null;
 
 const bindingTypeSchema = z.object({
     type: z.string().nonempty()
 });
 
-const tunnelHostFormSchema = z.object({
-    protocol: z.string().nonempty(),
-    ipOrHostname: z.string().nonempty(),
-    port: z.string().nonempty(),
-    identity: z.string().nonempty()
-});
-
-const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailResult[] }) => {
+const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdentitiesByEmailResult[], serviceSlug: string }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
+    const [tunnelHostConfig, setTunnelHostConfig] = useState<null | z.infer<typeof tunnelHostFormSchema>>(null);
 
     const bindingTypeForm = useForm<z.infer<typeof bindingTypeSchema>>({
         resolver: zodResolver(bindingTypeSchema),
@@ -42,11 +39,19 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
         resolver: zodResolver(tunnelHostFormSchema),
         defaultValues: {
             protocol: '',
-            ipOrHostname: '',
+            address: '',
             port: '',
             identity: '',
         }
     });
+
+    const tunnelInterceptForm = useForm<z.infer<typeof tunnelInterceptFormSchema>>({
+        resolver: zodResolver(tunnelInterceptFormSchema),
+        defaultValues: {
+            address: '',
+            port: ''
+        }
+    })
 
     const getCurrentPage = (bindingType: BindingType) => {
         const bindingTypePage = <>
@@ -73,7 +78,7 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                                         <SelectContent>
                                             <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>
                                             <SelectItem className='cursor-pointer' value="port">Port</SelectItem>
-                                            <SelectItem className='cursor-pointer' value="proxied">Proxied</SelectItem>
+                                            <SelectItem className='cursor-pointer' value="proxy">Proxy</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FormControl>
@@ -103,8 +108,8 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                 <Form {...tunnelHostForm}>
                     <form
                         onSubmit={tunnelHostForm.handleSubmit((formData: z.infer<typeof tunnelHostFormSchema>) => {
-                            console.log(formData);
-                            // setPageIndex(pageIndex + 1);
+                            setTunnelHostConfig(formData);
+                            setPageIndex(pageIndex + 1);
                         })}
                         className='space-y-8'>
                         <FormField
@@ -142,7 +147,7 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                             <span className='w-full'>
                                 <FormField
                                     control={tunnelHostForm.control}
-                                    name='ipOrHostname'
+                                    name='address'
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>IP / Hostname</FormLabel>
@@ -157,7 +162,7 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                                     )}
                                 />
                             </span>
-                            <span className='max-w-32'>
+                            <span className='w-24'>
                                 <FormField
                                     control={tunnelHostForm.control}
                                     name='port'
@@ -202,6 +207,9 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                                             </Select>
                                         </FormControl>
                                         <FormMessage />
+                                        <FormDescription>
+                                            The identity your service will be accessed from
+                                        </FormDescription>
                                     </FormItem>
                                 )}
                             />
@@ -230,7 +238,79 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
                 </Form>
             </>,
             <>
-                page 3 !
+                <h3 className='font-semibold'>Configure the intercept</h3>
+                <Form {...tunnelInterceptForm}>
+                    <form
+                        onSubmit={tunnelInterceptForm.handleSubmit((formData: z.infer<typeof tunnelInterceptFormSchema>) => {
+                            if (!tunnelHostConfig) return;
+                            createTunnelBinding({
+                                serviceSlug: serviceSlug,
+                                hostConfig: tunnelHostConfig,
+                                interceptConfig: formData,
+                            });
+                        })}
+                        className='space-y-8'>
+                        <div className='flex gap-4'>
+                            <span className='w-full'>
+                                <FormField
+                                    control={tunnelInterceptForm.control}
+                                    name='address'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Address</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder='my.service'
+                                                    {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                            <FormDescription>
+                                                The address clients can use to connect to the service
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}
+                                />
+                            </span>
+                            <span className='w-24'>
+                                <FormField
+                                    control={tunnelInterceptForm.control}
+                                    name='port'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Port</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder='443'
+                                                    {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </span>
+                        </div>
+                        <div className='grid grid-cols-2'>
+                            <span>
+                                <Button
+                                    onClick={() => setPageIndex(pageIndex - 1)}
+                                    type='button'
+                                    variant='outline'
+                                    className='cursor-pointer'>
+                                    <ArrowLeft />
+                                </Button>
+                            </span>
+                            <span className='grid justify-end'>
+                                <Button
+                                    onSubmit={e => e.preventDefault()}
+                                    type='submit'
+                                    variant='outline'
+                                    className='cursor-pointer'>
+                                    <ArrowRight />
+                                </Button>
+                            </span>
+                        </div>
+                    </form>
+                </Form>
             </>
         ];
 
@@ -250,9 +330,25 @@ const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailRe
     }
 
     return (
-        <div className='grid gap-4'>
-            {getCurrentPage(bindingType)}
-        </div>
+        <Dialog>
+            <Button className='cursor-pointer' variant='ghost' asChild>
+                <DialogTrigger>
+                    Create
+                </DialogTrigger>
+            </Button>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>
+                        Create a <span className='capitalize'>{
+                            bindingType && pageIndex !== 0 ? bindingType : ''}
+                        </span> Binding
+                    </DialogTitle>
+                </DialogHeader>
+                <div className='grid gap-4'>
+                    {getCurrentPage(bindingType)}
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }
 
