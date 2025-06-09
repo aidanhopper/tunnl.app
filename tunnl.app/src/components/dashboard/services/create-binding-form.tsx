@@ -2,7 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -16,10 +21,13 @@ const bindingTypeSchema = z.object({
 });
 
 const tunnelHostFormSchema = z.object({
-    type: z.string()
-})
+    protocol: z.string().nonempty(),
+    ipOrHostname: z.string().nonempty(),
+    port: z.string().nonempty(),
+    identity: z.string().nonempty()
+});
 
-const CreateBindingForm = () => {
+const CreateBindingForm = ({ identities }: { identities: IGetIdentitiesByEmailResult[] }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
 
@@ -32,6 +40,12 @@ const CreateBindingForm = () => {
 
     const tunnelHostForm = useForm<z.infer<typeof tunnelHostFormSchema>>({
         resolver: zodResolver(tunnelHostFormSchema),
+        defaultValues: {
+            protocol: '',
+            ipOrHostname: '',
+            port: '',
+            identity: '',
+        }
     });
 
     const getCurrentPage = (bindingType: BindingType) => {
@@ -64,7 +78,7 @@ const CreateBindingForm = () => {
                                     </Select>
                                 </FormControl>
                                 <FormDescription>
-                                    The name of your identity that is referenced by services.
+                                    The name of your identity that is referenced by services
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -88,26 +102,110 @@ const CreateBindingForm = () => {
                 <h3 className='font-semibold'>Configure the host</h3>
                 <Form {...tunnelHostForm}>
                     <form
-                        onSubmit={tunnelHostForm.handleSubmit((formData: z.infer<typeof bindingTypeSchema>) => {
-                            setBindingType(formData.type as BindingType);
-                            setPageIndex(pageIndex + 1);
+                        onSubmit={tunnelHostForm.handleSubmit((formData: z.infer<typeof tunnelHostFormSchema>) => {
+                            console.log(formData);
+                            // setPageIndex(pageIndex + 1);
                         })}
                         className='space-y-8'>
                         <FormField
                             control={tunnelHostForm.control}
-                            name='type'
+                            name='protocol'
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Host</FormLabel>
+                                    <FormLabel>Protocol</FormLabel>
                                     <FormControl>
+                                        <RadioGroup
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="tcp" id="tcp" className='cursor-pointer' />
+                                                <Label htmlFor="tcp" className='cursor-pointer'>TCP</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="udp" id="udp" className='cursor-pointer' />
+                                                <Label htmlFor="udp" className='cursor-pointer'>UDP</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="tcp/udp" id="tcp/udp" className='cursor-pointer' />
+                                                <Label htmlFor="tcp/udp" className='cursor-pointer'>TCP / UDP</Label>
+                                            </div>
+                                        </RadioGroup>
                                     </FormControl>
                                     <FormDescription>
-                                        The name of your identity that is referenced by services.
+                                        Choose the protocol the service is running on
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+                        <div className='flex gap-4'>
+                            <span className='w-full'>
+                                <FormField
+                                    control={tunnelHostForm.control}
+                                    name='ipOrHostname'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>IP / Hostname</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder='127.0.0.1' {...field} />
+                                            </FormControl>
+                                            <FormDescription>
+                                                Where the hosting identity can access the service
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </span>
+                            <span className='max-w-32'>
+                                <FormField
+                                    control={tunnelHostForm.control}
+                                    name='port'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Port</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder='443' {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </span>
+                        </div>
+                        <div>
+                            <FormField
+                                control={tunnelHostForm.control}
+                                name='identity'
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Hosting identity</FormLabel>
+                                        <FormControl>
+                                            <Select
+                                                onValueChange={field.onChange}
+                                                {...field}>
+                                                <SelectTrigger
+                                                    className='w-full cursor-pointer'
+                                                    value='identity'>
+                                                    <SelectValue placeholder='Identity' />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {identities.map((elem, i) =>
+                                                        <SelectItem
+                                                            className='cursor-pointer'
+                                                            key={i}
+                                                            value={elem.slug}>
+                                                            {elem.name}
+                                                        </SelectItem>
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                         <div className='grid grid-cols-2'>
                             <span>
                                 <Button
@@ -130,6 +228,9 @@ const CreateBindingForm = () => {
                         </div>
                     </form>
                 </Form>
+            </>,
+            <>
+                page 3 !
             </>
         ];
 

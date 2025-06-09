@@ -4,14 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import client from "@/lib/db";
 import { Delete, EllipsisVertical, Settings } from "lucide-react";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, unauthorized } from "next/navigation";
 
 const DashboardServiceConnectvity = async ({ params }: { params: { slug: string } }) => {
     const slug = (await params).slug;
+
+    const session = await getServerSession();
+
+    if (!session?.user?.email) unauthorized();
+
+    const email = session.user.email;
 
     const serviceList = await getServiceBySlug.run(
         {
@@ -21,6 +29,13 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
     );
     if (serviceList.length === 0) notFound();
     const service = serviceList[0]
+
+    const identities = await getIdentitiesByEmail.run(
+        {
+            email: email
+        },
+        client
+    )
 
     // TODO Add way to create a underlying ziti service binding using intercepts,
     // policies, and hosts and then associate them with the service with the id service.ziti_id
@@ -49,7 +64,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                         Create a binding
                                     </DialogTitle>
                                 </DialogHeader>
-                                <CreateBindingForm />
+                                <CreateBindingForm identities={identities} />
                             </DialogContent>
                         </Dialog>
                     </div>
