@@ -44,3 +44,14 @@ WHERE user_id = (
     FROM users
     WHERE email = :email
 ) AND name = :name;
+
+/* @name getUserAndServiceByServiceSlug */
+SELECT
+    users.id AS user_id,
+    services.id AS service_id,
+    services.slug AS service_slug,
+    users.email AS email
+FROM services
+JOIN users ON users.id = services.user_id
+WHERE services.slug = :slug
+LIMIT 1;

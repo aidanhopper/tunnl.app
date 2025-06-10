@@ -190,3 +190,41 @@ const getServiceByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":tru
 export const getServiceByNameAndEmail = new PreparedQuery<IGetServiceByNameAndEmailParams,IGetServiceByNameAndEmailResult>(getServiceByNameAndEmailIR);
 
 
+/** 'GetUserAndServiceByServiceSlug' parameters type */
+export interface IGetUserAndServiceByServiceSlugParams {
+  slug?: string | null | void;
+}
+
+/** 'GetUserAndServiceByServiceSlug' return type */
+export interface IGetUserAndServiceByServiceSlugResult {
+  email: string;
+  service_id: string;
+  service_slug: string;
+  user_id: string;
+}
+
+/** 'GetUserAndServiceByServiceSlug' query type */
+export interface IGetUserAndServiceByServiceSlugQuery {
+  params: IGetUserAndServiceByServiceSlugParams;
+  result: IGetUserAndServiceByServiceSlugResult;
+}
+
+const getUserAndServiceByServiceSlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":201,"b":205}]}],"statement":"SELECT\n    users.id AS user_id,\n    services.id AS service_id,\n    services.slug AS service_slug,\n    users.email AS email\nFROM services\nJOIN users ON users.id = services.user_id\nWHERE services.slug = :slug\nLIMIT 1"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT
+ *     users.id AS user_id,
+ *     services.id AS service_id,
+ *     services.slug AS service_slug,
+ *     users.email AS email
+ * FROM services
+ * JOIN users ON users.id = services.user_id
+ * WHERE services.slug = :slug
+ * LIMIT 1
+ * ```
+ */
+export const getUserAndServiceByServiceSlug = new PreparedQuery<IGetUserAndServiceByServiceSlugParams,IGetUserAndServiceByServiceSlugResult>(getUserAndServiceByServiceSlugIR);
+
+

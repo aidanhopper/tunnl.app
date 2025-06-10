@@ -1,10 +1,10 @@
 import { get, post, del } from './methods';
-import { ConfigTypeListResponse, PostConfigData } from './types';
+import { ConfigTypeListResponse, PostConfigData, PostConfigResponse } from './types';
 
 let configTypes: ConfigTypeListResponse | null = null;
 
 export const postConfig = async (data: PostConfigData) => {
-    return await post({
+    return await post<PostConfigResponse>({
         route: '/configs',
         data: data
     });

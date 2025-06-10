@@ -283,3 +283,9 @@ interface ConfigType {
     tags?: Tags
     schema: Record<string, object>; // schema is a JSON schema object, shape is dynamic
 };
+
+export interface PostConfigResponse {
+    data: { id: string };
+    _links: Links;
+    meta: Meta;
+};

@@ -13,6 +13,7 @@ import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,6 +28,8 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
     const [tunnelHostConfig, setTunnelHostConfig] = useState<null | z.infer<typeof tunnelHostFormSchema>>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
 
     const bindingTypeForm = useForm<z.infer<typeof bindingTypeSchema>>({
         resolver: zodResolver(bindingTypeSchema),
@@ -241,13 +244,18 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                 <h3 className='font-semibold'>Configure the intercept</h3>
                 <Form {...tunnelInterceptForm}>
                     <form
-                        onSubmit={tunnelInterceptForm.handleSubmit((formData: z.infer<typeof tunnelInterceptFormSchema>) => {
+                        onSubmit={tunnelInterceptForm.handleSubmit(async (formData: z.infer<typeof tunnelInterceptFormSchema>) => {
                             if (!tunnelHostConfig) return;
-                            createTunnelBinding({
+                            const res = await createTunnelBinding({
                                 serviceSlug: serviceSlug,
                                 hostConfig: tunnelHostConfig,
                                 interceptConfig: formData,
                             });
+
+                            if (!res) return;
+
+                            setIsOpen(false);
+                            router.refresh();
                         })}
                         className='space-y-8'>
                         <div className='flex gap-4'>
@@ -330,10 +338,12 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
     }
 
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <Button className='cursor-pointer' variant='ghost' asChild>
-                <DialogTrigger>
-                    Create
+                <DialogTrigger asChild>
+                    <Button variant='ghost' onClick={() => setIsOpen(true)}>
+                        Create
+                    </Button>
                 </DialogTrigger>
             </Button>
             <DialogContent>
