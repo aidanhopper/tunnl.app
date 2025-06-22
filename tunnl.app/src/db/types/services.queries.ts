@@ -190,41 +190,51 @@ const getServiceByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":tru
 export const getServiceByNameAndEmail = new PreparedQuery<IGetServiceByNameAndEmailParams,IGetServiceByNameAndEmailResult>(getServiceByNameAndEmailIR);
 
 
-/** 'GetUserAndServiceByServiceSlug' parameters type */
-export interface IGetUserAndServiceByServiceSlugParams {
-  slug?: string | null | void;
+/** 'GetUserServiceAndIdentityBySlugs' parameters type */
+export interface IGetUserServiceAndIdentityBySlugsParams {
+  identity_slug?: string | null | void;
+  service_slug?: string | null | void;
 }
 
-/** 'GetUserAndServiceByServiceSlug' return type */
-export interface IGetUserAndServiceByServiceSlugResult {
+/** 'GetUserServiceAndIdentityBySlugs' return type */
+export interface IGetUserServiceAndIdentityBySlugsResult {
   email: string;
+  identity_id: string;
+  identity_slug: string;
+  identity_ziti_id: string;
   service_id: string;
   service_slug: string;
+  service_ziti_id: string;
   user_id: string;
 }
 
-/** 'GetUserAndServiceByServiceSlug' query type */
-export interface IGetUserAndServiceByServiceSlugQuery {
-  params: IGetUserAndServiceByServiceSlugParams;
-  result: IGetUserAndServiceByServiceSlugResult;
+/** 'GetUserServiceAndIdentityBySlugs' query type */
+export interface IGetUserServiceAndIdentityBySlugsQuery {
+  params: IGetUserServiceAndIdentityBySlugsParams;
+  result: IGetUserServiceAndIdentityBySlugsResult;
 }
 
-const getUserAndServiceByServiceSlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":201,"b":205}]}],"statement":"SELECT\n    users.id AS user_id,\n    services.id AS service_id,\n    services.slug AS service_slug,\n    users.email AS email\nFROM services\nJOIN users ON users.id = services.user_id\nWHERE services.slug = :slug\nLIMIT 1"};
+const getUserServiceAndIdentityBySlugsIR: any = {"usedParamSet":{"service_slug":true,"identity_slug":true},"params":[{"name":"service_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":412,"b":424}]},{"name":"identity_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":450,"b":463}]}],"statement":"SELECT\n    users.id AS user_id,\n    users.email AS email,\n    services.id AS service_id,\n    services.ziti_id AS service_ziti_id,\n    services.slug AS service_slug,\n    identities.id AS identity_id,\n    identities.ziti_id AS identity_ziti_id,\n    identities.slug AS identity_slug\nFROM services\nJOIN users ON users.id = services.user_id\nLEFT JOIN identities ON identities.user_id = users.id\nWHERE services.slug = :service_slug\n  AND identities.slug = :identity_slug"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT
  *     users.id AS user_id,
+ *     users.email AS email,
  *     services.id AS service_id,
+ *     services.ziti_id AS service_ziti_id,
  *     services.slug AS service_slug,
- *     users.email AS email
+ *     identities.id AS identity_id,
+ *     identities.ziti_id AS identity_ziti_id,
+ *     identities.slug AS identity_slug
  * FROM services
  * JOIN users ON users.id = services.user_id
- * WHERE services.slug = :slug
- * LIMIT 1
+ * LEFT JOIN identities ON identities.user_id = users.id
+ * WHERE services.slug = :service_slug
+ *   AND identities.slug = :identity_slug
  * ```
  */
-export const getUserAndServiceByServiceSlug = new PreparedQuery<IGetUserAndServiceByServiceSlugParams,IGetUserAndServiceByServiceSlugResult>(getUserAndServiceByServiceSlugIR);
+export const getUserServiceAndIdentityBySlugs = new PreparedQuery<IGetUserServiceAndIdentityBySlugsParams,IGetUserServiceAndIdentityBySlugsResult>(getUserServiceAndIdentityBySlugsIR);
 
 

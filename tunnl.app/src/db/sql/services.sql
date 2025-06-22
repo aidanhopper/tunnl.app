@@ -45,13 +45,18 @@ WHERE user_id = (
     WHERE email = :email
 ) AND name = :name;
 
-/* @name getUserAndServiceByServiceSlug */
+/* @name getUserServiceAndIdentityBySlugs */
 SELECT
     users.id AS user_id,
+    users.email AS email,
     services.id AS service_id,
+    services.ziti_id AS service_ziti_id,
     services.slug AS service_slug,
-    users.email AS email
+    identities.id AS identity_id,
+    identities.ziti_id AS identity_ziti_id,
+    identities.slug AS identity_slug
 FROM services
 JOIN users ON users.id = services.user_id
-WHERE services.slug = :slug
-LIMIT 1;
+LEFT JOIN identities ON identities.user_id = users.id
+WHERE services.slug = :service_slug
+  AND identities.slug = :identity_slug;

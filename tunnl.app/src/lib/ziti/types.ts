@@ -289,3 +289,22 @@ export interface PostConfigResponse {
     _links: Links;
     meta: Meta;
 };
+
+
+export interface PostPolicyData {
+    identityRoles: string[];
+    name: string;
+    postureCheckRoles: string[];
+    semantic: "AllOf" | "AnyOf";
+    serviceRoles: string[];
+    tags?: Tags;
+    type: "Dial" | "Bind" | "Invalid";
+};
+
+export interface PostPolicyResponse {
+    data: {
+        id: string;
+        meta: Meta;
+        _links: Links;
+    };
+};

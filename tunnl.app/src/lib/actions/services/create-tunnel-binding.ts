@@ -1,63 +1,72 @@
 'use server'
 
-import { getUserAndServiceByServiceSlug } from "@/db/types/services.queries";
+import { getServiceBySlug, getUserServiceAndIdentityBySlugs } from "@/db/types/services.queries";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
-import { getConfigTypes, postConfig } from "@/lib/ziti/configs";
+import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
+import { getConfigIds, postConfig } from "@/lib/ziti/configs";
+import { postPolicy } from "@/lib/ziti/policies";
 import { getServerSession } from "next-auth";
+
+const getProtocolObject = (protocol: 'tcp' | 'udp' | 'tcp/udp') => {
+    return protocol === 'tcp/udp' ? {
+        forwardProtocol: true,
+        allowedProtocols: [
+            'tcp',
+            'udp'
+        ]
+    } : {
+        protocol: protocol,
+    }
+}
+
+// The assumption is that there can only be one ziti config and ziti intercept.
+// It would be useful to allow users to have multiple intercepts in the future.
+// Or another way could be to force users to create a separate service and each
+// service has a single intercept/host.
 
 const createTunnelBinding = async ({
     serviceSlug,
     hostConfig,
-    interceptConfig
+    interceptConfig,
+    shareConfig
 }: {
     serviceSlug: string
     hostConfig: unknown
     interceptConfig: unknown
+    shareConfig: unknown
 }) => {
     try {
         const session = await getServerSession();
         if (!session?.user?.email) return;
         const email = session.user.email;
 
-        const userList = await getUserAndServiceByServiceSlug.run(
+        const host = tunnelHostFormSchema.parse(hostConfig);
+        const intercept = tunnelInterceptFormSchema.parse(interceptConfig);
+        const share = tunnelShareFormSchema.parse(shareConfig);
+
+        // add identity to this 
+        const userList = await getUserServiceAndIdentityBySlugs.run(
             {
-                slug: serviceSlug
+                service_slug: serviceSlug,
+                identity_slug: host.identity
             },
             client
-        )
+        );
 
-        if (userList.length === 0) throw new Error('User or service does not exist');
+        if (userList.length === 0) throw new Error('User or service or identity does not exist');
         const user = userList[0];
         if (user.email !== email) throw new Error('Forbidden');
 
-        const host = tunnelHostFormSchema.parse(hostConfig);
-        const intercept = tunnelInterceptFormSchema.parse(interceptConfig);
 
-        const configTypes = await getConfigTypes();
+        console.log(host);
+        console.log(intercept);
+        console.log(share);
 
-        const hostV1Id = configTypes
-            ?.data
-            .find(configType => configType.name === 'host.v1')
-            ?.id;
+        const { hostV1Id, interceptV1Id } = await getConfigIds();
 
-        const interceptV1Id = configTypes
-            ?.data
-            .find(configType => configType.name === 'intercept.v1')
-            ?.id;
-
-        if (!hostV1Id || !interceptV1Id) throw new Error('Could not find host.v1 or intercept.v1 config ids');
-
-        const protocol = host.protocol === 'tcp/udp' ? {
-            forwardProtocol: true,
-            allowedProtocols: [
-                'tcp',
-                'udp'
-            ]
-        } : {
-            protocol: host.protocol,
-        }
+        const protocol = getProtocolObject(host.protocol as 'tcp' | 'udp' | 'tcp/udp');
 
         const hostZitiId = await postConfig({
             name: serviceSlug + '-host-config',
@@ -94,8 +103,34 @@ const createTunnelBinding = async ({
 
         if (!interceptZitiId || !hostZitiId) throw new Error('Failed to post configs to Ziti');
 
-        console.log('intercept', interceptZitiId?.data.id);
-        console.log('host', hostZitiId?.data.id);
+        await postPolicy({
+            type: 'Dial',
+            name: serviceSlug + '-dial-policy',
+            semantic: 'AnyOf',
+            serviceRoles: [
+                `@${user.service_ziti_id}`
+            ],
+            identityRoles: [
+                `#${serviceSlug}-dial`
+            ],
+            postureCheckRoles: [],
+        });
+
+        await postPolicy({
+            type: 'Bind',
+            name: serviceSlug + '-bind-policy',
+            semantic: 'AnyOf',
+            serviceRoles: [
+                `@${user.service_ziti_id}`,
+            ],
+            identityRoles: [
+                `@${user.identity_ziti_id}`
+            ],
+            postureCheckRoles: [],
+        })
+
+        // TODO Attach configs to service
+        // TODO If share type is automatic then share with all the users identities
 
         return true;
     } catch (err) {

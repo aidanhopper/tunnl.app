@@ -11,6 +11,7 @@ import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
 import createTunnelBinding from "@/lib/actions/services/create-tunnel-binding";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
+import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
     const [tunnelHostConfig, setTunnelHostConfig] = useState<null | z.infer<typeof tunnelHostFormSchema>>(null);
+    const [tunnelInterceptConfig, setTunnelInterceptConfig] = useState<null | z.infer<typeof tunnelInterceptFormSchema>>(null);
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
 
@@ -54,7 +56,14 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             address: '',
             port: ''
         }
-    })
+    });
+
+    const tunnelShareForm = useForm<z.infer<typeof tunnelShareFormSchema>>({
+        resolver: zodResolver(tunnelShareFormSchema),
+        defaultValues: {
+            type: ''
+        }
+    });
 
     const getCurrentPage = (bindingType: BindingType) => {
         const bindingTypePage = <>
@@ -245,17 +254,8 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                 <Form {...tunnelInterceptForm}>
                     <form
                         onSubmit={tunnelInterceptForm.handleSubmit(async (formData: z.infer<typeof tunnelInterceptFormSchema>) => {
-                            if (!tunnelHostConfig) return;
-                            const res = await createTunnelBinding({
-                                serviceSlug: serviceSlug,
-                                hostConfig: tunnelHostConfig,
-                                interceptConfig: formData,
-                            });
-
-                            if (!res) return;
-
-                            setIsOpen(false);
-                            router.refresh();
+                            setPageIndex(pageIndex + 1);
+                            setTunnelInterceptConfig(formData);
                         })}
                         className='space-y-8'>
                         <div className='flex gap-4'>
@@ -319,6 +319,99 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                         </div>
                     </form>
                 </Form>
+            </>,
+            <>
+                <Form {...tunnelShareForm}>
+                    <form
+                        onSubmit={tunnelShareForm.handleSubmit(async (formData: z.infer<typeof tunnelShareFormSchema>) => {
+                            if (!tunnelHostConfig) return;
+                            const res = await createTunnelBinding({
+                                serviceSlug: serviceSlug,
+                                hostConfig: tunnelHostConfig,
+                                interceptConfig: tunnelInterceptConfig,
+                                shareConfig: formData
+                            });
+
+                            if (!res) return;
+
+                            setIsOpen(false);
+                            router.refresh();
+                        })}
+                        className='space-y-8'>
+                        <div className='flex gap-4'>
+                            <span className='w-full'>
+                                <FormField
+                                    control={tunnelShareForm.control}
+                                    name='type'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Share settings</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem
+                                                            value="automatic"
+                                                            id="automatic"
+                                                            className='cursor-pointer' />
+                                                        <Label
+                                                            htmlFor="automatic"
+                                                            className='cursor-pointer'>
+                                                            Automatic
+                                                        </Label>
+                                                        <Label
+                                                            htmlFor="automatic"
+                                                            className='text-muted-foreground text-xs ml-1 cursor-pointer'>
+                                                            Share the service binding with all identities automatically
+                                                        </Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem
+                                                            value="manual"
+                                                            id="manual"
+                                                            className='cursor-pointer' />
+                                                        <Label
+                                                            htmlFor="manual"
+                                                            className='cursor-pointer'>
+                                                            Manual
+                                                        </Label>
+                                                        <Label
+                                                            htmlFor="manual"
+                                                            className='text-muted-foreground text-xs ml-6 cursor-pointer'>
+                                                            Share the service binding with identities manually
+                                                        </Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </span>
+                        </div>
+                        <div className='grid grid-cols-2'>
+                            <span>
+                                <Button
+                                    onClick={() => setPageIndex(pageIndex - 1)}
+                                    type='button'
+                                    variant='outline'
+                                    className='cursor-pointer'>
+                                    <ArrowLeft />
+                                </Button>
+                            </span>
+                            <span className='grid justify-end'>
+                                <Button
+                                    onSubmit={e => e.preventDefault()}
+                                    type='submit'
+                                    variant='outline'
+                                    className='cursor-pointer'>
+                                    Submit
+                                </Button>
+                            </span>
+                        </div>
+                    </form>
+                </Form>
             </>
         ];
 
@@ -339,13 +432,14 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <Button className='cursor-pointer' variant='ghost' asChild>
-                <DialogTrigger asChild>
-                    <Button variant='ghost' onClick={() => setIsOpen(true)}>
-                        Create
-                    </Button>
-                </DialogTrigger>
-            </Button>
+            <DialogTrigger asChild>
+                <Button
+                    className='cursor-pointer'
+                    variant='ghost'
+                    onClick={() => setIsOpen(true)}>
+                    Create
+                </Button>
+            </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>

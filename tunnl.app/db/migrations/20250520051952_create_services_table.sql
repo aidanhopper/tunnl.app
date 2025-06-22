@@ -7,6 +7,7 @@ CREATE TABLE services (
     name VARCHAR(100) NOT NULL,
     ziti_id VARCHAR(32) NOT NULL,
     protocol protocol NOT NULL CHECK (protocol IN ('http', 'tcp/udp')),
+    share_with_all_identities BOOLEAN NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (name, user_id)
 );

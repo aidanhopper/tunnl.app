@@ -2,10 +2,10 @@ import pg from 'pg';
 
 declare global {
     // eslint-disable-next-line no-var
-    var pgClient: pg.Client | undefined; // Define pgClient type here
+    var pgClient: pg.Pool | undefined; // Define pgClient type here
 }
 
-const client = global.pgClient || new pg.Client({
+const client = global.pgClient || new pg.Pool({
     connectionString: process.env.DATABASE_URL
 });
 
