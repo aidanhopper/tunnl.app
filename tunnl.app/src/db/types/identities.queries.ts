@@ -261,3 +261,39 @@ const getIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name"
 export const getIdentityBySlug = new PreparedQuery<IGetIdentityBySlugParams,IGetIdentityBySlugResult>(getIdentityBySlugIR);
 
 
+/** 'GetUserIdentities' parameters type */
+export interface IGetUserIdentitiesParams {
+  user_id?: string | null | void;
+}
+
+/** 'GetUserIdentities' return type */
+export interface IGetUserIdentitiesResult {
+  created: Date | null;
+  id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
+  name: string;
+  slug: string;
+  user_id: string;
+  ziti_id: string;
+}
+
+/** 'GetUserIdentities' query type */
+export interface IGetUserIdentitiesQuery {
+  params: IGetUserIdentitiesParams;
+  result: IGetUserIdentitiesResult;
+}
+
+const getUserIdentitiesIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":48}]}],"statement":"SELECT *\nFROM identities\nWHERE user_id = :user_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM identities
+ * WHERE user_id = :user_id
+ * ```
+ */
+export const getUserIdentities = new PreparedQuery<IGetUserIdentitiesParams,IGetUserIdentitiesResult>(getUserIdentitiesIR);
+
+

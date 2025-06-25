@@ -59,3 +59,8 @@ SELECT *
 FROM identities 
 WHERE slug = :slug
 LIMIT 1;
+
+/* @name getUserIdentities */
+SELECT *
+FROM identities
+WHERE user_id = :user_id;

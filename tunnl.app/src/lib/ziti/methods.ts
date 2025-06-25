@@ -22,7 +22,8 @@ export const token = async () => {
     if (auth && auth.token !== '' && auth.expires > new Date()) return auth.token;
 
     const url = `${managementAPI}/authenticate?method=password`;
-    const r = await axios.post<TokenResponse>(url,
+    const r = await axios.post<TokenResponse>(
+        url,
         {
             username: process.env.ZITI_ADMIN_USERNAME,
             password: process.env.ZITI_ADMIN_PASSWORD,
@@ -48,7 +49,8 @@ export const token = async () => {
 export const get = async <T>({ route, filter }: { route: string, filter?: string }) => {
     try {
         const url = `${managementAPI}${route}`;
-        const r = await axios.get(url,
+        const r = await axios.get(
+            url,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +71,8 @@ export const get = async <T>({ route, filter }: { route: string, filter?: string
 export const post = async <T>({ route, data }: { route: string, data?: object }) => {
     try {
         const url = `${managementAPI}${route}`;
-        const r = await axios.post<T>(url,
+        const r = await axios.post<T>(
+            url,
             data,
             {
                 headers: {
@@ -88,7 +91,8 @@ export const post = async <T>({ route, data }: { route: string, data?: object })
 export const del = async ({ route }: { route: string }) => {
     try {
         const url = `${managementAPI}${route}`;
-        const r = await axios.delete(url,
+        const r = await axios.delete(
+            url,
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -98,4 +102,24 @@ export const del = async ({ route }: { route: string }) => {
         );
         return r.status === 200 || r.status === 404;
     } catch { return false }
+}
+
+export const patch = async ({ route, data }: { route: string, data: object }) => {
+    try {
+        const url = `${managementAPI}${route}`;
+        const r = await axios.patch(
+            url,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'zt-session': await token(),
+                },
+            },
+        );
+        return r.status === 200 || r.status === 404;
+    } catch (err) {
+        console.error(err);
+        return false
+    }
 }

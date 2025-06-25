@@ -1,9 +1,16 @@
-import { del, get, post } from './methods';
-import { PostServiceData, Service, ServiceListResponse } from './types';
+import { del, get, post, patch } from './methods';
+import { PatchServiceData, PostServiceData, Service, ServiceListResponse } from './types';
 
 export const postService = async (data: PostServiceData) => {
     return await post({
         route: '/services',
+        data: data
+    });
+}
+
+export const patchService = async ({ ziti_id, data }: { ziti_id: string, data: PatchServiceData }) => {
+    return await patch({
+        route: `/services/${encodeURIComponent(ziti_id)}`,
         data: data
     });
 }

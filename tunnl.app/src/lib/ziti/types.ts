@@ -3,7 +3,7 @@ export interface IdentityListResponse {
     meta: Meta;
 }
 
-interface IdentityResponse {
+export interface IdentityResponse {
     _links: Links;
     comment?: string;
     href: string;
@@ -144,6 +144,21 @@ export interface PostIdentityData {
     type: "User" | "Device" | "Service" | "Router" | "Default";
 }
 
+export interface PatchIdentityData {
+    appData?: { [key: string]: string | boolean | null } | null;
+    authPolicyId?: string | null;
+    defaultHostingCost?: number; // integer (0 .. 65535)
+    defaultHostingPrecedence?: "default" | "required" | "failed";
+    externalId?: string | null;
+    isAdmin?: boolean | null;
+    name?: string | null;
+    roleAttributes?: string[] | null;
+    serviceHostingCosts?: Record<string, number>; // integer (0 .. 65535)
+    serviceHostingPrecedences?: Record<string, "default" | "required" | "failed">;
+    tags?: { [key: string]: string | boolean | null } | null;
+    type?: "User" | "Device" | "Service" | "Router" | "Default";
+}
+
 type AppDataValue = string | boolean | null;
 
 interface Link {
@@ -194,6 +209,18 @@ export interface EnrollmentListResponse {
 export interface PostServiceData {
     name: string;
     encryptionRequired: boolean;
+    maxIdleTimeMillis?: number;
+    roleAttributes?: string[];
+    configs?: string[];
+    tags?: {
+        [key: string]: string | boolean | null;
+    } | null;
+    terminatorStrategy?: string;
+}
+
+export interface PatchServiceData {
+    name?: string;
+    encryptionRequired?: boolean;
     maxIdleTimeMillis?: number;
     roleAttributes?: string[];
     configs?: string[];
