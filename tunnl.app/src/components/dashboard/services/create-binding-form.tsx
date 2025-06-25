@@ -334,7 +334,9 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
 
                             if (!res) return;
 
+                            // reset and close when successful
                             setIsOpen(false);
+                            setPageIndex(0);
                             router.refresh();
                         })}
                         className='space-y-8'>

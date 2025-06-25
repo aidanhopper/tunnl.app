@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE private_bindings (
+CREATE TABLE tunnel_bindings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID NOT NULL,
     host_id UUID NOT NULL,
@@ -37,11 +37,11 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER check_binding_policy_type
-BEFORE INSERT OR UPDATE ON private_bindings
+BEFORE INSERT OR UPDATE ON tunnel_bindings
 FOR EACH ROW
 EXECUTE FUNCTION enforce_binding_policy_type();
 
 -- migrate:down
-DROP TRIGGER check_binding_policy_type ON private_bindings;
+DROP TRIGGER check_binding_policy_type ON tunnel_bindings;
 DROP FUNCTION enforce_binding_policy_type;
-DROP TABLE private_bindings;
+DROP TABLE tunnel_bindings;

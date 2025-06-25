@@ -14,6 +14,7 @@ export interface IGetServicesByEmailResult {
   id: string;
   name: string;
   protocol: protocol;
+  share_with_all_identities: boolean;
   slug: string;
   user_id: string;
   ziti_id: string;
@@ -126,6 +127,7 @@ export interface IGetServiceBySlugResult {
   id: string;
   name: string;
   protocol: protocol;
+  share_with_all_identities: boolean;
   slug: string;
   user_id: string;
   ziti_id: string;
@@ -162,6 +164,7 @@ export interface IGetServiceByNameAndEmailResult {
   id: string;
   name: string;
   protocol: protocol;
+  share_with_all_identities: boolean;
   slug: string;
   user_id: string;
   ziti_id: string;

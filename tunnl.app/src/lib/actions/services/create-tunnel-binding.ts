@@ -1,8 +1,8 @@
 'use server'
 
-import Identity from "@/app/dashboard/identities/[slug]/page";
 import { getUserIdentities } from "@/db/types/identities.queries";
 import { getUserServiceAndIdentityBySlugs } from "@/db/types/services.queries";
+import { insertZitiHost } from "@/db/types/ziti_hosts.queries";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
@@ -72,8 +72,10 @@ const createTunnelBinding = async ({
 
         const protocol = getProtocolObject(host.protocol as 'tcp' | 'udp' | 'tcp/udp');
 
+        // Insert the host config
+        const hostZitiName = serviceSlug + '-host-config';
         const hostZiti = await postConfig({
-            name: serviceSlug + '-host-config',
+            name: hostZitiName,
             configTypeId: hostV1Id,
             data: {
                 ...protocol,
@@ -84,6 +86,24 @@ const createTunnelBinding = async ({
             },
             tags: {}
         });
+
+        if (!hostZiti) throw new Error('Failed to post configs to Ziti');
+
+        const hostDb = await insertZitiHost.run(
+            {
+                name: hostZitiName,
+                ziti_id: hostZiti.data.id,
+                address: host.address,
+                ...(host.protocol === 'tcp/udp' ? {
+                    forward_protocol: true,
+                } : {
+                    forward_protocol: false,
+                    protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
+                }),
+                port: host.port
+            },
+            client
+        )
 
         const interceptZiti = await postConfig({
             name: serviceSlug + '-intercept-config',
@@ -105,7 +125,7 @@ const createTunnelBinding = async ({
             },
         })
 
-        if (!interceptZiti || !hostZiti) throw new Error('Failed to post configs to Ziti');
+        if (!interceptZiti) throw new Error('Failed to post configs to Ziti');
 
         // Attach configs to the service
         await patchService({
@@ -119,7 +139,7 @@ const createTunnelBinding = async ({
         });
 
         // Create the policies for the service
-        await postPolicy({
+        const dialPolicy = await postPolicy({
             type: 'Dial',
             name: serviceSlug + '-dial-policy',
             semantic: 'AnyOf',
@@ -132,7 +152,7 @@ const createTunnelBinding = async ({
             postureCheckRoles: [],
         });
 
-        await postPolicy({
+        const bindPolicy = await postPolicy({
             type: 'Bind',
             name: serviceSlug + '-bind-policy',
             semantic: 'AnyOf',
@@ -145,20 +165,15 @@ const createTunnelBinding = async ({
             postureCheckRoles: [],
         });
 
-        console.log('SHARE TYPE', share.type);
-
-        // TODO If share type is automatic then share with all the users identities
         if (share.type !== 'automatic') return true;
 
-        // get all the users identities
+        // get all the users identities and add dial role
         const identities = await getUserIdentities.run(
             {
                 user_id: user.user_id
             },
             client
         );
-
-        console.log(identities);
 
         identities.forEach(async i => {
             const zitiIdentityData = await getIdentity(i.ziti_id);
