@@ -54,3 +54,35 @@ const insertZitiInterceptIR: any = {"usedParamSet":{"ziti_id":true,"name":true,"
 export const insertZitiIntercept = new PreparedQuery<IInsertZitiInterceptParams,IInsertZitiInterceptResult>(insertZitiInterceptIR);
 
 
+/** 'DeleteZitiIntercept' parameters type */
+export interface IDeleteZitiInterceptParams {
+  id?: string | null | void;
+}
+
+/** 'DeleteZitiIntercept' return type */
+export interface IDeleteZitiInterceptResult {
+  addresses: stringArray;
+  id: string;
+  name: string;
+  port_ranges: string;
+  protocol: protocol;
+  ziti_id: string;
+}
+
+/** 'DeleteZitiIntercept' query type */
+export interface IDeleteZitiInterceptQuery {
+  params: IDeleteZitiInterceptParams;
+  result: IDeleteZitiInterceptResult;
+}
+
+const deleteZitiInterceptIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":39,"b":41}]}],"statement":"DELETE FROM ziti_intercepts WHERE id = :id RETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM ziti_intercepts WHERE id = :id RETURNING *
+ * ```
+ */
+export const deleteZitiIntercept = new PreparedQuery<IDeleteZitiInterceptParams,IDeleteZitiInterceptResult>(deleteZitiInterceptIR);
+
+

@@ -4,6 +4,8 @@ import { deleteServiceByNameAndEmail, getServiceByNameAndEmail } from "@/db/type
 import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import * as ziti from '@/lib/ziti/services';
+import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
+import { deleteTunnelBinding } from "./delete-tunnel-binding";
 
 const deleteService = async (name: string) => {
     const session = await getServerSession();
@@ -24,9 +26,18 @@ const deleteService = async (name: string) => {
 
     const service = serviceList[0];
 
-    ziti.getService(service.ziti_id)
-
     try {
+        const tunnelBindings = await getTunnelBindingsByServiceSlug.run(
+            {
+                slug: service.slug
+            },
+            client
+        );
+
+        tunnelBindings.forEach(e => {
+            deleteTunnelBinding(e.id);
+        });
+
         deleteServiceByNameAndEmail.run(
             {
                 email: email,

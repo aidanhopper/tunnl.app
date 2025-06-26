@@ -15,3 +15,6 @@ INSERT INTO ziti_policies (
   :identity_roles
 )
 RETURNING *;
+
+/* @name deleteZitiPolicy */
+DELETE FROM ziti_policies WHERE id = :id RETURNING *;

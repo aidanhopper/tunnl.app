@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
+import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";
 import { Delete, EllipsisVertical, Settings } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -36,6 +37,13 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
         client
     )
 
+    const tunnelBindings = await getTunnelBindingsByServiceSlug.run(
+        {
+            slug: slug
+        },
+        client
+    );
+
     // TODO Add way to create a underlying ziti service binding using intercepts,
     // policies, and hosts and then associate them with the service with the id service.ziti_id
     //
@@ -64,41 +72,53 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                         <TableRow>
                             <TableHead>Type</TableHead>
                             <TableHead>Visibility</TableHead>
-                            <TableHead>Created</TableHead>
                             <TableCell>Config</TableCell>
                             <TableHead />
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow>
-                            <TableCell>Tunnel</TableCell>
-                            <TableCell>Private</TableCell>
-                            <TableCell>{service.created?.toLocaleString()}</TableCell>
-                            <TableCell>Domain: postman.tunnl.app</TableCell>
-                            <TableCell className='w-16'>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='ghost' className='cursor-pointer'>
-                                            <EllipsisVertical />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            className='cursor-pointer'
-                                            asChild>
-                                            <Link href={`/dashboard/services/${service.slug}`}>
-                                                <Settings /> Settings
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuGroup>
-                                            <DropdownMenuItem variant='destructive' className='cursor-pointer'>
-                                                <Delete /> Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
+                        {tunnelBindings.map((e, i) => {
+                            return (
+                                <TableRow key={i}>
+                                    <TableCell>Tunnel</TableCell>
+                                    <TableCell>Private</TableCell>
+                                    <TableCell className='grid grid-cols-1'>
+                                        <div>
+                                            Intercept: {e.intercept_addresses[0]}
+                                        </div>
+                                        <div>
+                                            Intercept port ranges: {e.intercept_port_ranges}
+                                        </div>
+                                        <div>
+                                            Host address: {e.host_address}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className='w-16'>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant='ghost' className='cursor-pointer'>
+                                                    <EllipsisVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem
+                                                    className='cursor-pointer'
+                                                    asChild>
+                                                    <Link href={`/dashboard/services/${service.slug}`}>
+                                                        <Settings /> Settings
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuGroup>
+                                                    <DropdownMenuItem variant='destructive' className='cursor-pointer'>
+                                                        <Delete /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuGroup>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </CardContent>

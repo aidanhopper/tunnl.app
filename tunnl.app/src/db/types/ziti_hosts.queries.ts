@@ -64,3 +64,38 @@ const insertZitiHostIR: any = {"usedParamSet":{"name":true,"forward_ports":true,
 export const insertZitiHost = new PreparedQuery<IInsertZitiHostParams,IInsertZitiHostResult>(insertZitiHostIR);
 
 
+/** 'DeleteZitiHost' parameters type */
+export interface IDeleteZitiHostParams {
+  id?: string | null | void;
+}
+
+/** 'DeleteZitiHost' return type */
+export interface IDeleteZitiHostResult {
+  address: string;
+  allowed_port_ranges: string | null;
+  forward_ports: boolean;
+  forward_protocol: boolean;
+  id: string;
+  name: string;
+  port: string | null;
+  protocol: protocol | null;
+  ziti_id: string;
+}
+
+/** 'DeleteZitiHost' query type */
+export interface IDeleteZitiHostQuery {
+  params: IDeleteZitiHostParams;
+  result: IDeleteZitiHostResult;
+}
+
+const deleteZitiHostIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":36}]}],"statement":"DELETE FROM ziti_hosts WHERE id = :id RETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM ziti_hosts WHERE id = :id RETURNING *
+ * ```
+ */
+export const deleteZitiHost = new PreparedQuery<IDeleteZitiHostParams,IDeleteZitiHostResult>(deleteZitiHostIR);
+
+

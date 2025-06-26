@@ -13,3 +13,6 @@ INSERT INTO ziti_intercepts (
   :addresses
 )
 RETURNING *;
+
+/* @name deleteZitiIntercept */
+DELETE FROM ziti_intercepts WHERE id = :id RETURNING *;

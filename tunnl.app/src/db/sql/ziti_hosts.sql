@@ -19,3 +19,6 @@ INSERT INTO ziti_hosts (
     :port
 )
 RETURNING *;
+
+/* @name deleteZitiHost */
+DELETE FROM ziti_hosts WHERE id = :id RETURNING *;

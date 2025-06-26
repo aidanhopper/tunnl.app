@@ -60,3 +60,36 @@ const insertZitiPolicyIR: any = {"usedParamSet":{"name":true,"ziti_id":true,"typ
 export const insertZitiPolicy = new PreparedQuery<IInsertZitiPolicyParams,IInsertZitiPolicyResult>(insertZitiPolicyIR);
 
 
+/** 'DeleteZitiPolicy' parameters type */
+export interface IDeleteZitiPolicyParams {
+  id?: string | null | void;
+}
+
+/** 'DeleteZitiPolicy' return type */
+export interface IDeleteZitiPolicyResult {
+  id: string;
+  identity_roles: stringArray;
+  name: string;
+  semantic: policy_semantic;
+  service_roles: stringArray;
+  type: policy_type;
+  ziti_id: string;
+}
+
+/** 'DeleteZitiPolicy' query type */
+export interface IDeleteZitiPolicyQuery {
+  params: IDeleteZitiPolicyParams;
+  result: IDeleteZitiPolicyResult;
+}
+
+const deleteZitiPolicyIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":37,"b":39}]}],"statement":"DELETE FROM ziti_policies WHERE id = :id RETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM ziti_policies WHERE id = :id RETURNING *
+ * ```
+ */
+export const deleteZitiPolicy = new PreparedQuery<IDeleteZitiPolicyParams,IDeleteZitiPolicyResult>(deleteZitiPolicyIR);
+
+
