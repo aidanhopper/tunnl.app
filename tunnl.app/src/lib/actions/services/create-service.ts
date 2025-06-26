@@ -36,7 +36,7 @@ const createService = async (formData: z.infer<typeof serviceSchema>) => {
                 name: name,
                 slug: slug,
                 ziti_id: service.id,
-                protocol: formData.protocol
+                protocol: formData.protocol,
             },
             client
         );

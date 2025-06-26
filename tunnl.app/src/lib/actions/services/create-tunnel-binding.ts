@@ -2,7 +2,10 @@
 
 import { getUserIdentities } from "@/db/types/identities.queries";
 import { getUserServiceAndIdentityBySlugs } from "@/db/types/services.queries";
+import { insertTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import { insertZitiHost } from "@/db/types/ziti_hosts.queries";
+import { insertZitiIntercept } from "@/db/types/ziti_intercepts.queries";
+import { insertZitiPolicy } from "@/db/types/ziti_policies.queries";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
@@ -100,13 +103,16 @@ const createTunnelBinding = async ({
                     forward_protocol: false,
                     protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
                 }),
-                port: host.port
+                port: host.port,
+                forward_ports: false
             },
             client
-        )
+        );
 
+        // insert the intercept config
+        const interceptZitiName = serviceSlug + '-intercept-config';
         const interceptZiti = await postConfig({
-            name: serviceSlug + '-intercept-config',
+            name: interceptZitiName,
             configTypeId: interceptV1Id,
             data: {
                 portRanges: [
@@ -123,9 +129,20 @@ const createTunnelBinding = async ({
                     'udp'
                 ]
             },
-        })
+        });
 
         if (!interceptZiti) throw new Error('Failed to post configs to Ziti');
+
+        const interceptDb = await insertZitiIntercept.run(
+            {
+                ziti_id: interceptZiti.data.id,
+                name: interceptZitiName,
+                port_ranges: intercept.port,
+                addresses: [intercept.address],
+                protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
+            },
+            client
+        );
 
         // Attach configs to the service
         await patchService({
@@ -138,10 +155,11 @@ const createTunnelBinding = async ({
             }
         });
 
-        // Create the policies for the service
-        const dialPolicy = await postPolicy({
+        // Create the dial policy
+        const dialPolicyZitiName = serviceSlug + '-dial-policy';
+        const dialPolicyZiti = await postPolicy({
             type: 'Dial',
-            name: serviceSlug + '-dial-policy',
+            name: dialPolicyZitiName,
             semantic: 'AnyOf',
             serviceRoles: [
                 `@${user.service_ziti_id}`
@@ -152,9 +170,29 @@ const createTunnelBinding = async ({
             postureCheckRoles: [],
         });
 
-        const bindPolicy = await postPolicy({
+        if (!dialPolicyZiti) throw new Error('Failed to post dial policy to Ziti');
+
+        const dialPolicyDb = await insertZitiPolicy.run(
+            {
+                name: dialPolicyZitiName,
+                ziti_id: dialPolicyZiti.data.id,
+                type: 'Dial',
+                semantic: 'AnyOf',
+                service_roles: [
+                    `@${user.service_ziti_id}`
+                ],
+                identity_roles: [
+                    `#${serviceSlug}-dial`
+                ]
+            },
+            client
+        );
+
+        // Create the bind policy
+        const bindPolicyZitiName = serviceSlug + '-bind-policy';
+        const bindPolicyZiti = await postPolicy({
             type: 'Bind',
-            name: serviceSlug + '-bind-policy',
+            name: bindPolicyZitiName,
             semantic: 'AnyOf',
             serviceRoles: [
                 `@${user.service_ziti_id}`,
@@ -164,6 +202,43 @@ const createTunnelBinding = async ({
             ],
             postureCheckRoles: [],
         });
+
+        if (!bindPolicyZiti) throw new Error('Failed to post bind policy to Ziti');
+
+        const bindPolicyDb = await insertZitiPolicy.run(
+            {
+                ziti_id: bindPolicyZiti.data.id,
+                name: bindPolicyZitiName,
+                semantic: 'AnyOf',
+                type: 'Bind',
+                service_roles: [
+                    `@${user.service_ziti_id}`,
+                ],
+                identity_roles: [
+                    `@${user.identity_ziti_id}`
+                ]
+            },
+            client
+        )
+
+        if (interceptDb.length === 0) throw new Error('intercept insert failed');
+        if (hostDb.length === 0) throw new Error('host insert failed');
+        if (dialPolicyDb.length === 0) throw new Error('dial insert failed');
+        if (bindPolicyDb.length === 0) throw new Error('bind insert failed');
+
+        const tunnelBindingDb = await insertTunnelBinding.run(
+            {
+                service_id: user.service_id,
+                intercept_id: interceptDb[0].id,
+                host_id: hostDb[0].id,
+                dial_policy_id: dialPolicyDb[0].id,
+                bind_policy_id: bindPolicyDb[0].id,
+                share_automatically: share.type === 'automatic'
+            },
+            client
+        );
+
+        console.log(tunnelBindingDb.length !== 0 ? tunnelBindingDb[0] : 'Failed to insert tunnel binding');
 
         if (share.type !== 'automatic') return true;
 

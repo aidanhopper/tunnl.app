@@ -6,6 +6,7 @@ CREATE TABLE tunnel_bindings (
     intercept_id UUID NOT NULL,
     dial_policy_id UUID NOT NULL,
     bind_policy_id UUID NOT NULL,
+    share_automatically BOOLEAN NOT NULL,
     FOREIGN KEY (service_id) REFERENCES services(id),
     FOREIGN KEY (host_id) REFERENCES ziti_hosts(id),
     FOREIGN KEY (intercept_id) REFERENCES ziti_intercepts(id),
@@ -18,17 +19,17 @@ RETURNS TRIGGER AS $$
 BEGIN
   -- Check dial_policy_id is a binding policy
   IF NEW.dial_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM policies WHERE id = NEW.dial_policy_id AND type = 'dial';
+    PERFORM 1 FROM ziti_policies WHERE id = NEW.dial_policy_id AND type = 'Dial';
     IF NOT FOUND THEN
-      RAISE EXCEPTION 'dial_policy_id % must reference a policy of type dial', NEW.dial_policy_id;
+      RAISE EXCEPTION 'dial_policy_id % must reference a policy of type Dial', NEW.dial_policy_id;
     END IF;
   END IF;
 
   -- Check bind_policy_id is a binding policy
   IF NEW.bind_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM policies WHERE id = NEW.bind_policy_id AND type = 'binding';
+    PERFORM 1 FROM ziti_policies WHERE id = NEW.bind_policy_id AND type = 'Bind';
     IF NOT FOUND THEN
-      RAISE EXCEPTION 'bind_policy_id % must reference a policy of type binding', NEW.bind_policy_id;
+      RAISE EXCEPTION 'bind_policy_id % must reference a policy of type Bind', NEW.bind_policy_id;
     END IF;
   END IF;
 
