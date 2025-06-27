@@ -1,3 +1,4 @@
+import { Play } from 'next/font/google';
 import { get, post, del } from './methods';
 import { ConfigTypeListResponse, PostConfigData, PostConfigResponse } from './types';
 
@@ -35,4 +36,10 @@ export const getConfigIds = async () => {
         hostV1Id: hostV1Id,
         interceptV1Id: interceptV1Id
     }
+}
+
+export const deleteConfig = async (ziti_id: string) => {
+    return del({
+        route: `/configs/${ziti_id}`
+    })
 }

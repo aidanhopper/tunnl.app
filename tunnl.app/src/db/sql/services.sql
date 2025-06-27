@@ -60,3 +60,8 @@ JOIN users ON users.id = services.user_id
 LEFT JOIN identities ON identities.user_id = users.id
 WHERE services.slug = :service_slug
   AND identities.slug = :identity_slug;
+
+/* @name getService */
+SELECT *
+FROM services
+WHERE id = :id;

@@ -238,3 +238,38 @@ const getUserServiceAndIdentityBySlugsIR: any = {"usedParamSet":{"service_slug":
 export const getUserServiceAndIdentityBySlugs = new PreparedQuery<IGetUserServiceAndIdentityBySlugsParams,IGetUserServiceAndIdentityBySlugsResult>(getUserServiceAndIdentityBySlugsIR);
 
 
+/** 'GetService' parameters type */
+export interface IGetServiceParams {
+  id?: string | null | void;
+}
+
+/** 'GetService' return type */
+export interface IGetServiceResult {
+  created: Date | null;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+  ziti_id: string;
+}
+
+/** 'GetService' query type */
+export interface IGetServiceQuery {
+  params: IGetServiceParams;
+  result: IGetServiceResult;
+}
+
+const getServiceIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":36}]}],"statement":"SELECT *\nFROM services\nWHERE id = :id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM services
+ * WHERE id = :id
+ * ```
+ */
+export const getService = new PreparedQuery<IGetServiceParams,IGetServiceResult>(getServiceIR);
+
+

@@ -7,3 +7,9 @@ export const postPolicy = async (data: PostPolicyData) => {
         data: data
     });
 }
+
+export const deletePolicy = async (ziti_id: string) => {
+    return await del({
+        route: `/service-policies/${ziti_id}`
+    });
+}

@@ -13,7 +13,7 @@ const deleteService = async (name: string) => {
     const email = session?.user?.email;
 
     if (!email) return;
-
+    
     const serviceList = await getServiceByNameAndEmail.run(
         {
             name: name,
@@ -34,9 +34,7 @@ const deleteService = async (name: string) => {
             client
         );
 
-        tunnelBindings.forEach(e => {
-            deleteTunnelBinding(e.id);
-        });
+        tunnelBindings.forEach(async e => await deleteTunnelBinding(e.id));
 
         deleteServiceByNameAndEmail.run(
             {
