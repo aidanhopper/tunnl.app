@@ -244,6 +244,11 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                     rule: 'HostSNI(`*`)',
                     service: 'vanillaMinecraftService',
                 },
+                minecraftAgainRouter: {
+                    entryPoints: ['minecraftAgain'],
+                    rule: 'HostSNI(`*`)',
+                    service: 'minecraftAgainService',
+                },
             },
             services: {
                 minecraftService: {
@@ -260,6 +265,15 @@ fetch('https://traefik.api.tunnl.app:8443/traefik/dynamic-config', {
                         servers: [
                             {
                                 address: 'vanilla.minecraft.server:25565'
+                            }
+                        ]
+                    }
+                },
+                minecraftAgainService: {
+                    loadBalancer: {
+                        servers: [
+                            {
+                                address: 'minecraft.again:25565'
                             }
                         ]
                     }
@@ -281,11 +295,11 @@ await fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
     }
 }).then(r => r.json()).then(d => console.log(JSON.stringify(d)));
 
-// fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
-//     method: 'POST',
-//     headers: {
-//         Authorization: `Bearer ${process.env.MANAGEMENT_API_TOKEN}`,
-//         'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
-// });
+fetch('https://traefik.api.tunnl.app:8443/traefik/static-config', {
+    method: 'POST',
+    headers: {
+        Authorization: `Bearer ${process.env.MANAGEMENT_API_TOKEN}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(yaml.load(await fs.readFile('traefik.yml')))
+});

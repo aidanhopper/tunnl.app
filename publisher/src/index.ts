@@ -127,6 +127,8 @@ const main = async () => {
 
     const ws = new WebSocket(`${process.env.MANAGEMENT_API_URL}/ws/events?token=${process.env.MANAGEMENT_API_TOKEN}`);
 
+    console.log('connected to ws server')
+
     ws.on('message', async buf => {
         const data = JSON.parse(buf.toString());
         const payload = transformEvent(data);

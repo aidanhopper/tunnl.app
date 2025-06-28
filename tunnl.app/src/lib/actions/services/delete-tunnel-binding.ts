@@ -33,7 +33,6 @@ export const deleteTunnelBinding = async (id: string) => {
         if (service.user_id !== user.id) return;
 
         // session is validated after this point
-        console.log('DELETE TUNNEL BINDING SESSION AUTHENTICATED');
 
         // get the users identities and remove the dial roles
         const identities = await getUserIdentities.run({ user_id: user.id }, client);
@@ -50,40 +49,11 @@ export const deleteTunnelBinding = async (id: string) => {
         });
 
         // remove entries from the database
-        deleteTunnelBindingDb.run(
-            {
-                id: tunnelBinding.id
-            },
-            client
-        );
-
-        await deleteZitiHost.run(
-            {
-                id: tunnelBinding.host_id
-            },
-            client
-        );
-
-        await deleteZitiIntercept.run(
-            {
-                id: tunnelBinding.intercept_id,
-            },
-            client
-        );
-
-        await deleteZitiPolicy.run(
-            {
-                id: tunnelBinding.dial_policy_id
-            },
-            client
-        );
-
-        await deleteZitiPolicy.run(
-            {
-                id: tunnelBinding.bind_policy_id
-            },
-            client
-        );
+        await deleteTunnelBindingDb.run({ id: tunnelBinding.id }, client);
+        await deleteZitiHost.run({ id: tunnelBinding.host_id }, client);
+        await deleteZitiIntercept.run({ id: tunnelBinding.intercept_id, }, client);
+        await deleteZitiPolicy.run({ id: tunnelBinding.dial_policy_id }, client);
+        await deleteZitiPolicy.run({ id: tunnelBinding.bind_policy_id }, client);
 
         // delete the configs and policies on the ziti side
         await deleteConfig(tunnelBinding.intercept_ziti_id);

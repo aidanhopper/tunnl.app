@@ -13,7 +13,7 @@ const deleteService = async (name: string) => {
     const email = session?.user?.email;
 
     if (!email) return;
-    
+
     const serviceList = await getServiceByNameAndEmail.run(
         {
             name: name,
@@ -34,9 +34,9 @@ const deleteService = async (name: string) => {
             client
         );
 
-        tunnelBindings.forEach(async e => await deleteTunnelBinding(e.id));
+        await Promise.all(tunnelBindings.map(e => deleteTunnelBinding(e.id)));
 
-        deleteServiceByNameAndEmail.run(
+        await deleteServiceByNameAndEmail.run(
             {
                 email: email,
                 name: name
@@ -44,7 +44,7 @@ const deleteService = async (name: string) => {
             client
         );
 
-        ziti.deleteService(service.ziti_id);
+        await ziti.deleteService(service.ziti_id);
     } catch (err) {
         console.error(err);
     }
