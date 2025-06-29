@@ -20,7 +20,6 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             nodejs
-            create-react-app 
             yarn
             python312
             netcat

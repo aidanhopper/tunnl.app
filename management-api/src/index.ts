@@ -1,10 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
-import http, { IncomingMessage } from 'http'
+import http from 'http'
 import fs from 'fs/promises';
 import yaml from 'js-yaml';
 import Docker from 'dockerode';
-import { WebSocketServer } from "ws";
-import { configureWsEvents } from './ws-events';
 import dotenv from 'dotenv'
 
 dotenv.config();
@@ -17,28 +15,7 @@ const port = process.env.PORT || 4000;
 
 app.use(express.json());
 
-const verifyWs = (
-    info: { req: IncomingMessage },
-    done: (res: boolean, code?: number, msg?: string) => void
-) => {
-    try {
-        const url = new URL(info.req.url ?? '', 'http://asdf');
-        const token = url.searchParams.get('token');
-        console.log(process.env.MANAGEMENT_API_TOKEN)
-        console.log(token)
-
-        if (token !== process.env.MANAGEMENT_API_TOKEN) throw new Error('Invalid auth token');
-        else done(true);
-    } catch (err) {
-        console.error(err);
-        done(false, 401, 'Unauthorized');
-    }
-}
-
 const server = http.createServer(app);
-const wsEvents = new WebSocketServer({ server, path: '/ws/events', verifyClient: verifyWs });
-
-configureWsEvents(wsEvents);
 
 const sleep = (ms: number) => {
     return new Promise(resolve => setTimeout(resolve, ms));
