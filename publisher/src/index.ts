@@ -113,7 +113,7 @@ const subscribers = new Map<string, RegExp[]>();
 
 const publishEvent = async (topic: string, payload: object) => {
     try {
-        console.log({
+        console.log('publishing', {
             topic: topic,
             payload: payload
         })
@@ -297,6 +297,26 @@ const main = async () => {
             publishEvent(topic, payload);
         });
         ws.on('error', console.error);
+
+        io.on("connection", (socket) => {
+            const { token } = socket.handshake.auth;
+
+            try {
+                const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET || 'no') as {} as Payload;
+                console.log('connect');
+
+                subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
+
+                socket.on("disconnect", () => {
+                    subscribers.delete(socket.id);
+                    console.log('disconnect');
+                });
+            } catch (err) {
+                console.error(err)
+                socket.disconnect();
+                return;
+            }
+        });
     } catch (err) {
         console.error(err);
     }
