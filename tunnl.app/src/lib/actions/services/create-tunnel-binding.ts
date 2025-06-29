@@ -70,6 +70,8 @@ const createTunnelBinding = async ({
         console.log(intercept);
         console.log(share);
 
+        return false;
+
         // Create configs for the service on the ziti controller
         const { hostV1Id, interceptV1Id } = await getConfigIds();
 
