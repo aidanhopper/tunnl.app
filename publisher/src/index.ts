@@ -7,7 +7,6 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import https from 'https';
 import { Buffer } from 'buffer';
-import crypto from 'crypto';
 
 dotenv.config({
     path: './../.env',
@@ -200,7 +199,6 @@ const subscribeMessage = (subscriptions: { type: string, options: { version?: nu
     const bodyLength = Buffer.alloc(4);
     bodyLength.writeUint32LE(body.length);
 
-
     return Buffer.concat([
         marker,
         contentType,
@@ -251,7 +249,7 @@ const main = async () => {
     try {
         const agent = new https.Agent({ rejectUnauthorized: false });
 
-        const ws = new WebSocket(`wss://ziti.ahop.dev:1280/fabric/v1/ws-api`, {
+        const ws = new WebSocket(`${process.env.ZITI_WEBSOCKET_CONTROLLER_URL}/fabric/v1/ws-api`, {
             agent: agent,
             headers: {
                 'Content-Type': 'application/json',
