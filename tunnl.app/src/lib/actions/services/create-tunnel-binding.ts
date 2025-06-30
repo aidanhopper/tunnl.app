@@ -14,6 +14,7 @@ import { getConfigIds, postConfig } from "@/lib/ziti/configs";
 import { getIdentity, patchIdentity } from "@/lib/ziti/identities";
 import { postPolicy } from "@/lib/ziti/policies";
 import { patchService } from "@/lib/ziti/services";
+import { assert } from "console";
 import { getServerSession } from "next-auth";
 
 const getProtocolObject = (protocol: 'tcp' | 'udp' | 'tcp/udp') => {
@@ -26,6 +27,25 @@ const getProtocolObject = (protocol: 'tcp' | 'udp' | 'tcp/udp') => {
     } : {
         protocol: protocol,
     }
+}
+
+const parsePortRange = (input: string) => {
+    if (input.trim() === '') throw new Error('Port range cannot be empty');
+    return input
+        .trim()
+        .split(" ")
+        .filter(e => e !== '')
+        .map(e => {
+            const s = e.split("-");
+            if (s.length === 1) return {
+                high: Number(e),
+                low: Number(e),
+            };
+            return {
+                high: Number(s[1]),
+                low: Number(s[0]),
+            }
+        });
 }
 
 // The assumption is that there can only be one ziti config and ziti intercept.
@@ -66,37 +86,22 @@ const createTunnelBinding = async ({
         const user = userList[0];
         if (user.email !== email) throw new Error('Forbidden');
 
+        assert(host.portConfig.forwardPorts === intercept.portConfig.forwardPorts);
+
         console.log(host);
         console.log(intercept);
         console.log(share);
 
-        const parsePortRange = (input: string) => {
-            const ranges = input
-                .trim()
-                .split(" ")
-                .filter(e => e !== '')
-                .map(e => {
-                    const s = e.split("-");
-                    if (s.length === 1) return {
-                        low: Number(e),
-                        high: Number(e)
-                    };
-                    return {
-                        low: Number(s[0]),
-                        high: Number(s[1])
-                    }
-                });
-            console.log(ranges);
-        }
-
         if (host.portConfig.forwardPorts) parsePortRange(host.portConfig.portRange);
 
-        return false;
+        const proto = host.protocol as 'tcp' | 'udp' | 'tcp/udp';
+
+        // return false;
 
         // Create configs for the service on the ziti controller
         const { hostV1Id, interceptV1Id } = await getConfigIds();
 
-        const protocol = getProtocolObject(host.protocol as 'tcp' | 'udp' | 'tcp/udp');
+        const protocol = getProtocolObject(proto);
 
         // Insert the host config
         const hostZitiName = serviceSlug + '-host-config';
@@ -106,7 +111,12 @@ const createTunnelBinding = async ({
             data: {
                 ...protocol,
                 address: host.address,
-                port: Number(host.portConfig.port),
+                ...(host.portConfig.forwardPorts ? {
+                    forwardPort: true,
+                    allowedPortRanges: parsePortRange(host.portConfig.portRange)
+                } : {
+                    port: Number(host.portConfig.port)
+                }),
                 portChecks: [],
                 httpChecks: []
             },
@@ -120,11 +130,11 @@ const createTunnelBinding = async ({
                 name: hostZitiName,
                 ziti_id: hostZiti.data.id,
                 address: host.address,
-                ...(host.protocol === 'tcp/udp' ? {
+                ...(proto === 'tcp/udp' ? {
                     forward_protocol: true,
                 } : {
                     forward_protocol: false,
-                    protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
+                    protocol: proto,
                 }),
                 port: host.portConfig.forwardPorts ? undefined : host.portConfig.port,
                 allowed_port_ranges: host.portConfig.forwardPorts ? host.portConfig.portRange : undefined,
@@ -139,16 +149,19 @@ const createTunnelBinding = async ({
             name: interceptZitiName,
             configTypeId: interceptV1Id,
             data: {
-                portRanges: [
-                    {
-                        high: Number(intercept.port),
-                        low: Number(intercept.port),
-                    }
-                ],
+                portRanges: parsePortRange(
+                    host.portConfig.forwardPorts ?
+                        host.portConfig.portRange : !intercept.portConfig.forwardPorts ?
+                            intercept.portConfig.port : ''
+                ),
                 addresses: [
                     intercept.address
                 ],
-                protocols: [
+                protocols: proto === 'tcp' ? [
+                    'tcp'
+                ] : proto === 'udp' ? [
+                    'udp'
+                ] : [
                     'tcp',
                     'udp'
                 ]
@@ -161,9 +174,11 @@ const createTunnelBinding = async ({
             {
                 ziti_id: interceptZiti.data.id,
                 name: interceptZitiName,
-                port_ranges: intercept.port,
+                port_ranges: host.portConfig.forwardPorts ?
+                    host.portConfig.portRange : !intercept.portConfig.forwardPorts ?
+                        intercept.portConfig.port : '',
                 addresses: [intercept.address],
-                protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
+                protocol: proto,
             },
             client
         );
