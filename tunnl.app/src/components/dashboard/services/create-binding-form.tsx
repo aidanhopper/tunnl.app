@@ -47,7 +47,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             protocol: '',
             address: '',
             identity: '',
-            init: {
+            portConfig: {
                 forwardPorts: false,
                 port: '',
             }
@@ -59,19 +59,19 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
         resolver: zodResolver(tunnelInterceptFormSchema),
         defaultValues: {
             address: '',
-            init: {
+            portConfig: {
                 forwardPorts: false,
                 port: ''
             }
         }
     });
 
-    const tunnelHostFormForwardPorts = tunnelHostForm.watch('init.forwardPorts');
+    const tunnelHostFormForwardPorts = tunnelHostForm.watch('portConfig.forwardPorts');
     useEffect(() => {
-        tunnelHostForm.setValue('init.portRange', '');
-        tunnelHostForm.setValue('init.port', '');
-        tunnelInterceptForm.setValue('init.forwardPorts', tunnelHostForm.getValues().init.forwardPorts)
-        if (tunnelHostForm.getValues().init.forwardPorts) tunnelInterceptForm.setValue('init.port', '');
+        tunnelHostForm.setValue('portConfig.portRange', '');
+        tunnelHostForm.setValue('portConfig.port', '');
+        tunnelInterceptForm.setValue('portConfig.forwardPorts', tunnelHostForm.getValues().portConfig.forwardPorts)
+        if (tunnelHostForm.getValues().portConfig.forwardPorts) tunnelInterceptForm.setValue('portConfig.port', '');
     }, [tunnelHostFormForwardPorts, tunnelHostForm, tunnelInterceptForm]);
 
     const tunnelShareForm = useForm<z.infer<typeof tunnelShareFormSchema>>({
@@ -173,7 +173,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                         />
                         <FormField
                             control={tunnelHostForm.control}
-                            name='init.forwardPorts'
+                            name='portConfig.forwardPorts'
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Forward Ports</FormLabel>
@@ -210,11 +210,11 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                     )}
                                 />
                             </span>
-                            {!tunnelHostForm.getValues().init.forwardPorts &&
+                            {!tunnelHostForm.getValues().portConfig.forwardPorts &&
                                 <span className='w-24'>
                                     <FormField
                                         control={tunnelHostForm.control}
-                                        name='init.port'
+                                        name='portConfig.port'
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Port</FormLabel>
@@ -228,10 +228,10 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 </span>
                             }
                         </div>
-                        {tunnelHostForm.getValues().init.forwardPorts &&
+                        {tunnelHostForm.getValues().portConfig.forwardPorts &&
                             <FormField
                                 control={tunnelHostForm.control}
-                                name='init.portRange'
+                                name='portConfig.portRange'
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Allowed Port Ranges</FormLabel>
@@ -334,11 +334,11 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                     )}
                                 />
                             </span>
-                            {!tunnelInterceptForm.getValues().init.forwardPorts &&
+                            {!tunnelInterceptForm.getValues().portConfig.forwardPorts &&
                                 <span className='w-24'>
                                     <FormField
                                         control={tunnelInterceptForm.control}
-                                        name='init.port'
+                                        name='portConfig.port'
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Port</FormLabel>

@@ -70,6 +70,27 @@ const createTunnelBinding = async ({
         console.log(intercept);
         console.log(share);
 
+        const parsePortRange = (input: string) => {
+            const ranges = input
+                .trim()
+                .split(" ")
+                .filter(e => e !== '')
+                .map(e => {
+                    const s = e.split("-");
+                    if (s.length === 1) return {
+                        low: Number(e),
+                        high: Number(e)
+                    };
+                    return {
+                        low: Number(s[0]),
+                        high: Number(s[1])
+                    }
+                });
+            console.log(ranges);
+        }
+
+        if (host.portConfig.forwardPorts) parsePortRange(host.portConfig.portRange);
+
         return false;
 
         // Create configs for the service on the ziti controller
@@ -85,7 +106,7 @@ const createTunnelBinding = async ({
             data: {
                 ...protocol,
                 address: host.address,
-                port: Number(host.port),
+                port: Number(host.portConfig.port),
                 portChecks: [],
                 httpChecks: []
             },
@@ -105,8 +126,9 @@ const createTunnelBinding = async ({
                     forward_protocol: false,
                     protocol: host.protocol as 'tcp' | 'udp' | 'tcp/udp',
                 }),
-                port: host.port,
-                forward_ports: false
+                port: host.portConfig.forwardPorts ? undefined : host.portConfig.port,
+                allowed_port_ranges: host.portConfig.forwardPorts ? host.portConfig.portRange : undefined,
+                forward_ports: host.portConfig.forwardPorts
             },
             client
         );
