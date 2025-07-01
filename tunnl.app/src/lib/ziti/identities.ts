@@ -1,5 +1,5 @@
 import { get, post, del, patch } from './methods';
-import { IdentityListResponse, IdentityResponse, PatchIdentityData, PostIdentityData } from './types';
+import { IdentityListResponse, IdentityResponse, PatchIdentityData, PostIdentityData, PostIdentityResponse } from './types';
 
 export const getIdentityByName = async (name: string) => {
     const r = await get<IdentityListResponse>({
@@ -13,7 +13,7 @@ export const getIdentityByName = async (name: string) => {
 }
 
 export const postIdentity = async (data: PostIdentityData) => {
-    return await post({
+    return await post<PostIdentityResponse>({
         route: '/identities',
         data: data
     });

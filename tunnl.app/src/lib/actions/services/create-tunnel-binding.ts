@@ -11,6 +11,7 @@ import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
 import { getConfigIds, postConfig } from "@/lib/ziti/configs";
+import dialRole from "@/lib/ziti/dial-role";
 import { getIdentity, patchIdentity } from "@/lib/ziti/identities";
 import { postPolicy } from "@/lib/ziti/policies";
 import { patchService } from "@/lib/ziti/services";
@@ -221,7 +222,7 @@ const createTunnelBinding = async ({
                     `@${user.service_ziti_id}`
                 ],
                 identity_roles: [
-                    `#${serviceSlug}-dial`
+                    `#${dialRole(serviceSlug)}`
                 ]
             },
             client
@@ -282,17 +283,11 @@ const createTunnelBinding = async ({
         if (share.type !== 'automatic') return true;
 
         // get all the users identities and add dial role
-        const identities = await getUserIdentities.run(
-            {
-                user_id: user.user_id
-            },
-            client
-        );
-
+        const identities = await getUserIdentities.run({ user_id: user.user_id }, client);
         identities.forEach(async i => {
             const zitiIdentityData = await getIdentity(i.ziti_id);
             const roleAttributes = zitiIdentityData?.roleAttributes ?? [];
-            roleAttributes.push(`${serviceSlug}-dial`);
+            roleAttributes.push(dialRole(serviceSlug));
             await patchIdentity({
                 ziti_id: i.ziti_id,
                 data: {

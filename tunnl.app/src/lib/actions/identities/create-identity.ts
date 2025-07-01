@@ -6,9 +6,11 @@ import slugify from '@/lib/slugify';
 import client from '@/lib/db';
 import { insertIdentityByEmail } from '@/db/types/identities.queries';
 import { getServerSession } from 'next-auth';
-import { deleteIdentityByName, getIdentityByName, postIdentity } from '@/lib/ziti/identities'
+import { deleteIdentityByName, postIdentity } from '@/lib/ziti/identities'
 import { PostIdentityData } from '@/lib/ziti/types'
 import { z } from 'zod';
+import { getAutomaticallySharedTunnelBindingSlugsByEmail } from '@/db/types/tunnel_bindings.queries';
+import dialRole from '@/lib/ziti/dial-role';
 
 const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const session = await getServerSession();
@@ -18,30 +20,32 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const name = formData.name
     const slug = slugify(name);
 
-    const data: PostIdentityData = {
-        name: slug,
-        type: 'Default',
-        isAdmin: false,
-        enrollment: {
-            ott: true,
-        }
-    }
-
-    if (!(await postIdentity(data))) return;
-
-    const zitiIdentity = await getIdentityByName(slug)
-    if (!zitiIdentity) return;
-
     try {
+        const slugs = await getAutomaticallySharedTunnelBindingSlugsByEmail
+            .run({ email: email }, client);
+
+        const data: PostIdentityData = {
+            name: slug,
+            type: 'Default',
+            isAdmin: false,
+            roleAttributes: slugs.map(e => dialRole(e.slug)),
+            enrollment: {
+                ott: true,
+            }
+        }
+
+        const identity = await postIdentity(data);
+        if (!identity) throw new Error('Could not post identity');
+
         await insertIdentityByEmail.run(
             {
                 email: email,
                 name: name,
                 slug: slug,
-                ziti_id: zitiIdentity.id
+                ziti_id: identity.data.id
             },
             client
-        )
+        );
     } catch (err) {
         await deleteIdentityByName(slug);
         console.error(err);

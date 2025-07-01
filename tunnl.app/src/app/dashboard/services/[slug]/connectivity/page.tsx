@@ -1,3 +1,4 @@
+import DeleteTunnelBindingButton from "@/components/dashboard/services/connectivity/delete-tunnel-binding-button";
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
+import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import client from "@/lib/db";
 import { Delete, EllipsisVertical, Settings } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -109,9 +111,11 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuGroup>
-                                                    <DropdownMenuItem variant='destructive' className='cursor-pointer'>
-                                                        <Delete /> Delete
-                                                    </DropdownMenuItem>
+                                                    <DeleteTunnelBindingButton
+                                                        onClick={async () => {
+                                                            'use server'
+                                                            await deleteTunnelBinding(e.id);
+                                                        }} />
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -122,7 +126,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                     </TableBody>
                 </Table>
             </CardContent>
-        </Card>
+        </Card >
     );
 }
 

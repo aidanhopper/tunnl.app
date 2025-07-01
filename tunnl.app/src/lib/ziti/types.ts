@@ -144,6 +144,12 @@ export interface PostIdentityData {
     type: "User" | "Device" | "Service" | "Router" | "Default";
 }
 
+export interface PostIdentityResponse {
+    data: { id: string };
+    _links: Links;
+    meta: Meta;
+};
+
 export interface PatchIdentityData {
     appData?: { [key: string]: string | boolean | null } | null;
     authPolicyId?: string | null;

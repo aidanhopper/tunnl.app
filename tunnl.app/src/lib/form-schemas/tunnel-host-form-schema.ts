@@ -4,9 +4,19 @@ const hostnameRegex = /^(?=.{1,253}$)(?!\-)([a-zA-Z0-9\-]{1,63}\.?)+(?!\d+$)[a-z
 const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
 const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::1|::)$/;
 
+const isValidPortString = (value: string) => {
+    const port = Number(value.trim());
+    return (
+        /^\d+$/.test(value) && // only digits
+        Number.isInteger(port) &&
+        port >= 1 &&
+        port <= 65535
+    );
+}
+
 const forwardPortsFalse = z.object({
     forwardPorts: z.literal(false),
-    port: z.string().nonempty(),
+    port: z.string().nonempty().refine(isValidPortString, { message: 'Port must be valid' }),
 })
 
 const forwardPortsTrue = z.object({

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { signIn } from 'next-auth/react';
+import Link from "next/link";
 
 const Login = () => {
     return (
@@ -19,6 +20,9 @@ const Login = () => {
                             variant="outline"
                             className="w-64 cursor-pointer">
                             Login
+                        </Button>
+                        <Button variant='link'>
+                            <Link href='/register'>Don&apos;t have an account? Register here</Link>
                         </Button>
                     </div>
                 </CardContent>

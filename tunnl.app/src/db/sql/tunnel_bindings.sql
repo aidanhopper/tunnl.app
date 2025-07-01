@@ -106,3 +106,20 @@ WHERE tunnel_bindings.id = :id;
 
 /* @name deleteTunnelBinding */
 DELETE FROM tunnel_bindings WHERE id = :id RETURNING *;
+
+/* @name getAutomaticallySharedTunnelBindingSlugsByEmail */
+SELECT slug 
+FROM services
+WHERE id = (
+    SELECT id
+    FROM services
+    WHERE user_id = (
+        SELECT id
+        FROM users
+        WHERE email = :email
+    )
+) AND id = (
+    SELECT service_id
+    FROM tunnel_bindings
+    WHERE share_automatically = true
+);
