@@ -63,12 +63,12 @@ const items = [
         icon: MonitorSmartphone,
         subItems: []
     },
-    {
-        title: 'Domains',
-        url: '/dashboard/domains',
-        icon: null,
-        subItems: []
-    }
+    // {
+    //     title: 'Domains',
+    //     url: '/dashboard/domains',
+    //     icon: null,
+    //     subItems: []
+    // }
 ];
 
 const DashboardSidebar = ({ ...props }) => {

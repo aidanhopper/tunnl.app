@@ -65,3 +65,12 @@ WHERE services.slug = :service_slug
 SELECT *
 FROM services
 WHERE id = :id;
+
+/* @name getServiceByIdAndEmail */
+SELECT *
+FROM services
+WHERE user_id = (
+    SELECT id 
+    FROM users
+    WHERE email = :email
+) AND id = :id;

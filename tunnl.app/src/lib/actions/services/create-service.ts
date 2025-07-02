@@ -12,8 +12,8 @@ import * as ziti from '@/lib/ziti/services';
 const createService = async (formData: z.infer<typeof serviceSchema>) => {
     const session = await getServerSession();
     if (!session?.user?.email) return;
-
     const email = session.user.email;
+
     const name = formData.name;
     const slug = slugify(name);
 

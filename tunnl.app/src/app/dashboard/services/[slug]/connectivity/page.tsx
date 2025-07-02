@@ -9,7 +9,7 @@ import { getServiceBySlug } from "@/db/types/services.queries";
 import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
 import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import client from "@/lib/db";
-import { Delete, EllipsisVertical, Settings, Share } from "lucide-react";
+import { EllipsisVertical, Share } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
@@ -85,14 +85,12 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                     <TableCell>Tunnel</TableCell>
                                     <TableCell>Private</TableCell>
                                     <TableCell className='grid grid-cols-1'>
-                                        <div>
-                                            Intercept: {e.intercept_addresses[0]}
-                                        </div>
-                                        <div>
-                                            Intercept port ranges: {e.intercept_port_ranges}
-                                        </div>
-                                        <div>
-                                            Host address: {e.host_address}
+                                        <div className='flex gap-3'>
+                                            <span>
+                                                {service.protocol === 'http' ? 'http' : e.host_protocol}
+                                            </span>
+                                            <span>{e.intercept_addresses[0]}</span>
+                                            <span>{e.intercept_port_ranges}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className='w-16'>

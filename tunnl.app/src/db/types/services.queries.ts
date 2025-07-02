@@ -273,3 +273,43 @@ const getServiceIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","re
 export const getService = new PreparedQuery<IGetServiceParams,IGetServiceResult>(getServiceIR);
 
 
+/** 'GetServiceByIdAndEmail' parameters type */
+export interface IGetServiceByIdAndEmailParams {
+  email?: string | null | void;
+  id?: string | null | void;
+}
+
+/** 'GetServiceByIdAndEmail' return type */
+export interface IGetServiceByIdAndEmailResult {
+  created: Date | null;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+  ziti_id: string;
+}
+
+/** 'GetServiceByIdAndEmail' query type */
+export interface IGetServiceByIdAndEmailQuery {
+  params: IGetServiceByIdAndEmailParams;
+  result: IGetServiceByIdAndEmailResult;
+}
+
+const getServiceByIdAndEmailIR: any = {"usedParamSet":{"email":true,"id":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":89,"b":94}]},{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":107,"b":109}]}],"statement":"SELECT *\nFROM services\nWHERE user_id = (\n    SELECT id \n    FROM users\n    WHERE email = :email\n) AND id = :id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM services
+ * WHERE user_id = (
+ *     SELECT id 
+ *     FROM users
+ *     WHERE email = :email
+ * ) AND id = :id
+ * ```
+ */
+export const getServiceByIdAndEmail = new PreparedQuery<IGetServiceByIdAndEmailParams,IGetServiceByIdAndEmailResult>(getServiceByIdAndEmailIR);
+
+

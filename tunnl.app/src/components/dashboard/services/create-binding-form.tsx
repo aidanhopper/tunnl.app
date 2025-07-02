@@ -309,8 +309,22 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                 <Form {...tunnelInterceptForm}>
                     <form
                         onSubmit={tunnelInterceptForm.handleSubmit(async (formData: z.infer<typeof tunnelInterceptFormSchema>) => {
-                            setPageIndex(pageIndex + 1);
-                            setTunnelInterceptConfig(formData);
+                            // setPageIndex(pageIndex + 1);
+                            // setTunnelInterceptConfig(formData);
+                            if (!tunnelHostConfig) return;
+                            const res = await createTunnelBinding({
+                                serviceSlug: serviceSlug,
+                                hostConfig: tunnelHostConfig,
+                                interceptConfig: formData,
+                                shareConfig: { type: 'automatic' }
+                            });
+
+                            if (!res) return;
+
+                            // reset and close when successful
+                            setIsOpen(false);
+                            setPageIndex(0);
+                            router.refresh();
                         })}
                         className='space-y-8'>
                         <div className='flex gap-4'>
