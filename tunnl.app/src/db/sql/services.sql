@@ -2,7 +2,7 @@
 SELECT *
 FROM services
 WHERE user_id = (
-    SELECT user_id
+    SELECT id
     FROM users
     WHERE email = :email
 )

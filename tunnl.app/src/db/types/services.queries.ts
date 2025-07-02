@@ -25,7 +25,7 @@ export interface IGetServicesByEmailQuery {
   result: IGetServicesByEmailResult;
 }
 
-const getServicesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":93,"b":98}]}],"statement":"SELECT *\nFROM services\nWHERE user_id = (\n    SELECT user_id\n    FROM users\n    WHERE email = :email\n)\nORDER BY created DESC"};
+const getServicesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":88,"b":93}]}],"statement":"SELECT *\nFROM services\nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)\nORDER BY created DESC"};
 
 /**
  * Query generated from SQL:
@@ -33,7 +33,7 @@ const getServicesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"nam
  * SELECT *
  * FROM services
  * WHERE user_id = (
- *     SELECT user_id
+ *     SELECT id
  *     FROM users
  *     WHERE email = :email
  * )

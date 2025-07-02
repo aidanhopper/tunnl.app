@@ -24,7 +24,7 @@ const Home = () => {
                                 hassel securely over the internet.
                             </p>
                             <Button asChild>
-                                <Link href='/register' className='w-full'>
+                                <Link href='/login' className='w-full'>
                                     Start here &rarr;
                                 </Link>
                             </Button>

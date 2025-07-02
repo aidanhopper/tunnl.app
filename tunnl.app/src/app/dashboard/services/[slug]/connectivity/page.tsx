@@ -9,7 +9,7 @@ import { getServiceBySlug } from "@/db/types/services.queries";
 import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
 import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import client from "@/lib/db";
-import { Delete, EllipsisVertical, Settings } from "lucide-react";
+import { Delete, EllipsisVertical, Settings, Share } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
@@ -103,11 +103,18 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
+                                                {/* <DropdownMenuItem */}
+                                                {/*     className='cursor-pointer' */}
+                                                {/*     asChild> */}
+                                                {/*     <Link href={`/dashboard/services/${service.slug}`}> */}
+                                                {/*         <Settings /> Settings */}
+                                                {/*     </Link> */}
+                                                {/* </DropdownMenuItem> */}
                                                 <DropdownMenuItem
                                                     className='cursor-pointer'
                                                     asChild>
                                                     <Link href={`/dashboard/services/${service.slug}`}>
-                                                        <Settings /> Settings
+                                                        <Share /> Share
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuGroup>
