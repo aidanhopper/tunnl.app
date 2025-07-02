@@ -1,3 +1,4 @@
+import CreateShareButton from "@/components/dashboard/services/connectivity/create-share-button";
 import DeleteTunnelBindingButton from "@/components/dashboard/services/connectivity/delete-tunnel-binding-button";
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,11 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                         </div>
                                     </TableCell>
                                     <TableCell className='w-16'>
+
+                                        {/* will need to move entire dropdown menu 
+                                            into client componenet to make dialog work 
+                                            for creating share                          */}
+
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant='ghost' className='cursor-pointer'>
@@ -108,20 +114,12 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                                 {/*         <Settings /> Settings */}
                                                 {/*     </Link> */}
                                                 {/* </DropdownMenuItem> */}
-                                                <DropdownMenuItem
-                                                    className='cursor-pointer'
-                                                    asChild>
-                                                    <Link href={`/dashboard/services/${service.slug}`}>
-                                                        <Share /> Share
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuGroup>
-                                                    <DeleteTunnelBindingButton
-                                                        onClick={async () => {
-                                                            'use server'
-                                                            await deleteTunnelBinding(e.id);
-                                                        }} />
-                                                </DropdownMenuGroup>
+                                                <CreateShareButton />
+                                                <DeleteTunnelBindingButton
+                                                    onClick={async () => {
+                                                        'use server'
+                                                        await deleteTunnelBinding(e.id);
+                                                    }} />
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
