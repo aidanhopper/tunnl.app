@@ -20,7 +20,6 @@ import { Card, CardContent } from "@/components/ui/card";
 const Services = async ({ params }: { params: { slug: string } }) => {
     const session = await getServerSession();
     const email = session?.user?.email;
-
     if (!email) unauthorized();
 
     const services = await getServicesByEmail.run(

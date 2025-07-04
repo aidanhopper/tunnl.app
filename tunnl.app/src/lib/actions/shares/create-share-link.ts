@@ -14,6 +14,7 @@ const createShareLink = async (service_id: string) => {
         const email = session.user.email;
 
         const serviceList = await getServiceByIdAndEmail.run({ email: email, id: service_id }, client);
+        console.log('serviceList', serviceList);
         if (serviceList.length === 0) notFound();
         const service = serviceList[0];
 
@@ -25,7 +26,10 @@ const createShareLink = async (service_id: string) => {
 
         if (shareLinkList.length === 0) throw new Error('Failed to insert share link');
         const shareLink = shareLinkList[0];
-        return shareLink.slug;
+        return {
+            slug: shareLink.slug,
+            expires: shareLink.expires
+        };
     } catch (err) {
         console.error(err);
         return null;

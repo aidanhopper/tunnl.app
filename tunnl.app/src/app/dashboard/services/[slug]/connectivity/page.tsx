@@ -1,18 +1,12 @@
-import CreateShareButton from "@/components/dashboard/services/connectivity/create-share-button";
-import DeleteTunnelBindingButton from "@/components/dashboard/services/connectivity/delete-tunnel-binding-button";
+import BindingDropdown from "@/components/dashboard/services/connectivity/binding-dropdown";
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
-import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import client from "@/lib/db";
-import { EllipsisVertical, Share } from "lucide-react";
 import { getServerSession } from "next-auth";
-import Link from "next/link";
 import { notFound, unauthorized } from "next/navigation";
 
 const DashboardServiceConnectvity = async ({ params }: { params: { slug: string } }) => {
@@ -62,13 +56,14 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                         <CardDescription>Connectivity settings for {service.name}</CardDescription>
                     </div>
                     <div className='justify-end grid items-center'>
-                        <CreateBindingForm
-                            serviceSlug={slug}
-                            identities={identities} />
+                        {tunnelBindings.length === 0 &&
+                            <CreateBindingForm
+                                serviceSlug={slug}
+                                identities={identities} />}
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className='h-96'>
+            <CardContent>
                 <Table>
                     <TableCaption>A list of your bindings</TableCaption>
                     <TableHeader>
@@ -100,28 +95,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                             into client componenet to make dialog work 
                                             for creating share                          */}
 
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant='ghost' className='cursor-pointer'>
-                                                    <EllipsisVertical />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                {/* <DropdownMenuItem */}
-                                                {/*     className='cursor-pointer' */}
-                                                {/*     asChild> */}
-                                                {/*     <Link href={`/dashboard/services/${service.slug}`}> */}
-                                                {/*         <Settings /> Settings */}
-                                                {/*     </Link> */}
-                                                {/* </DropdownMenuItem> */}
-                                                <CreateShareButton />
-                                                <DeleteTunnelBindingButton
-                                                    onClick={async () => {
-                                                        'use server'
-                                                        await deleteTunnelBinding(e.id);
-                                                    }} />
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <BindingDropdown id={service.id} />
                                     </TableCell>
                                 </TableRow>
                             );

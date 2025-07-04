@@ -18,3 +18,24 @@ INSERT INTO share_links (
 SELECT *
 FROM share_links
 WHERE slug = :slug;
+
+/* @name getShareLinkOwnerEmail */
+SELECT email
+FROM users
+WHERE id = (
+    SELECT user_id
+    FROM services
+    WHERE id = (
+        SELECT service_id
+        FROM tunnel_bindings
+        WHERE id = (
+            SELECT tunnel_binding_id
+            FROM share_links
+            WHERE slug = :slug
+        )
+    )
+);
+
+/* @name deleteShareLink */
+DELETE FROM share_links
+WHERE id = :id;

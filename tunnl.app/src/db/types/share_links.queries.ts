@@ -80,3 +80,70 @@ const getShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name
 export const getShareLinkBySlug = new PreparedQuery<IGetShareLinkBySlugParams,IGetShareLinkBySlugResult>(getShareLinkBySlugIR);
 
 
+/** 'GetShareLinkOwnerEmail' parameters type */
+export interface IGetShareLinkOwnerEmailParams {
+  slug?: string | null | void;
+}
+
+/** 'GetShareLinkOwnerEmail' return type */
+export interface IGetShareLinkOwnerEmailResult {
+  email: string;
+}
+
+/** 'GetShareLinkOwnerEmail' query type */
+export interface IGetShareLinkOwnerEmailQuery {
+  params: IGetShareLinkOwnerEmailParams;
+  result: IGetShareLinkOwnerEmailResult;
+}
+
+const getShareLinkOwnerEmailIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":258,"b":262}]}],"statement":"SELECT email\nFROM users\nWHERE id = (\n    SELECT user_id\n    FROM services\n    WHERE id = (\n        SELECT service_id\n        FROM tunnel_bindings\n        WHERE id = (\n            SELECT tunnel_binding_id\n            FROM share_links\n            WHERE slug = :slug\n        )\n    )\n)"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT email
+ * FROM users
+ * WHERE id = (
+ *     SELECT user_id
+ *     FROM services
+ *     WHERE id = (
+ *         SELECT service_id
+ *         FROM tunnel_bindings
+ *         WHERE id = (
+ *             SELECT tunnel_binding_id
+ *             FROM share_links
+ *             WHERE slug = :slug
+ *         )
+ *     )
+ * )
+ * ```
+ */
+export const getShareLinkOwnerEmail = new PreparedQuery<IGetShareLinkOwnerEmailParams,IGetShareLinkOwnerEmailResult>(getShareLinkOwnerEmailIR);
+
+
+/** 'DeleteShareLink' parameters type */
+export interface IDeleteShareLinkParams {
+  id?: string | null | void;
+}
+
+/** 'DeleteShareLink' return type */
+export type IDeleteShareLinkResult = void;
+
+/** 'DeleteShareLink' query type */
+export interface IDeleteShareLinkQuery {
+  params: IDeleteShareLinkParams;
+  result: IDeleteShareLinkResult;
+}
+
+const deleteShareLinkIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":35,"b":37}]}],"statement":"DELETE FROM share_links\nWHERE id = :id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM share_links
+ * WHERE id = :id
+ * ```
+ */
+export const deleteShareLink = new PreparedQuery<IDeleteShareLinkParams,IDeleteShareLinkResult>(deleteShareLinkIR);
+
+
