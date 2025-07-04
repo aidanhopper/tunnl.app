@@ -22,12 +22,7 @@ const Services = async ({ params }: { params: { slug: string } }) => {
     const email = session?.user?.email;
     if (!email) unauthorized();
 
-    const services = await getServicesByEmail.run(
-        {
-            email: email,
-        },
-        client
-    );
+    const services = await getServicesByEmail.run({ email: email }, client);
 
     return (
         <DashboardLayout>

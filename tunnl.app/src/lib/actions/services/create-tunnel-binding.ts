@@ -6,6 +6,7 @@ import { insertTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import { insertZitiHost } from "@/db/types/ziti_hosts.queries";
 import { insertZitiIntercept } from "@/db/types/ziti_intercepts.queries";
 import { insertZitiPolicy } from "@/db/types/ziti_policies.queries";
+import addDialPolicyToUserIdentities from "@/lib/add-dial-policy-to-user-identities";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
@@ -282,18 +283,9 @@ const createTunnelBinding = async ({
 
         if (share.type !== 'automatic') return true;
 
-        // get all the users identities and add dial role
-        const identities = await getUserIdentities.run({ user_id: user.user_id }, client);
-        identities.forEach(async i => {
-            const zitiIdentityData = await getIdentity(i.ziti_id);
-            const roleAttributes = zitiIdentityData?.roleAttributes ?? [];
-            roleAttributes.push(dialRole(serviceSlug));
-            await patchIdentity({
-                ziti_id: i.ziti_id,
-                data: {
-                    roleAttributes: roleAttributes
-                }
-            });
+        await addDialPolicyToUserIdentities({
+            dialRole: dialRole(serviceSlug), 
+            user_id: user.user_id 
         });
 
         return true;

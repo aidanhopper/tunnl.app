@@ -31,6 +31,7 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
 
     const handleJoin = async () => {
         'use server'
+        console.log(shareLink.slug)
         await createShare(shareLink.slug);
         redirect('/dashboard');
     }

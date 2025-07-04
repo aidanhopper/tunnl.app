@@ -1,11 +1,20 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import SharesTable from "@/components/dashboard/shares/shares-table";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { getSharesByEmail } from "@/db/types/shares.queries";
+import client from "@/lib/db";
 import { Users } from "lucide-react";
-import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { unauthorized } from "next/navigation";
 
 const Shares = async () => {
+    const session = await getServerSession();
+    const email = session?.user?.email;
+    if (!email) unauthorized();
+
+    const shares = await getSharesByEmail.run({ email: email }, client);
+    console.log(shares);
+
     return (
         <DashboardLayout>
             <div className='flex'>
@@ -16,7 +25,7 @@ const Shares = async () => {
             </div>
             <Card className='mt-10'>
                 <CardContent>
-                    <SharesTable />
+                    <SharesTable shares={shares} />
                 </CardContent>
             </Card>
         </DashboardLayout >
