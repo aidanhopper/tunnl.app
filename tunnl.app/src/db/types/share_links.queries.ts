@@ -147,3 +147,43 @@ const deleteShareLinkIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id
 export const deleteShareLink = new PreparedQuery<IDeleteShareLinkParams,IDeleteShareLinkResult>(deleteShareLinkIR);
 
 
+/** 'GetServiceShareLinks' parameters type */
+export interface IGetServiceShareLinksParams {
+  slug?: string | null | void;
+}
+
+/** 'GetServiceShareLinks' return type */
+export interface IGetServiceShareLinksResult {
+  expires: Date;
+  id: string;
+  slug: string;
+  tunnel_binding_id: string;
+}
+
+/** 'GetServiceShareLinks' query type */
+export interface IGetServiceShareLinksQuery {
+  params: IGetServiceShareLinksParams;
+  result: IGetServiceShareLinksResult;
+}
+
+const getServiceShareLinksIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":179,"b":183}]}],"statement":"SELECT *\nFROM share_links\nWHERE tunnel_binding_id = (\n    SELECT id\n    FROM tunnel_bindings\n    WHERE service_id = (\n        SELECT id\n        FROM services\n        WHERE slug = :slug\n    ) \n)"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM share_links
+ * WHERE tunnel_binding_id = (
+ *     SELECT id
+ *     FROM tunnel_bindings
+ *     WHERE service_id = (
+ *         SELECT id
+ *         FROM services
+ *         WHERE slug = :slug
+ *     ) 
+ * )
+ * ```
+ */
+export const getServiceShareLinks = new PreparedQuery<IGetServiceShareLinksParams,IGetServiceShareLinksResult>(getServiceShareLinksIR);
+
+

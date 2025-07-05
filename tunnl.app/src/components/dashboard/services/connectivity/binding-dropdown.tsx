@@ -33,13 +33,6 @@ const BindingDropdown = ({ id }: { id: string }) => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    {/* <DropdownMenuItem */}
-                    {/*     className='cursor-pointer' */}
-                    {/*     asChild> */}
-                    {/*     <Link href={`/dashboard/services/${service.slug}`}> */}
-                    {/*         <Settings /> Settings */}
-                    {/*     </Link> */}
-                    {/* </DropdownMenuItem> */}
                     <DialogTrigger
                         onClick={generateShareLink}
                         className='w-full'>

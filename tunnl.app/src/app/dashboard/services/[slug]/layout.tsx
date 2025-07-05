@@ -44,9 +44,9 @@ const DashboardServiceLayout = async ({ children, params }: { children: ReactNod
                     <h1>{service.name}</h1>
                 </div>
             </div>
-            <div className='mt-10 flex gap-10'>
+            <div className='mt-10 flex flex-col lg:flex-row gap-10'>
                 <div>
-                    <div className='grid gap-2'>
+                    <div className='flex lg:grid gap-2 grid-cols-2 lg:grid-cols-none'>
                         <Link href={`/dashboard/services/${slug}`}>
                             <ServiceNavButton
                                 activePath={`/dashboard/services/${slug}`}>

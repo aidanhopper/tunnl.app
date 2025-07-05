@@ -39,3 +39,16 @@ WHERE id = (
 /* @name deleteShareLink */
 DELETE FROM share_links
 WHERE id = :id;
+
+/* @name getServiceShareLinks */
+SELECT *
+FROM share_links
+WHERE tunnel_binding_id = (
+    SELECT id
+    FROM tunnel_bindings
+    WHERE service_id = (
+        SELECT id
+        FROM services
+        WHERE slug = :slug
+    ) 
+);

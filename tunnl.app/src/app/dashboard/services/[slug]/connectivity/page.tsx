@@ -70,8 +70,8 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                         <TableRow>
                             <TableHead>Type</TableHead>
                             <TableHead>Visibility</TableHead>
-                            <TableCell>Config</TableCell>
-                            <TableHead />
+                            <TableHead>Config</TableHead>
+                            <TableHead/>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -81,7 +81,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                     <TableCell>Tunnel</TableCell>
                                     <TableCell>Private</TableCell>
                                     <TableCell className='grid grid-cols-1'>
-                                        <div className='flex gap-3'>
+                                        <div className='flex flex-col'>
                                             <span>
                                                 {service.protocol === 'http' ? 'http' : e.host_protocol}
                                             </span>
@@ -89,12 +89,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                             <span>{e.intercept_port_ranges}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className='w-16'>
-
-                                        {/* will need to move entire dropdown menu 
-                                            into client componenet to make dialog work 
-                                            for creating share                          */}
-
+                                    <TableCell>
                                         <BindingDropdown id={service.id} />
                                     </TableCell>
                                 </TableRow>
