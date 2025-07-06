@@ -92,9 +92,11 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <BindingDropdown
-                                                tunnel_binding_id={e.id}
-                                                service_id={service.id} />
+                                            <div className='flex justify-end'>
+                                                <BindingDropdown
+                                                    tunnel_binding_id={e.id}
+                                                    service_id={service.id} />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );

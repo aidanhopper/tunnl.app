@@ -123,3 +123,16 @@ WHERE id = (
     FROM tunnel_bindings
     WHERE share_automatically = true
 );
+
+/* @name getAutomaticallySharedTunnelBindings */
+SELECT slug 
+FROM services
+WHERE id = (
+    SELECT id
+    FROM services
+    WHERE user_id = :user_id
+) AND id = (
+    SELECT service_id
+    FROM tunnel_bindings
+    WHERE share_automatically = true
+);

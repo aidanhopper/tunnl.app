@@ -13,7 +13,6 @@ const Shares = async () => {
     if (!email) unauthorized();
 
     const shares = await getSharesByEmail.run({ email: email }, client);
-    console.log(shares);
 
     return (
         <DashboardLayout>
@@ -25,7 +24,11 @@ const Shares = async () => {
             </div>
             <Card className='mt-10'>
                 <CardContent>
-                    <SharesTable shares={shares} />
+                    {shares.length !== 0 ?
+                        <SharesTable shares={shares} /> :
+                        <p>
+                            Join a service share to use another users service
+                        </p>}
                 </CardContent>
             </Card>
         </DashboardLayout >

@@ -9,11 +9,13 @@ import { ReactNode } from "react";
 const AreYouSure = ({
     onClickYes,
     refreshOnYes = false,
-    children
+    children,
+    yesText = 'Delete'
 }: {
     onClickYes: () => Promise<void>,
     refreshOnYes?: boolean,
-    children?: ReactNode
+    children?: ReactNode,
+    yesText?: ReactNode
 }) => {
     const { open, setOpen } = useAreYouSure();
     const router = useRouter();
@@ -30,16 +32,15 @@ const AreYouSure = ({
                     <Button
                         variant='destructive'
                         onClick={async () => {
-                            console.log('DELETOING TUNENLINB BIDNGING')
                             await onClickYes();
                             if (refreshOnYes) router.refresh();
-                            setOpen(false)
+                            setOpen(false);
                         }}>
-                        Yes
+                        {yesText}
                     </Button>
                     <Button
                         onClick={() => setOpen(false)}>
-                        No
+                        I&apos;m not sure
                     </Button>
                 </div>
             </DialogContent>

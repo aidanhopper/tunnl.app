@@ -11,8 +11,9 @@ import { deletePolicy } from "@/lib/ziti/policies";
 import { getServerSession } from "next-auth";
 import { getUserByEmail } from "@/db/types/users.queries";
 import { getService } from "@/db/types/services.queries";
-import { getIdentity, patchIdentity } from "@/lib/ziti/identities";
-import { getUserIdentities } from "@/db/types/identities.queries";
+import dialRole from "@/lib/ziti/dial-role";
+import { deleteAllServiceShares } from "@/db/types/shares.queries";
+import updateDialRoles from "@/lib/update-dial-roles";
 
 export const deleteTunnelBinding = async (id: string) => {
     try {
@@ -34,19 +35,9 @@ export const deleteTunnelBinding = async (id: string) => {
 
         // session is validated after this point
 
-        // get the users identities and remove the dial roles
-        const identities = await getUserIdentities.run({ user_id: user.id }, client);
-        identities.forEach(async i => {
-            const zitiIdentityData = await getIdentity(i.ziti_id);
-            const roleAttributes = zitiIdentityData?.roleAttributes ?? [];
-            const dialRole = `${service.slug}-dial`;
-            await patchIdentity({
-                ziti_id: i.ziti_id,
-                data: {
-                    roleAttributes: roleAttributes.filter(e => e !== dialRole)
-                }
-            });
-        });
+        // remove the shares
+        const shares = await deleteAllServiceShares.run({ service_id: service.id }, client);
+        await Promise.all(shares.map(e => updateDialRoles(e.user_id)));
 
         // remove entries from the database
         await deleteTunnelBindingDb.run({ id: tunnelBinding.id }, client);
@@ -60,6 +51,9 @@ export const deleteTunnelBinding = async (id: string) => {
         await deleteConfig(tunnelBinding.host_ziti_id);
         await deletePolicy(tunnelBinding.bind_policy_ziti_id);
         await deletePolicy(tunnelBinding.dial_policy_ziti_id);
+
+        // update the owners dial roles
+        await updateDialRoles(user.id);
     } catch (err) {
         console.error(err);
     }

@@ -342,3 +342,40 @@ const getAutomaticallySharedTunnelBindingSlugsByEmailIR: any = {"usedParamSet":{
 export const getAutomaticallySharedTunnelBindingSlugsByEmail = new PreparedQuery<IGetAutomaticallySharedTunnelBindingSlugsByEmailParams,IGetAutomaticallySharedTunnelBindingSlugsByEmailResult>(getAutomaticallySharedTunnelBindingSlugsByEmailIR);
 
 
+/** 'GetAutomaticallySharedTunnelBindings' parameters type */
+export interface IGetAutomaticallySharedTunnelBindingsParams {
+  user_id?: string | null | void;
+}
+
+/** 'GetAutomaticallySharedTunnelBindings' return type */
+export interface IGetAutomaticallySharedTunnelBindingsResult {
+  slug: string;
+}
+
+/** 'GetAutomaticallySharedTunnelBindings' query type */
+export interface IGetAutomaticallySharedTunnelBindingsQuery {
+  params: IGetAutomaticallySharedTunnelBindingsParams;
+  result: IGetAutomaticallySharedTunnelBindingsResult;
+}
+
+const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":99}]}],"statement":"SELECT slug \nFROM services\nWHERE id = (\n    SELECT id\n    FROM services\n    WHERE user_id = :user_id\n) AND id = (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT slug 
+ * FROM services
+ * WHERE id = (
+ *     SELECT id
+ *     FROM services
+ *     WHERE user_id = :user_id
+ * ) AND id = (
+ *     SELECT service_id
+ *     FROM tunnel_bindings
+ *     WHERE share_automatically = true
+ * )
+ * ```
+ */
+export const getAutomaticallySharedTunnelBindings = new PreparedQuery<IGetAutomaticallySharedTunnelBindingsParams,IGetAutomaticallySharedTunnelBindingsResult>(getAutomaticallySharedTunnelBindingsIR);
+
+

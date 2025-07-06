@@ -1,19 +1,17 @@
 'use server'
 
-import { getUserIdentities } from "@/db/types/identities.queries";
 import { getUserServiceAndIdentityBySlugs } from "@/db/types/services.queries";
 import { insertTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import { insertZitiHost } from "@/db/types/ziti_hosts.queries";
 import { insertZitiIntercept } from "@/db/types/ziti_intercepts.queries";
 import { insertZitiPolicy } from "@/db/types/ziti_policies.queries";
-import addDialPolicyToUserIdentities from "@/lib/add-dial-policy-to-user-identities";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
+import updateDialRoles from "@/lib/update-dial-roles";
 import { getConfigIds, postConfig } from "@/lib/ziti/configs";
 import dialRole from "@/lib/ziti/dial-role";
-import { getIdentity, patchIdentity } from "@/lib/ziti/identities";
 import { postPolicy } from "@/lib/ziti/policies";
 import { patchService } from "@/lib/ziti/services";
 import { assert } from "console";
@@ -281,12 +279,7 @@ const createTunnelBinding = async ({
 
         console.log(tunnelBindingDb.length !== 0 ? tunnelBindingDb[0] : 'Failed to insert tunnel binding');
 
-        if (share.type !== 'automatic') return true;
-
-        await addDialPolicyToUserIdentities({
-            dialRole: dialRole(serviceSlug), 
-            user_id: user.user_id 
-        });
+        await updateDialRoles(user.user_id);
 
         return true;
     } catch (err) {

@@ -1,7 +1,9 @@
 'use client'
 
+import AreYouSure from "@/components/are-you-sure";
+import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent } from "@/components/ui/dropdown-menu";
 import {
     Table,
     TableBody,
@@ -14,6 +16,8 @@ import {
 import { IGetSharesByEmailResult } from "@/db/types/shares.queries";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
+import DeleteShareButton from "./delete-share-button";
+import deleteShare from "@/lib/actions/shares/delete-share";
 
 const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
     return (
@@ -37,20 +41,27 @@ const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
                             <TableCell>{share.service_protocol === 'http' ? 'http' : share.intercept_protocol}</TableCell>
                             <TableCell>{share.intercept_addresses[0]}</TableCell>
                             <TableCell className='w-16'>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant='ghost' className='cursor-pointer'>
-                                            <EllipsisVertical />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            variant='destructive'
-                                            className='cursor-pointer'>
-                                            Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <AreYouSureProvider>
+                                    <AreYouSure
+                                        yesText=<>Delete the share</>
+                                        refreshOnYes={true}
+                                        onClickYes={async () => {
+                                            await deleteShare();
+                                        }}>
+                                        Are you sure you want to delete this share?
+                                        You will lose access to the service once deleted.
+                                    </AreYouSure>
+                                    <DropdownMenu modal={false}>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant='ghost' className='cursor-pointer'>
+                                                <EllipsisVertical />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DeleteShareButton />
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </AreYouSureProvider>
                             </TableCell>
                         </TableRow>
                     );

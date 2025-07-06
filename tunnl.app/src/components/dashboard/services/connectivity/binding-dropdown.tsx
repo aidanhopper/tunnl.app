@@ -37,7 +37,9 @@ const BindingDropdown = ({ service_id, tunnel_binding_id }: { service_id: string
             </AreYouSure>
             <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' className='cursor-pointer'>
+                    <Button
+                        variant='ghost'
+                        className='cursor-pointer'>
                         <EllipsisVertical />
                     </Button>
                 </DropdownMenuTrigger>

@@ -11,6 +11,8 @@ import { PostIdentityData } from '@/lib/ziti/types'
 import { z } from 'zod';
 import { getAutomaticallySharedTunnelBindingSlugsByEmail } from '@/db/types/tunnel_bindings.queries';
 import dialRole from '@/lib/ziti/dial-role';
+import updateDialRoles from '@/lib/update-dial-roles';
+import { getUserByEmail } from '@/db/types/users.queries';
 
 const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const session = await getServerSession();
@@ -21,6 +23,10 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const slug = slugify(name);
 
     try {
+        const userList = await getUserByEmail.run({ email: email }, client);
+        if (userList.length === 0) throw new Error('User does not exist');
+        const user = userList[0];
+
         const slugs = await getAutomaticallySharedTunnelBindingSlugsByEmail
             .run({ email: email }, client);
 
@@ -46,6 +52,9 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
             },
             client
         );
+
+        await updateDialRoles(user.id);
+
     } catch (err) {
         await deleteIdentityByName(slug);
         console.error(err);

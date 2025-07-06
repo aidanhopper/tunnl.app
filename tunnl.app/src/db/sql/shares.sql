@@ -65,3 +65,10 @@ SELECT
 FROM deleted_shares
 JOIN tunnel_bindings ON deleted_shares.tunnel_binding_id = tunnel_bindings.id
 JOIN services ON services.id = tunnel_bindings.service_id;
+
+/* @name getShareServiceSlugs */
+SELECT services.slug
+FROM shares
+JOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id
+JOIN services on tunnel_bindings.service_id = services.id
+WHERE shares.user_id = :user_id;

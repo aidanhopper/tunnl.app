@@ -3,8 +3,7 @@
 import { getServiceByIdAndEmail } from "@/db/types/services.queries";
 import { deleteAllServiceShares } from "@/db/types/shares.queries";
 import client from "@/lib/db";
-import removeDialPoliciesFromUserIdentities from "@/lib/remove-dial-policies-from-user-identities";
-import dialRole from "@/lib/ziti/dial-role";
+import updateDialRoles from "@/lib/update-dial-roles";
 import { getServerSession } from "next-auth";
 import { notFound, unauthorized } from "next/navigation";
 
@@ -18,12 +17,7 @@ const revokeAllShares = async (service_id: string) => {
         if (serviceList.length === 0) notFound();
 
         const deletedShares = await deleteAllServiceShares.run({ service_id: service_id }, client);
-        await Promise.all(
-            deletedShares.map(e => removeDialPoliciesFromUserIdentities({
-                dialRole: dialRole(e.service_slug),
-                user_id: e.user_id
-            }))
-        );
+        await Promise.all(deletedShares.map(e => updateDialRoles(e.user_id)));
 
         return true;
     } catch (err) {

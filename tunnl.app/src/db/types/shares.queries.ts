@@ -178,3 +178,34 @@ const deleteAllServiceSharesIR: any = {"usedParamSet":{"service_id":true},"param
 export const deleteAllServiceShares = new PreparedQuery<IDeleteAllServiceSharesParams,IDeleteAllServiceSharesResult>(deleteAllServiceSharesIR);
 
 
+/** 'GetShareServiceSlugs' parameters type */
+export interface IGetShareServiceSlugsParams {
+  user_id?: string | null | void;
+}
+
+/** 'GetShareServiceSlugs' return type */
+export interface IGetShareServiceSlugsResult {
+  slug: string;
+}
+
+/** 'GetShareServiceSlugs' query type */
+export interface IGetShareServiceSlugsQuery {
+  params: IGetShareServiceSlugsParams;
+  result: IGetShareServiceSlugsResult;
+}
+
+const getShareServiceSlugsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":184,"b":191}]}],"statement":"SELECT services.slug\nFROM shares\nJOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services on tunnel_bindings.service_id = services.id\nWHERE shares.user_id = :user_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT services.slug
+ * FROM shares
+ * JOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id
+ * JOIN services on tunnel_bindings.service_id = services.id
+ * WHERE shares.user_id = :user_id
+ * ```
+ */
+export const getShareServiceSlugs = new PreparedQuery<IGetShareServiceSlugsParams,IGetShareServiceSlugsResult>(getShareServiceSlugsIR);
+
+
