@@ -135,3 +135,46 @@ const getSharesByServiceSlugIR: any = {"usedParamSet":{"slug":true},"params":[{"
 export const getSharesByServiceSlug = new PreparedQuery<IGetSharesByServiceSlugParams,IGetSharesByServiceSlugResult>(getSharesByServiceSlugIR);
 
 
+/** 'DeleteAllServiceShares' parameters type */
+export interface IDeleteAllServiceSharesParams {
+  service_id?: string | null | void;
+}
+
+/** 'DeleteAllServiceShares' return type */
+export interface IDeleteAllServiceSharesResult {
+  id: string;
+  service_slug: string;
+  tunnel_binding_id: string;
+  user_id: string;
+}
+
+/** 'DeleteAllServiceShares' query type */
+export interface IDeleteAllServiceSharesQuery {
+  params: IDeleteAllServiceSharesParams;
+  result: IDeleteAllServiceSharesResult;
+}
+
+const deleteAllServiceSharesIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":154,"b":164}]}],"statement":"WITH deleted_shares AS (\n    DELETE FROM shares\n    WHERE tunnel_binding_id = (\n        SELECT id\n        FROM tunnel_bindings\n        WHERE service_id = :service_id\n    ) RETURNING *\n)\nSELECT\n    deleted_shares.*,\n    services.slug AS service_slug\nFROM deleted_shares\nJOIN tunnel_bindings ON deleted_shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services ON services.id = tunnel_bindings.service_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * WITH deleted_shares AS (
+ *     DELETE FROM shares
+ *     WHERE tunnel_binding_id = (
+ *         SELECT id
+ *         FROM tunnel_bindings
+ *         WHERE service_id = :service_id
+ *     ) RETURNING *
+ * )
+ * SELECT
+ *     deleted_shares.*,
+ *     services.slug AS service_slug
+ * FROM deleted_shares
+ * JOIN tunnel_bindings ON deleted_shares.tunnel_binding_id = tunnel_bindings.id
+ * JOIN services ON services.id = tunnel_bindings.service_id
+ * ```
+ */
+export const deleteAllServiceShares = new PreparedQuery<IDeleteAllServiceSharesParams,IDeleteAllServiceSharesResult>(deleteAllServiceSharesIR);
+
+

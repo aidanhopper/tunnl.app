@@ -105,8 +105,8 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>
-                                            <SelectItem className='cursor-pointer' value="port">Port</SelectItem>
-                                            <SelectItem className='cursor-pointer' value="proxy">Proxy</SelectItem>
+                                            {/* <SelectItem className='cursor-pointer' value="port">Port</SelectItem> */}
+                                            {/* <SelectItem className='cursor-pointer' value="proxy">Proxy</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                 </FormControl>
@@ -383,7 +383,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                     type='submit'
                                     variant='outline'
                                     className='cursor-pointer'>
-                                    <ArrowRight />
+                                    Submit
                                 </Button>
                             </span>
                         </div>

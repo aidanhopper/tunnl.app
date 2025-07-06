@@ -14,7 +14,6 @@ const createShareLink = async (service_id: string) => {
         const email = session.user.email;
 
         const serviceList = await getServiceByIdAndEmail.run({ email: email, id: service_id }, client);
-        console.log('serviceList', serviceList);
         if (serviceList.length === 0) notFound();
         const service = serviceList[0];
 

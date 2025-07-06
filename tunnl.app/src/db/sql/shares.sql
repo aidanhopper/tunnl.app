@@ -49,3 +49,19 @@ WHERE tunnel_binding_id = (
         WHERE slug = :slug
     )
 );
+
+/* @name deleteAllServiceShares */
+WITH deleted_shares AS (
+    DELETE FROM shares
+    WHERE tunnel_binding_id = (
+        SELECT id
+        FROM tunnel_bindings
+        WHERE service_id = :service_id
+    ) RETURNING *
+)
+SELECT
+    deleted_shares.*,
+    services.slug AS service_slug
+FROM deleted_shares
+JOIN tunnel_bindings ON deleted_shares.tunnel_binding_id = tunnel_bindings.id
+JOIN services ON services.id = tunnel_bindings.service_id;

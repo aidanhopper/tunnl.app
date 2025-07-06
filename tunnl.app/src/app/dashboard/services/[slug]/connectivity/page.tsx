@@ -1,3 +1,4 @@
+import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import BindingDropdown from "@/components/dashboard/services/connectivity/binding-dropdown";
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,39 +65,43 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                 </div>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableCaption>A list of your bindings</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Visibility</TableHead>
-                            <TableHead>Config</TableHead>
-                            <TableHead/>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {tunnelBindings.map((e, i) => {
-                            return (
-                                <TableRow key={i}>
-                                    <TableCell>Tunnel</TableCell>
-                                    <TableCell>Private</TableCell>
-                                    <TableCell className='grid grid-cols-1'>
-                                        <div className='flex flex-col'>
-                                            <span>
-                                                {service.protocol === 'http' ? 'http' : e.host_protocol}
-                                            </span>
-                                            <span>{e.intercept_addresses[0]}</span>
-                                            <span>{e.intercept_port_ranges}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <BindingDropdown id={service.id} />
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
+                <AreYouSureProvider>
+                    <Table>
+                        <TableCaption>A list of your bindings</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Visibility</TableHead>
+                                <TableHead>Config</TableHead>
+                                <TableHead />
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {tunnelBindings.map((e, i) => {
+                                return (
+                                    <TableRow key={i}>
+                                        <TableCell>Tunnel</TableCell>
+                                        <TableCell>Private</TableCell>
+                                        <TableCell className='grid grid-cols-1'>
+                                            <div className='flex flex-col'>
+                                                <span>
+                                                    {service.protocol === 'http' ? 'http' : e.host_protocol}
+                                                </span>
+                                                <span>{e.intercept_addresses[0]}</span>
+                                                <span>{e.intercept_port_ranges}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <BindingDropdown
+                                                tunnel_binding_id={e.id}
+                                                service_id={service.id} />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </AreYouSureProvider>
             </CardContent>
         </Card >
     );

@@ -16,7 +16,8 @@ const ServiceGeneral = async ({ params }: { params: { slug: string } }) => {
     const service = serviceList[0];
 
     const shares = await getSharesByServiceSlug.run({ slug: slug }, client);
-    const shareLinks = await getServiceShareLinks.run({ slug: slug }, client);
+    const shareLinks = (await getServiceShareLinks.run({ slug: slug }, client))
+        .filter(e => e.expires > new Date());
 
     return (
         <Card>

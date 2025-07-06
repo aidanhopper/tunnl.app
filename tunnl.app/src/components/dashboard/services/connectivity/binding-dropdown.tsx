@@ -8,8 +8,10 @@ import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import createShareLink from "@/lib/actions/shares/create-share-link";
 import { useState } from "react";
+import AreYouSure from "@/components/are-you-sure";
+import { useAreYouSure } from "@/components/are-you-sure-provider";
 
-const BindingDropdown = ({ id }: { id: string }) => {
+const BindingDropdown = ({ service_id, tunnel_binding_id }: { service_id: string, tunnel_binding_id: string }) => {
     const router = useRouter()
     const [shareLinkData, setShareLinkData] = useState<{ slug: string, expires: Date } | null>(null)
 
@@ -19,14 +21,21 @@ const BindingDropdown = ({ id }: { id: string }) => {
 
     const generateShareLink = async () => {
         console.log('generating share link')
-        setShareLinkData(await createShareLink(id));
+        setShareLinkData(await createShareLink(service_id));
     }
 
     const toUrl = (slug: string) => window.location.protocol + '//' + window.location.host + '/' + slug
 
+    const { setOpen } = useAreYouSure();
+
     return (
         <Dialog>
-            <DropdownMenu>
+            <AreYouSure
+                refreshOnYes={true}
+                onClickYes={() => deleteTunnelBinding(tunnel_binding_id)}>
+                Are you sure you want to delete this binding?
+            </AreYouSure>
+            <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant='ghost' className='cursor-pointer'>
                         <EllipsisVertical />
@@ -43,10 +52,7 @@ const BindingDropdown = ({ id }: { id: string }) => {
                     <DropdownMenuItem
                         variant='destructive'
                         className='cursor-pointer'
-                        onClick={async () => {
-                            await deleteTunnelBinding(id);
-                            router.refresh();
-                        }}>
+                        onClick={() => setOpen(true)}>
                         <Delete /> Delete
                     </DropdownMenuItem>
                 </DropdownMenuContent>

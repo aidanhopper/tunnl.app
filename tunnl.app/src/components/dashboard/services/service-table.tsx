@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
     Table,
     TableBody,
@@ -13,6 +13,9 @@ import { IGetServicesByEmailResult } from "@/db/types/services.queries"
 import { EllipsisVertical } from "lucide-react"
 import DeleteServiceDropdownButton from "./delete-service-dropdown-button"
 import Link from "next/link"
+import { AreYouSureProvider } from "@/components/are-you-sure-provider"
+import AreYouSure from "@/components/are-you-sure"
+import deleteService from "@/lib/actions/services/delete-service"
 
 const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) => {
     return (
@@ -33,25 +36,35 @@ const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) 
                         <TableCell>{service.created?.toLocaleString()}</TableCell>
                         <TableCell>{service.protocol.toUpperCase()}</TableCell>
                         <TableCell className='w-16'>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant='ghost' className='cursor-pointer'>
-                                        <EllipsisVertical />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        className='cursor-pointer'
-                                        asChild>
-                                        <Link href={`/dashboard/services/${service.slug}`}>
-                                            {service.name}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuGroup>
-                                        <DeleteServiceDropdownButton name={service.name} />
-                                    </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <AreYouSureProvider>
+                                <AreYouSure
+                                    refreshOnYes={true}
+                                    onClickYes={async () => {
+                                        'use server'
+                                        await deleteService(service.name);
+                                    }}>
+                                    Are you sure you want to delete this service?
+                                </AreYouSure>
+                                <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant='ghost' className='cursor-pointer'>
+                                            <EllipsisVertical />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem
+                                            className='cursor-pointer'
+                                            asChild>
+                                            <Link href={`/dashboard/services/${service.slug}`}>
+                                                {service.name}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuGroup>
+                                            <DeleteServiceDropdownButton />
+                                        </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </AreYouSureProvider>
                         </TableCell>
                     </TableRow>
                 ))}

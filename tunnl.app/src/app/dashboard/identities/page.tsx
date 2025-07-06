@@ -31,6 +31,9 @@ import SubscribeProvider from "@/components/subscribe-provider";
 import generateToken from "@/lib/subscribe/generate-token";
 import RefreshOnEvent from "@/components/dashboard/refresh-on-event";
 import { Card, CardContent } from "@/components/ui/card";
+import { AreYouSureProvider } from "@/components/are-you-sure-provider";
+import AreYouSure from "@/components/are-you-sure";
+import deleteIdentity from "@/lib/actions/identities/delete-identity";
 
 const Identities = async () => {
     const session = await getServerSession();
@@ -112,23 +115,33 @@ const Identities = async () => {
                                                     </div>}
                                             </TableCell>
                                             <TableCell className='w-16'>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant='ghost' className='cursor-pointer'>
-                                                            <EllipsisVertical />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        <DropdownMenuItem asChild className='cursor-pointer'>
-                                                            <Link href={`/dashboard/identities/${item.slug}`}>
-                                                                {item.name}
-                                                            </Link>
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuGroup>
-                                                            <DeleteIdentityDropdownButton name={item.name} />
-                                                        </DropdownMenuGroup>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                <AreYouSureProvider>
+                                                    <AreYouSure
+                                                        refreshOnYes={true}
+                                                        onClickYes={async () => {
+                                                            'use server'
+                                                            await deleteIdentity(item.name)
+                                                        }}>
+                                                        Are you sure you want to delete this identity
+                                                    </AreYouSure >
+                                                    <DropdownMenu modal={false}>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant='ghost' className='cursor-pointer'>
+                                                                <EllipsisVertical />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            <DropdownMenuItem asChild className='cursor-pointer'>
+                                                                <Link href={`/dashboard/identities/${item.slug}`}>
+                                                                    {item.name}
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuGroup>
+                                                                <DeleteIdentityDropdownButton name={item.name} />
+                                                            </DropdownMenuGroup>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </AreYouSureProvider>
                                             </TableCell>
                                         </TableRow>))}
                                 </TableBody>
