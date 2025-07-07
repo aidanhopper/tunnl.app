@@ -3,7 +3,7 @@
 import AreYouSure from "@/components/are-you-sure";
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
     Table,
     TableBody,
@@ -14,7 +14,6 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { IGetSharesByEmailResult } from "@/db/types/shares.queries";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
 import DeleteShareButton from "./delete-share-button";
 import deleteShare from "@/lib/actions/shares/delete-share";

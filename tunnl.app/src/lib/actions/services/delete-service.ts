@@ -9,9 +9,7 @@ import { deleteTunnelBinding } from "./delete-tunnel-binding";
 
 const deleteService = async (name: string) => {
     const session = await getServerSession();
-
     const email = session?.user?.email;
-
     if (!email) return;
 
     const serviceList = await getServiceByNameAndEmail.run(

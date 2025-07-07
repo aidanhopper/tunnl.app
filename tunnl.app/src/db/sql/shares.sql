@@ -72,3 +72,21 @@ FROM shares
 JOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id
 JOIN services on tunnel_bindings.service_id = services.id
 WHERE shares.user_id = :user_id;
+
+/* @name deleteShareById */
+WITH deleted_share AS (
+    DELETE FROM shares
+    WHERE id = :id
+    RETURNING *
+)
+SELECT
+    deleted_share.id AS share_id,
+    deleted_share.user_id AS share_user_id,
+    share_user.email AS share_user_email,
+    owner_user.id AS owner_user_id,
+    owner_user.email AS owner_user_email
+FROM deleted_share
+JOIN tunnel_bindings ON deleted_share.tunnel_binding_id = tunnel_bindings.id
+JOIN services ON tunnel_bindings.service_id = services.id
+JOIN users AS owner_user ON services.user_id = owner_user.id
+JOIN users AS share_user ON deleted_share.user_id = share_user.id;

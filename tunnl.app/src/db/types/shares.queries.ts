@@ -209,3 +209,49 @@ const getShareServiceSlugsIR: any = {"usedParamSet":{"user_id":true},"params":[{
 export const getShareServiceSlugs = new PreparedQuery<IGetShareServiceSlugsParams,IGetShareServiceSlugsResult>(getShareServiceSlugsIR);
 
 
+/** 'DeleteShareById' parameters type */
+export interface IDeleteShareByIdParams {
+  id?: string | null | void;
+}
+
+/** 'DeleteShareById' return type */
+export interface IDeleteShareByIdResult {
+  owner_user_email: string;
+  owner_user_id: string;
+  share_id: string;
+  share_user_email: string;
+  share_user_id: string;
+}
+
+/** 'DeleteShareById' query type */
+export interface IDeleteShareByIdQuery {
+  params: IDeleteShareByIdParams;
+  result: IDeleteShareByIdResult;
+}
+
+const deleteShareByIdIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":62,"b":64}]}],"statement":"WITH deleted_share AS (\n    DELETE FROM shares\n    WHERE id = :id\n    RETURNING *\n)\nSELECT\n    deleted_share.id AS share_id,\n    deleted_share.user_id AS share_user_id,\n    share_user.email AS share_user_email,\n    owner_user.id AS owner_user_id,\n    owner_user.email AS owner_user_email\nFROM deleted_share\nJOIN tunnel_bindings ON deleted_share.tunnel_binding_id = tunnel_bindings.id\nJOIN services ON tunnel_bindings.service_id = services.id\nJOIN users AS owner_user ON services.user_id = owner_user.id\nJOIN users AS share_user ON deleted_share.user_id = share_user.id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * WITH deleted_share AS (
+ *     DELETE FROM shares
+ *     WHERE id = :id
+ *     RETURNING *
+ * )
+ * SELECT
+ *     deleted_share.id AS share_id,
+ *     deleted_share.user_id AS share_user_id,
+ *     share_user.email AS share_user_email,
+ *     owner_user.id AS owner_user_id,
+ *     owner_user.email AS owner_user_email
+ * FROM deleted_share
+ * JOIN tunnel_bindings ON deleted_share.tunnel_binding_id = tunnel_bindings.id
+ * JOIN services ON tunnel_bindings.service_id = services.id
+ * JOIN users AS owner_user ON services.user_id = owner_user.id
+ * JOIN users AS share_user ON deleted_share.user_id = share_user.id
+ * ```
+ */
+export const deleteShareById = new PreparedQuery<IDeleteShareByIdParams,IDeleteShareByIdResult>(deleteShareByIdIR);
+
+

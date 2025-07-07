@@ -1,7 +1,7 @@
 -- migrate:up
 CREATE TABLE tunnel_bindings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    service_id UUID NOT NULL,
+    service_id UUID UNIQUE NOT NULL,
     host_id UUID NOT NULL,
     intercept_id UUID NOT NULL,
     dial_policy_id UUID NOT NULL,

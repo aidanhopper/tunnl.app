@@ -15,7 +15,7 @@ const DashboardLayout = ({ children }: { children?: ReactNode }) => {
                 <DashboardSidebar />
                 <main>
                     <div className='flex px-4 h-[65px] border-b-1 border-sidebar-border items-center'>
-                        <div className='flex w-full flex-1 items-center gap-8 '>
+                        <div className='flex w-full flex-1 items-center gap-8'>
                             <SidebarTrigger />
                             <DashboardBreadcrumb />
                         </div>

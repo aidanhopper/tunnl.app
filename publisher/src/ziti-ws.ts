@@ -4,6 +4,10 @@ import https from 'https';
 import { Buffer } from 'buffer';
 import dotenv from 'dotenv';
 
+let ws: WebSocket | null = null;
+let reconnectDelay = 1000;
+let heartbeatInterval: NodeJS.Timeout | null = null;
+let pongTimeout: NodeJS.Timeout | null = null;
 
 dotenv.config({
     path: './../.env',
@@ -122,6 +126,36 @@ const parseMessage = (msg: RawData) => {
     return bodyUtf8;
 }
 
+const stopHeartbeat = () => {
+    if (heartbeatInterval) clearInterval(heartbeatInterval);
+    if (pongTimeout) clearTimeout(pongTimeout);
+    heartbeatInterval = null;
+    pongTimeout = null;
+}
+
+const startHeartbeat = () => {
+    stopHeartbeat();
+    heartbeatInterval = setInterval(() => {
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
+        console.log('Sending ping');
+        ws.ping();
+        pongTimeout = setTimeout(() => {
+            console.warn('Pong timeout. Terminating connection.');
+            ws?.terminate(); // triggers onclose
+        }, 5000); // wait max 5s for pong
+    }, 30000); // ping every 30s
+}
+
+const cleanupAndReconnect = (
+    args: {
+        onMessage: (msg: object) => void,
+        subscriptions: { type: string, options: { version?: number } | null }[]
+    }) => {
+    stopHeartbeat();
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000); // exponential backoff
+    setTimeout(() => createZitiEventWebSocket(args), reconnectDelay);
+}
+
 const createZitiEventWebSocket = async ({
     onMessage,
     subscriptions
@@ -131,7 +165,7 @@ const createZitiEventWebSocket = async ({
 }) => {
     const agent = new https.Agent({ rejectUnauthorized: false });
 
-    const ws = new WebSocket(`${process.env.ZITI_WEBSOCKET_CONTROLLER_URL}/fabric/v1/ws-api`, {
+    ws = new WebSocket(`${process.env.ZITI_WEBSOCKET_CONTROLLER_URL}/fabric/v1/ws-api`, {
         agent: agent,
         headers: {
             'Content-Type': 'application/json',
@@ -140,20 +174,34 @@ const createZitiEventWebSocket = async ({
     });
 
     ws.on('open', () => {
-        ws.send(subscribeMessage(subscriptions));
-        console.log('connected to ziti controller');
+        console.log('Ziti WS connected');
+        ws?.send(subscribeMessage(subscriptions));
+        startHeartbeat();
     });
 
-    ws.on('close', () => console.log('close'));
+    ws.on('close', () => {
+        console.error('Ziti WS closed');
+        cleanupAndReconnect({
+            onMessage: onMessage,
+            subscriptions: subscriptions
+        });
+    });
 
     ws.on('message', msg => {
         const str = parseMessage(msg)
         if (str === 'success' || !str) return;
         onMessage(JSON.parse(str));
     });
-    ws.on('error', console.error);
 
-    return ws;
+    ws.on('error', () => {
+        console.error('Ziti WS error');
+        ws?.close();
+    });
+
+    ws.on('pong', () => {
+        if (pongTimeout) clearTimeout(pongTimeout);
+        console.log('Pong received');
+    });
 }
 
 export default createZitiEventWebSocket;
