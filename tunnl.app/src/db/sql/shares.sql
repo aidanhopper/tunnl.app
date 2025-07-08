@@ -13,6 +13,7 @@ INSERT INTO shares (
 
 /* @name getSharesByEmail */
 SELECT
+    shares.id,
     services.name AS service_name,
     services.protocol AS service_protocol,
     users.email AS owner_email,
@@ -20,18 +21,15 @@ SELECT
     ziti_intercepts.port_ranges AS intercept_port_ranges,
     ziti_intercepts.protocol AS intercept_protocol,
     ziti_intercepts.addresses AS intercept_addresses
-FROM tunnel_bindings
+FROM shares
+JOIN tunnel_bindings ON shares.tunnel_binding_id = tunnel_bindings.id
 JOIN services ON services.id = tunnel_bindings.service_id
 JOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id
 JOIN users ON services.user_id = users.id
-WHERE tunnel_bindings.id IN (
-    SELECT tunnel_binding_id
-    FROM shares
-    WHERE user_id = (
-        SELECT id
-        FROM users
-        WHERE email = :email
-    )
+WHERE shares.user_id = (
+    SELECT id
+    FROM users
+    WHERE email = :email
 );
 
 /* @name getSharesByServiceSlug */

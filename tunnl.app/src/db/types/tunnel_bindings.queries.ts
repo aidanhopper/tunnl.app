@@ -317,22 +317,18 @@ export interface IGetAutomaticallySharedTunnelBindingSlugsByEmailQuery {
   result: IGetAutomaticallySharedTunnelBindingSlugsByEmailResult;
 }
 
-const getAutomaticallySharedTunnelBindingSlugsByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":153,"b":158}]}],"statement":"SELECT slug \nFROM services\nWHERE id = (\n    SELECT id\n    FROM services\n    WHERE user_id = (\n        SELECT id\n        FROM users\n        WHERE email = :email\n    )\n) AND id = (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
+const getAutomaticallySharedTunnelBindingSlugsByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":93,"b":98}]}],"statement":"SELECT slug \nFROM services\nWHERE user_id IN (\n    SELECT id\n    FROM users\n    WHERE email = :email\n) AND id IN (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT slug 
  * FROM services
- * WHERE id = (
+ * WHERE user_id IN (
  *     SELECT id
- *     FROM services
- *     WHERE user_id = (
- *         SELECT id
- *         FROM users
- *         WHERE email = :email
- *     )
- * ) AND id = (
+ *     FROM users
+ *     WHERE email = :email
+ * ) AND id IN (
  *     SELECT service_id
  *     FROM tunnel_bindings
  *     WHERE share_automatically = true
@@ -358,18 +354,15 @@ export interface IGetAutomaticallySharedTunnelBindingsQuery {
   result: IGetAutomaticallySharedTunnelBindingsResult;
 }
 
-const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":99}]}],"statement":"SELECT slug \nFROM services\nWHERE id = (\n    SELECT id\n    FROM services\n    WHERE user_id = :user_id\n) AND id = (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
+const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":52,"b":59}]}],"statement":"SELECT slug \nFROM services\nWHERE services.user_id = :user_id\nAND services.id IN (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT slug 
  * FROM services
- * WHERE id = (
- *     SELECT id
- *     FROM services
- *     WHERE user_id = :user_id
- * ) AND id = (
+ * WHERE services.user_id = :user_id
+ * AND services.id IN (
  *     SELECT service_id
  *     FROM tunnel_bindings
  *     WHERE share_automatically = true

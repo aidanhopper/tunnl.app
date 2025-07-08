@@ -1,6 +1,7 @@
 import AreYouSure from "@/components/are-you-sure";
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import RevokeButton from "@/components/dashboard/services/revoke-button";
+import RevokeDropdownMenuItem from "@/components/dashboard/services/revoke-dropdown-menu-item";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -8,6 +9,7 @@ import { getServiceBySlug } from "@/db/types/services.queries";
 import { getServiceShareLinks } from "@/db/types/share_links.queries";
 import { getSharesByServiceSlug } from "@/db/types/shares.queries";
 import { getTunnelBindingsByServiceSlug, IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
+import deleteShare from "@/lib/actions/shares/delete-share";
 import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
 import client from "@/lib/db";
 import { EllipsisVertical } from "lucide-react";
@@ -64,20 +66,28 @@ const ServiceGeneral = async ({ params }: { params: { slug: string } }) => {
                             return (
                                 <div key={i} className='flex items-center gap-2'>
                                     <span className='text-sm flex-1'>{e.email}</span>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button size='icon' variant='ghost' className='cursor-pointer'>
-                                                <EllipsisVertical />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuItem
-                                                variant='destructive'
-                                                className='cursor-pointer'>
-                                                Revoke
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <AreYouSureProvider>
+                                        <AreYouSure
+                                            refreshOnYes={true}
+                                            onClickYes={async () => {
+                                                'use server'
+                                                await deleteShare(e.id);
+                                            }}>
+
+                                        </AreYouSure>
+                                        <DropdownMenu modal={false}>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size='icon' variant='ghost' className='cursor-pointer'>
+                                                    <EllipsisVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <RevokeDropdownMenuItem>
+                                                    Revoke
+                                                </RevokeDropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </AreYouSureProvider>
                                 </div>
                             );
                         })}

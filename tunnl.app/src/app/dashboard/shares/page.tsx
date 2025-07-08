@@ -32,7 +32,7 @@ const Shares = async () => {
                 </CardContent>
             </Card>
         </DashboardLayout >
-    )
+    );
 }
 
 export default Shares;

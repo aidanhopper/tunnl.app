@@ -44,9 +44,7 @@ const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
                                     <AreYouSure
                                         yesText=<>Delete the share</>
                                         refreshOnYes={true}
-                                        onClickYes={async () => {
-                                            await deleteShare();
-                                        }}>
+                                        onClickYes={async () => await deleteShare(share.id)}>
                                         Are you sure you want to delete this share?
                                         You will lose access to the service once deleted.
                                     </AreYouSure>

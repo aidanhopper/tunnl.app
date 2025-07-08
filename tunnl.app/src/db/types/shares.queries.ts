@@ -48,6 +48,7 @@ export interface IGetSharesByEmailParams {
 
 /** 'GetSharesByEmail' return type */
 export interface IGetSharesByEmailResult {
+  id: string;
   intercept_addresses: stringArray;
   intercept_name: string;
   intercept_port_ranges: string;
@@ -63,12 +64,13 @@ export interface IGetSharesByEmailQuery {
   result: IGetSharesByEmailResult;
 }
 
-const getSharesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":675,"b":680}]}],"statement":"SELECT\n    services.name AS service_name,\n    services.protocol AS service_protocol,\n    users.email AS owner_email,\n    ziti_intercepts.name AS intercept_name,\n    ziti_intercepts.port_ranges AS intercept_port_ranges,\n    ziti_intercepts.protocol AS intercept_protocol,\n    ziti_intercepts.addresses AS intercept_addresses\nFROM tunnel_bindings\nJOIN services ON services.id = tunnel_bindings.service_id\nJOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id\nJOIN users ON services.user_id = users.id\nWHERE tunnel_bindings.id IN (\n    SELECT tunnel_binding_id\n    FROM shares\n    WHERE user_id = (\n        SELECT id\n        FROM users\n        WHERE email = :email\n    )\n)"};
+const getSharesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":667,"b":672}]}],"statement":"SELECT\n    shares.id,\n    services.name AS service_name,\n    services.protocol AS service_protocol,\n    users.email AS owner_email,\n    ziti_intercepts.name AS intercept_name,\n    ziti_intercepts.port_ranges AS intercept_port_ranges,\n    ziti_intercepts.protocol AS intercept_protocol,\n    ziti_intercepts.addresses AS intercept_addresses\nFROM shares\nJOIN tunnel_bindings ON shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services ON services.id = tunnel_bindings.service_id\nJOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id\nJOIN users ON services.user_id = users.id\nWHERE shares.user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT
+ *     shares.id,
  *     services.name AS service_name,
  *     services.protocol AS service_protocol,
  *     users.email AS owner_email,
@@ -76,18 +78,15 @@ const getSharesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name"
  *     ziti_intercepts.port_ranges AS intercept_port_ranges,
  *     ziti_intercepts.protocol AS intercept_protocol,
  *     ziti_intercepts.addresses AS intercept_addresses
- * FROM tunnel_bindings
+ * FROM shares
+ * JOIN tunnel_bindings ON shares.tunnel_binding_id = tunnel_bindings.id
  * JOIN services ON services.id = tunnel_bindings.service_id
  * JOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id
  * JOIN users ON services.user_id = users.id
- * WHERE tunnel_bindings.id IN (
- *     SELECT tunnel_binding_id
- *     FROM shares
- *     WHERE user_id = (
- *         SELECT id
- *         FROM users
- *         WHERE email = :email
- *     )
+ * WHERE shares.user_id = (
+ *     SELECT id
+ *     FROM users
+ *     WHERE email = :email
  * )
  * ```
  */

@@ -110,15 +110,11 @@ DELETE FROM tunnel_bindings WHERE id = :id RETURNING *;
 /* @name getAutomaticallySharedTunnelBindingSlugsByEmail */
 SELECT slug 
 FROM services
-WHERE id = (
+WHERE user_id IN (
     SELECT id
-    FROM services
-    WHERE user_id = (
-        SELECT id
-        FROM users
-        WHERE email = :email
-    )
-) AND id = (
+    FROM users
+    WHERE email = :email
+) AND id IN (
     SELECT service_id
     FROM tunnel_bindings
     WHERE share_automatically = true
@@ -127,11 +123,8 @@ WHERE id = (
 /* @name getAutomaticallySharedTunnelBindings */
 SELECT slug 
 FROM services
-WHERE id = (
-    SELECT id
-    FROM services
-    WHERE user_id = :user_id
-) AND id = (
+WHERE services.user_id = :user_id
+AND services.id IN (
     SELECT service_id
     FROM tunnel_bindings
     WHERE share_automatically = true
