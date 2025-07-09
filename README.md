@@ -1,63 +1,55 @@
-# 🔒 Secure Service Sharing Over OpenZiti (Alpha)
+# 🚂 Secure Service Sharing Over OpenZiti (Alpha)
 
-A self-hostable platform for securely exposing and sharing internal services — without VPNs, port forwarding, or public IPs.
+This is a self-hostable tool for privately sharing internal services without exposing ports, using VPNs, or relying on third-party infrastructure.
 
-Built on [OpenZiti](https://openziti.io), this project creates a private, encrypted mesh network where you can:
+It creates an encrypted mesh network using [OpenZiti](https://openziti.io), where you can:
 
-- 🧱 Register services (HTTP, SSH, RDP, etc.)
-- 🔐 Share access securely using identity-based controls
-- 💡 Run everything yourself, or use the hosted version
-- 🌍 Tunnel over TCP/443 — bypassing firewalls and NAT
+- Register services (like HTTP, SSH, or RDP)
+- Grant access to those services using identity-based policies
+- Tunnel everything over TCP/443, so it works through most firewalls
+- Run the whole thing yourself
 
-This is the **alpha release** and currently focuses on private mesh networking and service sharing.  
-Reverse proxy support (e.g., custom domain routing) will come in a future version.
-
----
-
-## ✅ What’s Included
-
-- Create a Ziti-based mesh network
-- Register users/devices (edge identities)
-- Define services and access policies
-- Share services securely with others
-- Self-hostable control plane
+This is an alpha release focused on private service sharing.  
+Reverse proxy and custom domain support will be added later.
 
 ---
 
-## 🔜 Coming Soon
+## What's Included
 
-- Reverse proxy / custom domain integration
-- Role-based permissions and multi-user UI
-- Optional SaaS version for easier onboarding
-
----
-
-## 📦 Hosted Version
-
-A hosted version of this platform will be available soon for those who want a faster way to get started.
-
-> 🌐 **[Sign up to try the hosted version](https://tunnl.app)**
+- Service registration and access control
+- Ziti fabric deployment and edge client integration
+- Backend and frontend for managing services
+- Everything is self-hostable
 
 ---
 
-## 🧪 Self-Hosting
+## What's Not Included Yet
 
-This alpha is designed to be fully self-hostable.  
-Setup scripts and configuration guides are in progress. For now, you’ll need to be comfortable reading the code and wiring things together.
+- Reverse proxy / domain routing
+- Multi-user UI or permission editor
+- Hosted control plane
+- Setup docs
 
-If you're experienced with OpenZiti, Keycloak, and Traefik, you’ll be able to get it running.  
-Full documentation will follow shortly.
+---
+
+## Hosted Version (Coming Soon)
+
+There will be a hosted version available for people who want something easier to get started with.
+
+**➡ [Sign up to try it](https://tunnl.app)**
 
 ---
 
-## 💬 Why This Exists
+## Self-Hosting
 
-Cloudflare Tunnel, Tailscale, and similar tools are powerful — but they come with tradeoffs:
-
-- Their control planes are not fully open-source
-- Most expose entire devices, not services
-- Custom setups are limited by closed ecosystems
-
-This project was built to provide a **completely open, programmable alternative** — with the privacy, flexibility, and self-ownership serious users need.
+You can host this yourself right now if you're comfortable reading code and wiring things together.  
+Docs are coming, but for now it assumes you're familiar with OpenZiti, Keycloak, and container-based setups.
 
 ---
+
+## Why I Built This
+
+I wanted something like Tailscale or Cloudflare Tunnel, but fully open and programmable.  
+Tailscale’s control plane isn’t self-hostable, and most tools like it share entire devices instead of services.  
+This gives you full control — your network, your rules, no external dependencies.
+
