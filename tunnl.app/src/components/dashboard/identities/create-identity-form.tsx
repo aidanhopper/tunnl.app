@@ -44,7 +44,7 @@ const CreateIdentityForm = () => {
                         </FormItem>
                     )}
                 />
-                <Button type='submit' variant='outline' className='w-full cursor-pointer'>
+                <Button type='submit' className='w-full cursor-pointer'>
                     Submit
                 </Button>
             </form>

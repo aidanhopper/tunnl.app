@@ -24,8 +24,8 @@ const ThemeSwitcher = () => {
                     <TooltipTrigger asChild>
                         <Button
                             className='p-2 cursor-pointer select-none'
-                            variant='outline'
                             size='icon'
+                            variant='ghost'
                             onClick={handleTheme}
                             asChild
                         >

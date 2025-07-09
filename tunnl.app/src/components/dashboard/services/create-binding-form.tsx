@@ -121,7 +121,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                         <Button
                             onSubmit={(e) => e.preventDefault()}
                             type='submit'
-                            variant='outline'
                             className='cursor-pointer'>
                             <ArrowRight />
                         </Button>
@@ -286,7 +285,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onClick={() => setPageIndex(pageIndex - 1)}
                                     type='button'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     <ArrowLeft />
                                 </Button>
@@ -295,7 +293,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onSubmit={(e) => e.preventDefault()}
                                     type='submit'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     <ArrowRight />
                                 </Button>
@@ -372,7 +369,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onClick={() => setPageIndex(pageIndex - 1)}
                                     type='button'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     <ArrowLeft />
                                 </Button>
@@ -381,7 +377,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onSubmit={e => e.preventDefault()}
                                     type='submit'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     Submit
                                 </Button>
@@ -467,7 +462,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onClick={() => setPageIndex(pageIndex - 1)}
                                     type='button'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     <ArrowLeft />
                                 </Button>
@@ -476,7 +470,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                 <Button
                                     onSubmit={e => e.preventDefault()}
                                     type='submit'
-                                    variant='outline'
                                     className='cursor-pointer'>
                                     Submit
                                 </Button>
@@ -494,7 +487,6 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                     case 'tunnel': return tunnelPages[pageIndex - 1]
                     default: return <Button
                         className='cursor-pointer'
-                        variant='outline'
                         onClick={() => setPageIndex(pageIndex - 1)}>
                         <ArrowLeft />
                     </Button>;

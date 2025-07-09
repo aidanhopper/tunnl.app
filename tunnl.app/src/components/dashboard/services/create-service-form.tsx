@@ -81,7 +81,6 @@ const CreateServiceForm = () => {
                 />
                 <Button
                     type='submit'
-                    variant='outline'
                     className='w-full cursor-pointer'>
                     Submit
                 </Button>

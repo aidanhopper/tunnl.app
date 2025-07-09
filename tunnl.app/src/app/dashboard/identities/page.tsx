@@ -63,7 +63,7 @@ const Identities = async () => {
                         </div>
                         <div className='flex justify-end items-center'>
                             <Dialog>
-                                <Button className='cursor-pointer' variant='ghost' asChild>
+                                <Button className='cursor-pointer' variant='secondary' asChild>
                                     <DialogTrigger>
                                         Create
                                     </DialogTrigger>

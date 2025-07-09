@@ -9,10 +9,10 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
+    SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-    SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
 import {
@@ -33,7 +33,6 @@ import {
     BadgeCheck,
     ChevronsUpDown,
     LogOut,
-    Settings,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useLocalSession, clearLocalSession, useCachedImage } from '@/lib/hooks';
@@ -95,8 +94,10 @@ const DashboardSidebar = ({ ...props }) => {
 
     return (
         <Sidebar {...props}>
-            <SidebarSeparator />
             <SidebarContent>
+                <SidebarHeader className='font-bold text-left ml-3 mt-5 text-3xl'>
+                    🚂 &nbsp; tunnl 
+                </SidebarHeader>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
@@ -114,23 +115,21 @@ const DashboardSidebar = ({ ...props }) => {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarSeparator />
             <SidebarFooter>
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <SidebarMenuButton asChild>
-                                    <Link href='/dashboard/settings'>
-                                        <Settings />
-                                        <span>Settings</span>
-                                    </Link>
+                                    {/* <Link href='/dashboard/settings'> */}
+                                    {/*     <Settings /> */}
+                                    {/*     <span>Settings</span> */}
+                                    {/* </Link> */}
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-                <DropdownMenuSeparator className='my-0' />
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <DropdownMenu>
@@ -176,7 +175,7 @@ const DashboardSidebar = ({ ...props }) => {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarFooter>
-        </Sidebar>
+        </Sidebar >
     );
 }
 

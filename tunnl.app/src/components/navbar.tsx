@@ -42,7 +42,7 @@ const Navbar = () => {
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger>
-                                <Button variant='outline' className='cursor-pointer' asChild>
+                                <Button variant='ghost' className='cursor-pointer' asChild>
                                     <Avatar className="h-9 w-9 p-0">
                                         <AvatarImage
                                             src={cachedAvatar ?? ''}

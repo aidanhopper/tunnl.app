@@ -15,7 +15,7 @@ const RevokeButton = ({
             onClick={() => setOpen(true)}
             className='text-xs cursor-pointer'
             size='sm'
-            variant='outline'>
+            variant='secondary'>
             {children}
         </Button>
     );

@@ -47,7 +47,7 @@ const DashboardBreadcrumb = () => {
                     </Fragment>
                 ))}
             </BreadcrumbList>
-        </Breadcrumb >
+        </Breadcrumb>
     ) : null;
 }
 

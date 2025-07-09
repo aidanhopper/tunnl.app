@@ -29,7 +29,6 @@ const CopyDeviceUrl = ({ url }: { url: string }) => {
                     <TooltipTrigger asChild>
                         <Button
                             onClick={onCopy}
-                            variant='outline'
                             className={`cursor-pointer h-full`}
                         >
                             <Copy />

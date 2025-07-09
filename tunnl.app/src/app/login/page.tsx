@@ -16,7 +16,6 @@ const Login = () => {
                         </p>
                         <Button
                             onClick={() => signIn('keycloak', { callbackUrl: '/dashboard' })}
-                            variant="outline"
                             className="w-64 cursor-pointer">
                             Login
                         </Button>
