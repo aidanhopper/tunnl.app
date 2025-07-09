@@ -34,7 +34,7 @@ const DashboardBreadcrumb = () => {
                                     <Link
                                         href={'/' + path.slice(0, i + 1).join('/')}>
                                         {!isSlug(e) ?
-                                            e : e.split('-').slice(0, -1).join(' ')}
+                                            e : e.split('-').slice(0, -1).join(' ').replace('-', ' ')}
                                     </Link>
                                 </BreadcrumbLink> :
                                 <BreadcrumbPage

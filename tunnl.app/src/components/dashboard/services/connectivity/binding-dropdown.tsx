@@ -2,17 +2,16 @@
 
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Copy, Delete, EllipsisVertical, Share } from "lucide-react";
+import { Copy, Delete, Edit, EllipsisVertical, Share } from "lucide-react";
 import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
-import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import createShareLink from "@/lib/actions/shares/create-share-link";
 import { useState } from "react";
 import AreYouSure from "@/components/are-you-sure";
 import { useAreYouSure } from "@/components/are-you-sure-provider";
+import Link from "next/link";
 
-const BindingDropdown = ({ service_id, tunnel_binding_id }: { service_id: string, tunnel_binding_id: string }) => {
-    const router = useRouter()
+const BindingDropdown = ({ slug, service_id, tunnel_binding_id }: { slug: string, service_id: string, tunnel_binding_id: string }) => {
     const [shareLinkData, setShareLinkData] = useState<{ slug: string, expires: Date } | null>(null)
 
     const handleCopy = async (text: string) => {
@@ -44,6 +43,14 @@ const BindingDropdown = ({ service_id, tunnel_binding_id }: { service_id: string
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                    <DropdownMenuItem
+                        className='cursor-pointer'
+                        onClick={() => { }}
+                        asChild>
+                        <Link href={`/dashboard/services/${slug}/connectivity/binding`}>
+                            <Edit /> Edit
+                        </Link>
+                    </DropdownMenuItem>
                     <DialogTrigger
                         onClick={generateShareLink}
                         className='w-full'>

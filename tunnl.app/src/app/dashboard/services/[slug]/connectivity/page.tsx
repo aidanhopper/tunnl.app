@@ -19,34 +19,13 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
 
     const email = session.user.email;
 
-    const serviceList = await getServiceBySlug.run(
-        {
-            slug: slug
-        },
-        client
-    );
+    const serviceList = await getServiceBySlug.run({ slug: slug }, client);
     if (serviceList.length === 0) notFound();
     const service = serviceList[0]
 
-    const identities = await getIdentitiesByEmail.run(
-        {
-            email: email
-        },
-        client
-    )
+    const identities = await getIdentitiesByEmail.run({ email: email }, client)
 
-    const tunnelBindings = await getTunnelBindingsByServiceSlug.run(
-        {
-            slug: slug
-        },
-        client
-    );
-
-    // TODO Add way to create a underlying ziti service binding using intercepts,
-    // policies, and hosts and then associate them with the service with the id service.ziti_id
-    //
-    // Add form to create a ziti service 
-    // Might want to make enrollment a better experience as well
+    const tunnelBindings = await getTunnelBindingsByServiceSlug.run({ slug: slug }, client);
 
     return (
         <Card>
@@ -94,6 +73,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                         <TableCell>
                                             <div className='flex justify-end'>
                                                 <BindingDropdown
+                                                    slug={slug}
                                                     tunnel_binding_id={e.id}
                                                     service_id={service.id} />
                                             </div>

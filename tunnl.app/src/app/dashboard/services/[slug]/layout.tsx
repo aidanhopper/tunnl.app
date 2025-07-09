@@ -1,6 +1,5 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import ServiceNavButton from "@/components/dashboard/services/service-nav-button";
-import { Card, CardContent } from "@/components/ui/card";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import { getUserByEmail } from "@/db/types/users.queries";
 import client from "@/lib/db";
@@ -39,7 +38,7 @@ const DashboardServiceLayout = async ({ children, params }: { children: ReactNod
                     <div className='flex lg:grid gap-2 grid-cols-2 lg:grid-cols-none'>
                         <Link href={`/dashboard/services/${slug}`}>
                             <ServiceNavButton
-                                activePath={`/dashboard/services/${slug}`}>
+                                activePath={`/dashboard/services/${slug}$`}>
                                 General
                             </ServiceNavButton>
                         </Link>

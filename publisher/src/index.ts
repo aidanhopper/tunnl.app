@@ -109,16 +109,16 @@ const subscribers = new Map<string, RegExp[]>();
 
 const publishEvent = async (topic: string, payload: object) => {
     try {
-        console.log('publishing', {
-            topic: topic,
-            payload: payload
-        })
+        // console.log('publishing', {
+        //     topic: topic,
+        //     payload: payload
+        // })
 
         subscribers.forEach((topics, socketId) => {
             topics.forEach(topicRegex => {
                 if (topicRegex.test(topic)) {
                     io.to(socketId).emit('event', payload);
-                    console.log('sending', payload, 'to', socketId);
+                    // console.log('sending', payload, 'to', socketId);
                 }
             });
         });
@@ -136,8 +136,10 @@ const main = async () => {
                 { type: "entityChange", options: null },
                 { type: "service", options: null },
                 { type: "sdk", options: null },
+                { type: 'link', options: null }
             ],
             onMessage: (msg) => {
+                console.log(msg)
                 const payload = transformEvent(msg);
 
                 if (!(payload.namespace && payload.entityType && payload.id)) return;
@@ -166,13 +168,13 @@ const main = async () => {
 
             try {
                 const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET || 'no') as {} as Payload;
-                console.log('connect');
+                // console.log('connect');
 
                 subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
 
                 socket.on("disconnect", () => {
                     subscribers.delete(socket.id);
-                    console.log('disconnect');
+                    // console.log('disconnect');
                 });
             } catch (err) {
                 console.error(err)

@@ -52,3 +52,28 @@ WHERE tunnel_binding_id = (
         WHERE slug = :slug
     ) 
 );
+
+/* @name deleteAllServicesShareLinks */
+DELETE FROM share_links
+WHERE tunnel_binding_id = (
+    SELECT id
+    FROM tunnel_bindings
+    WHERE service_id = :service_id
+);
+
+/* @name deleteShareLinkByIdAndEmail */
+DELETE FROM share_links
+WHERE id = :share_link_id 
+AND tunnel_binding_id IN (
+    SELECT id 
+    FROM tunnel_bindings
+    WHERE service_id IN (
+        SELECT id
+        FROM services
+        WHERE user_id = (
+            SELECT id
+            FROM users
+            WHERE email = :email
+        )
+    )
+) RETURNING *;

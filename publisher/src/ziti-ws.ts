@@ -137,7 +137,7 @@ const startHeartbeat = () => {
     stopHeartbeat();
     heartbeatInterval = setInterval(() => {
         if (!ws || ws.readyState !== WebSocket.OPEN) return;
-        console.log('Sending ping');
+        // console.log('Sending ping');
         ws.ping();
         pongTimeout = setTimeout(() => {
             console.warn('Pong timeout. Terminating connection.');
@@ -200,7 +200,7 @@ const createZitiEventWebSocket = async ({
 
     ws.on('pong', () => {
         if (pongTimeout) clearTimeout(pongTimeout);
-        console.log('Pong received');
+        // console.log('Pong received');
     });
 }
 

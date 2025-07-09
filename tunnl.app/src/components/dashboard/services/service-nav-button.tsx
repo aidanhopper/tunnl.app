@@ -6,8 +6,7 @@ import { ReactNode } from "react";
 
 const ServiceNavButton = ({ children, className, activePath = '' }: { children?: ReactNode, className?: string, activePath?: string }) => {
     const path = usePathname();
-    const isActive = path === activePath;
-
+    const isActive = path ? RegExp(activePath).test(path) : false;
     return (
         <Button
             variant='ghost'
