@@ -6,7 +6,7 @@ It creates an encrypted mesh network using [OpenZiti](https://openziti.io), wher
 
 - Register services (like HTTP, SSH, or RDP)
 - Share access to those services with other users, individually
-- Control who can access what — at the **service level**, not device level
+- Control access at the **service level**, not device level
 - Tunnel traffic over TCP/443, which works through most firewalls
 - Run the whole system yourself
 
