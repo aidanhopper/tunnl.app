@@ -10,7 +10,7 @@ import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { notFound, unauthorized } from "next/navigation";
 
-const DashboardServiceConnectvity = async ({ params }: { params: { slug: string } }) => {
+const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
     const session = await getServerSession();
@@ -73,6 +73,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: { slug: string 
                                         <TableCell>
                                             <div className='flex justify-end'>
                                                 <BindingDropdown
+                                                    binding_slug={e.slug}
                                                     slug={slug}
                                                     tunnel_binding_id={e.id}
                                                     service_id={service.id} />

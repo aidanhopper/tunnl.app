@@ -17,7 +17,7 @@ import client from "@/lib/db";
 import { EllipsisVertical } from "lucide-react";
 import { notFound } from "next/navigation";
 
-const ServiceGeneral = async ({ params }: { params: { slug: string } }) => {
+const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
     const serviceList = await getServiceBySlug.run({ slug: slug }, client);

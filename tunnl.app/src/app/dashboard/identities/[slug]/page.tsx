@@ -13,7 +13,7 @@ import generateToken from '@/lib/subscribe/generate-token';
 import IdentityStatusCard from '@/components/dashboard/identities/identity-status-card';
 import RefreshOnEvent from '@/components/dashboard/refresh-on-event';
 
-const Identity = async ({ params }: { params: { slug: string } }) => {
+const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
     const session = await getServerSession();

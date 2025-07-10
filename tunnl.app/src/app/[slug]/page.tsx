@@ -52,10 +52,10 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
     );
 }
 
-const DynamicPage = async ({ params }: { params: { slug: string } }) => {
+const DynamicPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
-    if (slug.toString().length !== 8) return notFound();
+    if (slug.toString().length !== 6) return notFound();
 
     const shareLinkList = await getShareLinkBySlug.run({ slug: slug }, client);
 

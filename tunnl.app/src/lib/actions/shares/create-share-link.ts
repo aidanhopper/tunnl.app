@@ -2,7 +2,7 @@
 
 import { getServiceByIdAndEmail } from "@/db/types/services.queries";
 import { createShareLinkByServiceId } from "@/db/types/share_links.queries";
-import createShareLinkSlug from "@/lib/create-share-link-slug";
+import slug from "@/lib/slug";
 import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { notFound, unauthorized } from "next/navigation";
@@ -19,7 +19,7 @@ const createShareLink = async (service_id: string) => {
 
         const shareLinkList = await createShareLinkByServiceId.run({
             service_id: service.id,
-            slug: createShareLinkSlug(),
+            slug: slug(),
             expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         }, client);
 

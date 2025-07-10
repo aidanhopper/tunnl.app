@@ -9,7 +9,7 @@ import Link from "next/link";
 import { forbidden, notFound, unauthorized } from "next/navigation";
 import { ReactNode } from "react";
 
-const DashboardServiceLayout = async ({ children, params }: { children: ReactNode, params: { slug: string } }) => {
+const DashboardServiceLayout = async ({ children, params }: { children: ReactNode, params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
     const session = await getServerSession();

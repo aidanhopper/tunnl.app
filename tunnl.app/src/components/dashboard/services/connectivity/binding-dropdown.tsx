@@ -11,7 +11,11 @@ import AreYouSure from "@/components/are-you-sure";
 import { useAreYouSure } from "@/components/are-you-sure-provider";
 import Link from "next/link";
 
-const BindingDropdown = ({ slug, service_id, tunnel_binding_id }: { slug: string, service_id: string, tunnel_binding_id: string }) => {
+const BindingDropdown = ({
+    binding_slug, slug, service_id, tunnel_binding_id
+}: {
+    binding_slug: string, slug: string, service_id: string, tunnel_binding_id: string
+}) => {
     const [shareLinkData, setShareLinkData] = useState<{ slug: string, expires: Date } | null>(null)
 
     const handleCopy = async (text: string) => {
@@ -47,7 +51,7 @@ const BindingDropdown = ({ slug, service_id, tunnel_binding_id }: { slug: string
                         className='cursor-pointer'
                         onClick={() => { }}
                         asChild>
-                        <Link href={`/dashboard/services/${slug}/connectivity/binding`}>
+                        <Link href={`/dashboard/services/${slug}/connectivity/${binding_slug}`}>
                             <Edit /> Edit
                         </Link>
                     </DropdownMenuItem>

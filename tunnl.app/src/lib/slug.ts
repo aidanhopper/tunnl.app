@@ -1,4 +1,4 @@
-const createShareLinkSlug = () => {
+const slug = () => {
     const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let ret = '';
     for (let i = 0; i < 8; i++)
@@ -6,4 +6,4 @@ const createShareLinkSlug = () => {
     return ret;
 }
 
-export default createShareLinkSlug;
+export default slug;
