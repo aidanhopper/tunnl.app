@@ -499,7 +499,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             <DialogTrigger asChild>
                 <Button
                     className='cursor-pointer'
-                    variant='ghost'
+                    variant='secondary'
                     onClick={() => setIsOpen(true)}>
                     Create
                 </Button>

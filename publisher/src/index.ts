@@ -94,6 +94,17 @@ const transformEvent = (e: any) => {
                         id: e.initialState.id
                     }
             }
+        case 'service':
+            console.log(e)
+            const ret = {
+                namespace: e.namespace,
+                timestamp: e.timestamp,
+                eventType: e.event_type,
+                entityType: 'service',
+                id: e.identity_id,
+            }
+            console.log(ret);
+            return ret;
         default:
             return {
                 namespace: e.namespace,
@@ -136,13 +147,15 @@ const main = async () => {
                 { type: "entityChange", options: null },
                 { type: "service", options: null },
                 { type: "sdk", options: null },
-                { type: 'link', options: null }
             ],
             onMessage: (msg) => {
-                console.log(msg)
+                console.log(msg.namespace);
                 const payload = transformEvent(msg);
 
                 if (!(payload.namespace && payload.entityType && payload.id)) return;
+
+                if (payload.namespace === 'service')
+                    console.log(payload);
 
                 const isFilteredEvent = [
                     'apiSessions',
@@ -151,7 +164,6 @@ const main = async () => {
                     'terminators',
                     'sessions'
                 ].find(e => e === payload.entityType);
-
 
                 if (isFilteredEvent) return;
                 const topic = `${payload.namespace}:${payload.entityType}:${payload.id}`;

@@ -14,14 +14,14 @@ const Home = () => {
             <Content>
                 <div className='min-h-screen'>
                     <div className=' w-full grid grid-rows-2 md:grid-cols-3 gap-x-8 flex-1 mt-24'>
-                        <div className='flex h-full items-center text-5xl font-bold text-center md:text-left md:col-span-2'>
-                            <p>Easily share private services with your friends.</p>
+                        <div className='flex h-full items-center font-bold text-center md:text-left md:col-span-2'>
+                            <span className='text-6xl'>Easily share private services across networks.</span>
                         </div>
                         <div className='flex gap-8 flex-col justify-end items-center text-muted-foreground text-xl text-center md:text-left'>
                             <p>
-                                Tunnl is the only app you need for sharing
-                                private services with your friends without a
-                                hassel securely over the internet.
+                                Tunnl is the only software you need for sharing
+                                private services with yourself and friends over
+                                the internet.
                             </p>
                             <Button asChild>
                                 <Link href='/login' className='w-full'>
