@@ -7,7 +7,7 @@ CREATE TABLE tunnel_bindings (
     dial_policy_id UUID NOT NULL,
     bind_policy_id UUID NOT NULL,
     share_automatically BOOLEAN NOT NULL,
-    slug VARCHAR(16) UNIQUE NOT NULL,
+    slug VARCHAR(32) UNIQUE NOT NULL,
     FOREIGN KEY (service_id) REFERENCES services(id),
     FOREIGN KEY (host_id) REFERENCES ziti_hosts(id),
     FOREIGN KEY (intercept_id) REFERENCES ziti_intercepts(id),
