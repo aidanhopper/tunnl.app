@@ -95,9 +95,9 @@ const DashboardSidebar = ({ ...props }) => {
     return (
         <Sidebar {...props}>
             <SidebarContent>
-                <SidebarHeader className='font-bold text-left ml-3 mt-[5px] text-3xl'>
+                <SidebarHeader className='font-bold font-mono text-left ml-3 mt-[5px] text-3xl'>
                     <Link href='/'>
-                        🚂 &nbsp; tunnl
+                        🚂 tunnl
                     </Link>
                 </SidebarHeader>
                 <hr />

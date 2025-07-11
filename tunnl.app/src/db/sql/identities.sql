@@ -64,3 +64,8 @@ LIMIT 1;
 SELECT *
 FROM identities
 WHERE user_id = :user_id;
+
+/* @name getIdentityByZitiId */
+SELECT *
+FROM identities
+WHERE ziti_id = :ziti_id;

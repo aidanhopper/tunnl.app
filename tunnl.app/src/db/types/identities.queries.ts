@@ -297,3 +297,39 @@ const getUserIdentitiesIR: any = {"usedParamSet":{"user_id":true},"params":[{"na
 export const getUserIdentities = new PreparedQuery<IGetUserIdentitiesParams,IGetUserIdentitiesResult>(getUserIdentitiesIR);
 
 
+/** 'GetIdentityByZitiId' parameters type */
+export interface IGetIdentityByZitiIdParams {
+  ziti_id?: string | null | void;
+}
+
+/** 'GetIdentityByZitiId' return type */
+export interface IGetIdentityByZitiIdResult {
+  created: Date | null;
+  id: string;
+  is_online: boolean | null;
+  last_seen: Date | null;
+  name: string;
+  slug: string;
+  user_id: string;
+  ziti_id: string;
+}
+
+/** 'GetIdentityByZitiId' query type */
+export interface IGetIdentityByZitiIdQuery {
+  params: IGetIdentityByZitiIdParams;
+  result: IGetIdentityByZitiIdResult;
+}
+
+const getIdentityByZitiIdIR: any = {"usedParamSet":{"ziti_id":true},"params":[{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":48}]}],"statement":"SELECT *\nFROM identities\nWHERE ziti_id = :ziti_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM identities
+ * WHERE ziti_id = :ziti_id
+ * ```
+ */
+export const getIdentityByZitiId = new PreparedQuery<IGetIdentityByZitiIdParams,IGetIdentityByZitiIdResult>(getIdentityByZitiIdIR);
+
+

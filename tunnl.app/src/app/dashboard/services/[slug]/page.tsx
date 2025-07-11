@@ -36,124 +36,118 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
         <>
             {tunnelBinding ? <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
                 <Card>
+                    <CardHeader className='grid grid-cols-3 items-center'>
+                        <CardTitle className='col-span-2'>
+                            Active shares ({shares.length})
+                        </CardTitle>
+                        <AreYouSureProvider>
+                            <AreYouSure
+                                yesText=<>Revoke all shares</>
+                                refreshOnYes={true}
+                                onClickYes={async () => {
+                                    'use server'
+                                    await revokeAllShares(service.id);
+                                }}>
+                                Are you sure you want to revoke all {service.name} shares?
+                            </AreYouSure>
+                            <RevokeButton>
+                                Revoke all
+                            </RevokeButton>
+                        </AreYouSureProvider>
+                        <CardDescription className='col-span-3'>
+                            A list of your active shares
+                        </CardDescription>
+                    </CardHeader>
                     <CardContent>
-                        <CardHeader className='grid grid-cols-3 items-center'>
-                            <CardTitle className='col-span-2'>
-                                Active shares ({shares.length})
-                            </CardTitle>
-                            <AreYouSureProvider>
-                                <AreYouSure
-                                    yesText=<>Revoke all shares</>
-                                    refreshOnYes={true}
-                                    onClickYes={async () => {
-                                        'use server'
-                                        await revokeAllShares(service.id);
-                                    }}>
-                                    Are you sure you want to revoke all {service.name} shares?
-                                </AreYouSure>
-                                <RevokeButton>
-                                    Revoke all
-                                </RevokeButton>
-                            </AreYouSureProvider>
-                            <CardDescription className='col-span-3'>
-                                A list of your active shares
-                            </CardDescription>
-                        </CardHeader>
-                        <div className='mx-6'>
-                            <hr className='my-1' />
-                            {shares.map((e, i) => {
-                                return (
-                                    <div key={i} className='flex items-center gap-2'>
-                                        <span className='text-sm flex-1'>{e.email}</span>
-                                        <AreYouSureProvider>
-                                            <AreYouSure
-                                                refreshOnYes={true}
-                                                onClickYes={async () => {
-                                                    'use server'
-                                                    await deleteShare(e.id);
-                                                }} />
-                                            <DropdownMenu modal={false}>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button size='icon' variant='ghost' className='cursor-pointer'>
-                                                        <EllipsisVertical />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <RevokeDropdownMenuItem>
-                                                        Revoke
-                                                    </RevokeDropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </AreYouSureProvider>
-                                    </div>
-                                );
-                            })}
-                            {shares.length === 0 && <>You have no active shares</>}
-                        </div>
+                        {shares.map((e, i) => {
+                            return (
+                                <div key={i} className='flex items-center gap-2'>
+                                    <span className='text-sm flex-1'>{e.email}</span>
+                                    <AreYouSureProvider>
+                                        <AreYouSure
+                                            refreshOnYes={true}
+                                            onClickYes={async () => {
+                                                'use server'
+                                                await deleteShare(e.id);
+                                            }} />
+                                        <DropdownMenu modal={false}>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size='icon' variant='ghost' className='cursor-pointer'>
+                                                    <EllipsisVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <RevokeDropdownMenuItem>
+                                                    Revoke
+                                                </RevokeDropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </AreYouSureProvider>
+                                </div>
+                            );
+                        })}
+                        {shares.length === 0 && <>You have no active shares</>}
                     </CardContent>
                 </Card>
                 <Card>
+                    <CardHeader className='grid grid-cols-3 items-center'>
+                        <CardTitle className='col-span-2'>
+                            Active shares links ({shareLinks.length})
+                        </CardTitle>
+                        <AreYouSureProvider>
+                            <AreYouSure
+                                yesText=<>Revoke all share links</>
+                                refreshOnYes={true}
+                                onClickYes={async () => {
+                                    'use server'
+                                    revokeAllShareLinks(service.id);
+                                }}>
+                                Are you sure you want to revoke all {service.name} share links?
+                            </AreYouSure>
+                            <RevokeButton>
+                                Revoke all
+                            </RevokeButton>
+                        </AreYouSureProvider>
+                        <CardDescription className='col-span-3'>
+                            A list of your active shares
+                        </CardDescription>
+                    </CardHeader>
                     <CardContent>
-                        <CardHeader className='grid grid-cols-3 items-center'>
-                            <CardTitle className='col-span-2'>
-                                Active shares links ({shareLinks.length})
-                            </CardTitle>
-                            <AreYouSureProvider>
-                                <AreYouSure
-                                    yesText=<>Revoke all share links</>
-                                    refreshOnYes={true}
-                                    onClickYes={async () => {
-                                        'use server'
-                                        revokeAllShareLinks(service.id);
-                                    }}>
-                                    Are you sure you want to revoke all {service.name} share links?
-                                </AreYouSure>
-                                <RevokeButton>
-                                    Revoke all
-                                </RevokeButton>
-                            </AreYouSureProvider>
-                            <CardDescription className='col-span-3'>
-                                A list of your active shares
-                            </CardDescription>
-                        </CardHeader>
-                        <div className='mx-6'>
-                            <hr className='my-1' />
-                            {shareLinks.map((e, i) => {
-                                const diffMs = e.expires.getTime() - (new Date()).getTime();
-                                const totalMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60))); // prevent negative time
-                                const hours = Math.floor(totalMinutes / 60);
-                                const formatted = `${String(hours).padStart(2, '0')}h`;
-                                return (
-                                    <div key={i} className='flex items-center gap-2 '>
-                                        <span className='flex-1 grid lg:grid-cols-2'>
-                                            <span className='text-sm'>{e.slug}</span>
-                                            <span className='text-sm'>Expires in {formatted}</span>
-                                        </span>
-                                        <AreYouSureProvider>
-                                            <AreYouSure
-                                                refreshOnYes={true}
-                                                onClickYes={async () => {
-                                                    'use server'
-                                                    await deleteShareLink(e.id);
-                                                }} />
-                                            <DropdownMenu modal={false}>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button size='icon' variant='ghost' className='cursor-pointer'>
-                                                        <EllipsisVertical />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <RevokeDropdownMenuItem>
-                                                        Revoke
-                                                    </RevokeDropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </AreYouSureProvider>
-                                    </div>
-                                );
-                            })}
-                            {shareLinks.length === 0 && <>You have no active share links</>}
-                        </div>
+                        {shareLinks.map((e, i) => {
+                            const diffMs = e.expires.getTime() - (new Date()).getTime();
+                            const totalMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60))); // prevent negative time
+                            const hours = Math.floor(totalMinutes / 60);
+                            const formatted = `${String(hours).padStart(2, '0')}h`;
+                            return (
+                                <div key={i} className='flex items-center gap-2 '>
+                                    <span className='flex-1 grid lg:grid-cols-2'>
+                                        <span className='text-sm'>{e.slug}</span>
+                                        <span className='text-sm'>Expires in {formatted}</span>
+                                    </span>
+                                    <AreYouSureProvider>
+                                        <AreYouSure
+                                            refreshOnYes={true}
+                                            onClickYes={async () => {
+                                                'use server'
+                                                await deleteShareLink(e.id);
+                                            }} />
+                                        <DropdownMenu modal={false}>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size='icon' variant='ghost' className='cursor-pointer'>
+                                                    <EllipsisVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <RevokeDropdownMenuItem>
+                                                    Revoke
+                                                </RevokeDropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </AreYouSureProvider>
+                                </div>
+                            );
+                        })}
+                        {shareLinks.length === 0 && <>You have no active share links</>}
                     </CardContent>
                 </Card>
             </div > : <div>

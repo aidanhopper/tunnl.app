@@ -23,7 +23,7 @@ const DashboardLayout = ({ children }: { children?: ReactNode }) => {
                             <ThemeSwitcher />
                         </div>
                     </div>
-                    <hr className='border-sidebar-border'/>
+                    <hr className='border-sidebar-border' />
                     <Content className='py-4'>
                         {children}
                     </Content>

@@ -323,6 +323,33 @@ export interface PostConfigResponse {
     meta: Meta;
 };
 
+export interface GetPolicyResponse {
+    data: ServicePolicyDetail;
+    _links: {
+        [property: string]: Link;
+    };
+}
+
+interface ServicePolicyDetail {
+    createdAt: string;
+    id: string;
+    tags: Record<string, string | boolean | null> | null;
+    updatedAt: string;
+    identityRoles: string[];
+    identityRolesDisplay: NamedRole[];
+    postureCheckRoles: string[];
+    postureCheckRolesDisplay: NamedRole[];
+    semantic: "AllOf" | "AnyOf";
+    serviceRoles: string[];
+    serviceRolesDisplay: NamedRole[];
+    type: "Dial" | "Bind" | "Invalid";
+    meta: Meta;
+}
+
+interface NamedRole {
+    name: string;
+    role: string;
+}
 
 export interface PostPolicyData {
     identityRoles: string[];

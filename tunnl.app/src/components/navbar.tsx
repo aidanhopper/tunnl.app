@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { BadgeCheck, Download, LogOut, Terminal } from 'lucide-react';
+import { BadgeCheck, Download, Github, LogOut, Terminal } from 'lucide-react';
 import ThemeSwitcher from '@/components/theme-switcher';
 import Content from '@/components/content';
 import { clearLocalSession, useCachedImage, useLocalSession } from '@/lib/hooks';
@@ -25,7 +25,17 @@ const Navbar = () => {
                     </span>
                 </div>
                 <div className='gap-4 flex h-full justify-end items-center'>
-                    <ThemeSwitcher />
+                    <Button
+                        size='icon'
+                        variant='ghost'
+                        className='cursor-pointer text-muted-foreground'
+                        asChild>
+                        <Link
+                            target='_blank'
+                            href='https://github.com/aidanhopper/MeshNetMarket'>
+                            <Github />
+                        </Link>
+                    </Button>
                     <Button
                         variant='ghost'
                         className='text-muted-foreground cursor-pointer hidden md:block'>
@@ -87,6 +97,7 @@ const Navbar = () => {
                             </Button>
                         </>
                     }
+                    <ThemeSwitcher />
                 </div>
             </Content>
         </nav>
