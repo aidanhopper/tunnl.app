@@ -24,7 +24,7 @@ const Home = () => {
                             the internet.
                         </p>
                         <Button asChild>
-                            <Link href='/login' className='w-full'>
+                            <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}`} className='w-full'>
                                 Start here &rarr;
                             </Link>
                         </Button>

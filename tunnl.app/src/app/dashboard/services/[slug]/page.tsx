@@ -61,7 +61,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                     <CardContent>
                         {shares.map((e, i) => {
                             return (
-                                <div key={i} className='flex items-center gap-2'>
+                                <div key={i} className='flex items-center gap-2 space-y-2'>
                                     <span className='text-sm flex-1'>{e.email}</span>
                                     <AreYouSureProvider>
                                         <AreYouSure
@@ -92,7 +92,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                 <Card>
                     <CardHeader className='grid grid-cols-3 items-center'>
                         <CardTitle className='col-span-2'>
-                            Active shares links ({shareLinks.length})
+                            Active share links ({shareLinks.length})
                         </CardTitle>
                         <AreYouSureProvider>
                             <AreYouSure
@@ -119,7 +119,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             const hours = Math.floor(totalMinutes / 60);
                             const formatted = `${String(hours).padStart(2, '0')}h`;
                             return (
-                                <div key={i} className='flex items-center gap-2 '>
+                                <div key={i} className='flex items-center gap-2 space-y-2'>
                                     <span className='flex-1 grid lg:grid-cols-2'>
                                         <span className='text-sm'>{e.slug}</span>
                                         <span className='text-sm'>Expires in {formatted}</span>

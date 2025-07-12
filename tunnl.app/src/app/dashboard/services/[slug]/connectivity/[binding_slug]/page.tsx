@@ -1,6 +1,6 @@
 import EditBindingForm from "@/components/dashboard/services/edit-binding-form";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getIdentitiesByEmail, getIdentityByZitiId } from "@/db/types/identities.queries";
+import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getTunnelBindingBySlug } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";
 import getHostingIdentitySlug from "@/lib/get-hosting-identity-slug";

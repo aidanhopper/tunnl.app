@@ -32,7 +32,7 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
                         Enroll the Identity
                     </DialogTitle>
                     <DialogDescription className='text-center'>
-                        Enroll with a file or scan the QR code.
+                        Enroll with a file or scan the QR code in a Ziti edge app.
                     </DialogDescription>
                 </DialogHeader>
                 <div className='flex justify-center content-center flex-col gap-8 w-full h-full'>

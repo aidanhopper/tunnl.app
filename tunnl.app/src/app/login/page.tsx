@@ -3,8 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
 const Login = () => {
+    const params = useSearchParams();
+    const redirect = params?.get('redirect');
     return (
         <div className='flex justify-center items-center w-screen h-screen'>
             <Card>
@@ -15,7 +18,7 @@ const Login = () => {
                             Login or register your <span className='font-semibold'>tunnl.app</span> account
                         </p>
                         <Button
-                            onClick={() => signIn('keycloak', { callbackUrl: '/dashboard' })}
+                            onClick={() => signIn('keycloak', { callbackUrl: redirect ?? '/' })}
                             className="w-64 cursor-pointer">
                             Login
                         </Button>

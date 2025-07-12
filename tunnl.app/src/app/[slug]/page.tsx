@@ -13,7 +13,7 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
 
     const session = await getServerSession();
     const email = session?.user?.email;
-    if (!email) redirect('/login');
+    if (!email) redirect(`/login?redirect=${encodeURIComponent('/' + shareLink.slug)}`);
 
     const ownerEmailList = await getShareLinkOwnerEmail.run({ slug: shareLink.slug }, client);
     if (ownerEmailList.length === 0) return <></>;

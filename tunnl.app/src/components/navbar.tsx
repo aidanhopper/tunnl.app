@@ -91,7 +91,7 @@ const Navbar = () => {
                     </> :
                         <>
                             <Button asChild>
-                                <Link href='/login'>
+                                <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}`}>
                                     Sign in
                                 </Link>
                             </Button>
