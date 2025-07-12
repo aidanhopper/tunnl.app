@@ -1,4 +1,5 @@
 import EditBindingForm from "@/components/dashboard/services/edit-binding-form";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getIdentitiesByEmail, getIdentityByZitiId } from "@/db/types/identities.queries";
 import { getTunnelBindingBySlug } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";
@@ -24,7 +25,7 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
 
     let hostingIdentitySlug: string | null = null;
 
-    if (policy.data.identityRoles.length !== 0) {
+    if (policy.data.identityRoles) {
         const hostingIdentityZitiId = policy.data.identityRoles[0].substring(1);
         const identityList = await getIdentityByZitiId.run({ ziti_id: hostingIdentityZitiId }, client);
         if (identityList.length !== 0)
@@ -33,10 +34,24 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
 
     const identities = await getIdentitiesByEmail.run({ email: email }, client);
 
-    return <EditBindingForm
-        identities={identities}
-        hostingIdentitySlug={hostingIdentitySlug}
-        binding={binding} />
+    return (
+        <div className='grid gap-8'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>
+                        Edit Binding
+                    </CardTitle>
+                    <CardDescription>
+                        Edit the settings of this binding. Click save to update the binding.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+            <EditBindingForm
+                identities={identities}
+                hostingIdentitySlug={hostingIdentitySlug}
+                binding={binding} />
+        </div>
+    )
 }
 
 export default BindingPage;

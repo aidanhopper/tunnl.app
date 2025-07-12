@@ -30,6 +30,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
     const [tunnelHostConfig, setTunnelHostConfig] = useState<null | z.infer<typeof tunnelHostFormSchema>>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [tunnelInterceptConfig, setTunnelInterceptConfig] = useState<null | z.infer<typeof tunnelInterceptFormSchema>>(null);
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
