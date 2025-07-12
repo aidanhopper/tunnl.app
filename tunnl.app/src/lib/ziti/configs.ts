@@ -1,6 +1,6 @@
 import { Play } from 'next/font/google';
-import { get, post, del } from './methods';
-import { ConfigTypeListResponse, PostConfigData, PostConfigResponse } from './types';
+import { get, post, del, patch } from './methods';
+import { ConfigTypeListResponse, PatchConfigData, PostConfigData, PostConfigResponse } from './types';
 
 let configTypes: ConfigTypeListResponse | null = null;
 
@@ -39,7 +39,20 @@ export const getConfigIds = async () => {
 }
 
 export const deleteConfig = async (ziti_id: string) => {
-    return del({
+    return await del({
         route: `/configs/${ziti_id}`
     })
+}
+
+export const patchConfig = async ({
+    data,
+    ziti_id
+}: {
+    data: PatchConfigData,
+    ziti_id: string
+}) => {
+    return await patch({
+        route: `/configs/${ziti_id}`,
+        data: data
+    });
 }

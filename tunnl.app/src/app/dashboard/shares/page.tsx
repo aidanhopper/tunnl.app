@@ -1,6 +1,6 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import SharesTable from "@/components/dashboard/shares/shares-table";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSharesByEmail } from "@/db/types/shares.queries";
 import client from "@/lib/db";
 import { Users } from "lucide-react";
@@ -23,12 +23,16 @@ const Shares = async () => {
                 </div>
             </div>
             <Card className='mt-10'>
+                <CardHeader>
+                    <CardTitle>
+                        Shares List
+                    </CardTitle>
+                    <CardDescription>
+                        This is where your shares will be when you join them
+                    </CardDescription>
+                </CardHeader>
                 <CardContent>
-                    {shares.length !== 0 ?
-                        <SharesTable shares={shares} /> :
-                        <p>
-                            Join a service share to use another users service
-                        </p>}
+                    <SharesTable shares={shares} />
                 </CardContent>
             </Card>
         </DashboardLayout >

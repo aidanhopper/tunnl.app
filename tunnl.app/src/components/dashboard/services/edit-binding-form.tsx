@@ -15,8 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import editTunnelBinding from "@/lib/actions/services/edit-tunnel-binding";
 
 const combinedSchema = z.object({
     host: tunnelHostFormSchema,
@@ -66,8 +66,12 @@ const EditBindingForm = ({
     combinedForm.watch('host.portConfig.forwardPorts');
 
     const handleSubmit = async (formData: z.infer<typeof combinedSchema>) => {
-        console.log(formData);
-        router.refresh();
+        const res = await editTunnelBinding({
+            hostConfig: formData.host,
+            interceptConfig: formData.intercept,
+            tunnelBindingId: binding.id
+        });
+        if (res) router.refresh();
     }
 
     return (

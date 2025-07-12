@@ -30,7 +30,7 @@ import Link from "next/link";
 import SubscribeProvider from "@/components/subscribe-provider";
 import generateToken from "@/lib/subscribe/generate-token";
 import RefreshOnEvent from "@/components/dashboard/refresh-on-event";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import AreYouSure from "@/components/are-you-sure";
 import deleteIdentity from "@/lib/actions/identities/delete-identity";
@@ -83,6 +83,14 @@ const Identities = async () => {
                         </div>
                     </div>
                     <Card className='mt-10'>
+                        <CardHeader>
+                            <CardTitle>
+                                Identities List
+                            </CardTitle>
+                            <CardDescription>
+                                This is where your identities will be when you create them
+                            </CardDescription>
+                        </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableCaption>A list of your authenticated devices.</TableCaption>

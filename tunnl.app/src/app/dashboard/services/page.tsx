@@ -15,7 +15,7 @@ import { getServicesByEmail } from "@/db/types/services.queries";
 import client from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { unauthorized } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Services = async () => {
     const session = await getServerSession();
@@ -53,6 +53,14 @@ const Services = async () => {
                 </div>
             </div>
             <Card className='mt-10'>
+                <CardHeader>
+                    <CardTitle>
+                        Services List
+                    </CardTitle>
+                    <CardDescription>
+                        This is where your services will be when you create them
+                    </CardDescription>
+                </CardHeader>
                 <CardContent>
                     <ServicesTable services={services} />
                 </CardContent>

@@ -293,6 +293,13 @@ export interface PostConfigData {
     tags?: Tags | null
 }
 
+export interface PatchConfigData {
+    configTypeId?: string;
+    name?: string;
+    data?: object;
+    tags?: Tags | null;
+}
+
 export interface ConfigTypeListResponse {
     data: ConfigType[];
     _links: Links
@@ -360,6 +367,16 @@ export interface PostPolicyData {
     tags?: Tags;
     type: "Dial" | "Bind" | "Invalid";
 };
+
+export interface PatchPolicyData {
+    identityRoles?: string[];
+    name?: string;
+    postureCheckRoles?: string[];
+    semantic?: "AllOf" | "AnyOf";
+    serviceRoles?: string[];
+    tags?: Tags;
+    type?: "Dial" | "Bind" | "Invalid";
+}
 
 export interface PostPolicyResponse {
     data: {
