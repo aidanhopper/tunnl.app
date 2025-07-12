@@ -132,7 +132,7 @@ const BindingDropdown = ({
                     </TooltipProvider>
                 </div>
                 <div className='flex items-center justify-center'>
-                    <div className='bg-white p-2'>
+                    <div className='bg-white p-2 rounded'>
                         <QRCode
                             size={330}
                             value={toUrl(shareLinkData.slug)} />

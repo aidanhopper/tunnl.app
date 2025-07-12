@@ -9,61 +9,18 @@ dotenv.config({
     path: './../.env',
 });
 
-type Payload = {
+interface Payload {
     topics: string[],
     iat: string,
     exp: string
 }
 
-const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-});
-
-const io = new Server(Number(process.env.PUBLISHER_PORT || 1234), {
-    cors: {
-        origin: "*",
-    },
-});
-
-const readDataFile = async (path: string) => {
-    const data = await fs.readFile(path);
-    const jsonLines = data
-        .toString()
-        .split('\n')
-        .map(s => {
-            try {
-                return JSON.parse(s);
-            } catch (err) {
-                return null;
-            }
-        })
-        .filter(e => e != null);
-    return jsonLines;
-}
-
-const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
-    try {
-        await client.query(`
-        UPDATE identities
-        SET is_online = $1,
-            last_seen = NOW()
-        WHERE ziti_id = $2
-    `, [is_online, ziti_id]);
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-// to be inserted into the events table the event needs
-// namespace
-// eventType
-// id
-
 interface ServiceEvent {
     namespace: 'service',
     timestamp: Date,
     serviceId: string,
-    count: number
+    count: number,
+    intervalLength: number
 }
 
 interface EntityChangeEvent {
@@ -79,6 +36,58 @@ interface SdkEvent {
     id: string,
     eventType: string
 }
+
+const client = new Client({
+    connectionString: process.env.DATABASE_URL,
+});
+
+const io = new Server(Number(process.env.PUBLISHER_PORT || 1234), {
+    cors: {
+        origin: "*",
+    },
+});
+
+const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
+    try {
+        await client.query(`
+        UPDATE identities
+        SET is_online = $1,
+            last_seen = NOW()
+        WHERE ziti_id = $2
+    `, [is_online, ziti_id]);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+const insertServiceDial = async (e: ServiceEvent) => {
+    try {
+        await client.query(`
+        INSERT INTO service_dials (
+            timestamp,
+            dials,
+            service_id
+        ) VALUES (
+            $1,
+            $2,
+            (
+                SELECT id
+                FROM services
+                WHERE ziti_id = $3
+            )
+        )
+        ON CONFLICT (service_id, timestamp)
+        DO UPDATE SET dials = service_dials.dials + EXCLUDED.dials;
+        `, [e.timestamp, e.count, e.serviceId]);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// to be inserted into the events table the event needs
+// namespace
+// eventType
+// id
 
 const transformEvent = (e: any): SdkEvent | ServiceEvent | EntityChangeEvent | null => {
     switch (e.namespace) {
@@ -115,16 +124,16 @@ const transformEvent = (e: any): SdkEvent | ServiceEvent | EntityChangeEvent | n
             return {
                 namespace: 'sdk',
                 id: e.identity_id,
-                eventType: e.event_type
+                eventType: e.event_type,
             };
         case 'service':
-            const ret = {
+            return {
                 namespace: e.namespace,
                 timestamp: new Date(e.timestamp),
                 serviceId: e.service_id,
-                count: e.count
+                count: e.count,
+                intervalLength: e.interval_length
             }
-            return ret;
         default: return null;
     }
 }
@@ -135,10 +144,8 @@ const publishEvent = async (topic: string, payload: object) => {
     try {
         subscribers.forEach((topics, socketId) => {
             topics.forEach(topicRegex => {
-                if (topicRegex.test(topic)) {
+                if (topicRegex.test(topic))
                     io.to(socketId).emit('event', payload);
-                    // console.log('sending', payload, 'to', socketId);
-                }
             });
         });
     } catch (err) {
@@ -157,7 +164,6 @@ const main = async () => {
                 { type: "sdk", options: null },
             ],
             onMessage: (msg) => {
-                // console.log(msg.namespace);
                 const payload = transformEvent(msg);
 
                 if (!payload || !payload.namespace) return;
@@ -174,6 +180,7 @@ const main = async () => {
                         break;
                     case 'service':
                         console.log(payload);
+                        insertServiceDial(payload);
                     default: break;
                 }
             }
@@ -182,8 +189,10 @@ const main = async () => {
         io.on("connection", (socket) => {
             const { token } = socket.handshake.auth;
 
+            if (!process.env.PUBLISHER_JWT_SECRET) throw new Error('No jwt secret defined')
+
             try {
-                const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET || 'no') as {} as Payload;
+                const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET) as {} as Payload;
                 // console.log('connect');
 
                 subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
