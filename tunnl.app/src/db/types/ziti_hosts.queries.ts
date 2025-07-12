@@ -99,3 +99,55 @@ const deleteZitiHostIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id"
 export const deleteZitiHost = new PreparedQuery<IDeleteZitiHostParams,IDeleteZitiHostResult>(deleteZitiHostIR);
 
 
+/** 'UpdateZitiHost' parameters type */
+export interface IUpdateZitiHostParams {
+  address?: string | null | void;
+  allowed_port_ranges?: string | null | void;
+  forward_ports?: boolean | null | void;
+  forward_protocol?: boolean | null | void;
+  id?: string | null | void;
+  port?: string | null | void;
+  protocol?: protocol | null | void;
+  ziti_id?: string | null | void;
+}
+
+/** 'UpdateZitiHost' return type */
+export interface IUpdateZitiHostResult {
+  address: string;
+  allowed_port_ranges: string | null;
+  forward_ports: boolean;
+  forward_protocol: boolean;
+  id: string;
+  name: string;
+  port: string | null;
+  protocol: protocol | null;
+  ziti_id: string;
+}
+
+/** 'UpdateZitiHost' query type */
+export interface IUpdateZitiHostQuery {
+  params: IUpdateZitiHostParams;
+  result: IUpdateZitiHostResult;
+}
+
+const updateZitiHostIR: any = {"usedParamSet":{"forward_ports":true,"protocol":true,"ziti_id":true,"address":true,"forward_protocol":true,"allowed_port_ranges":true,"port":true,"id":true},"params":[{"name":"forward_ports","required":false,"transform":{"type":"scalar"},"locs":[{"a":42,"b":55}]},{"name":"protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":73,"b":81}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":98,"b":105}]},{"name":"address","required":false,"transform":{"type":"scalar"},"locs":[{"a":122,"b":129}]},{"name":"forward_protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":155,"b":171}]},{"name":"allowed_port_ranges","required":false,"transform":{"type":"scalar"},"locs":[{"a":200,"b":219}]},{"name":"port","required":false,"transform":{"type":"scalar"},"locs":[{"a":233,"b":237}]},{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":250,"b":252}]}],"statement":"UPDATE ziti_hosts\nSET\n    forward_ports = :forward_ports,\n    protocol = :protocol,\n    ziti_id = :ziti_id,\n    address = :address,\n    forward_protocol = :forward_protocol,\n    allowed_port_ranges = :allowed_port_ranges,\n    port = :port\nWHERE id = :id\nRETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * UPDATE ziti_hosts
+ * SET
+ *     forward_ports = :forward_ports,
+ *     protocol = :protocol,
+ *     ziti_id = :ziti_id,
+ *     address = :address,
+ *     forward_protocol = :forward_protocol,
+ *     allowed_port_ranges = :allowed_port_ranges,
+ *     port = :port
+ * WHERE id = :id
+ * RETURNING *
+ * ```
+ */
+export const updateZitiHost = new PreparedQuery<IUpdateZitiHostParams,IUpdateZitiHostResult>(updateZitiHostIR);
+
+

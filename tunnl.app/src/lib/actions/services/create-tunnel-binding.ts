@@ -18,18 +18,6 @@ import { patchService } from "@/lib/ziti/services";
 import { assert } from "console";
 import { getServerSession } from "next-auth";
 
-const getProtocolObject = (protocol: 'tcp' | 'udp' | 'tcp/udp') => {
-    return protocol === 'tcp/udp' ? {
-        forwardProtocol: true,
-        allowedProtocols: [
-            'tcp',
-            'udp'
-        ]
-    } : {
-        protocol: protocol,
-    }
-}
-
 const parsePortRange = (input: string) => {
     if (input.trim() === '') throw new Error('Port range cannot be empty');
     return input
@@ -102,15 +90,21 @@ const createTunnelBinding = async ({
         // Create configs for the service on the ziti controller
         const { hostV1Id, interceptV1Id } = await getConfigIds();
 
-        const protocol = getProtocolObject(proto);
-
         // Insert the host config
         const hostZitiName = serviceSlug + '-host-config';
         const hostZiti = await postConfig({
             name: hostZitiName,
             configTypeId: hostV1Id,
             data: {
-                ...protocol,
+                ...(proto === 'tcp/udp' ? {
+                    forwardProtocol: true,
+                    allowedProtocols: [
+                        'tcp',
+                        'udp'
+                    ]
+                } : {
+                    protocol: proto,
+                }),
                 address: host.address,
                 ...(host.portConfig.forwardPorts ? {
                     forwardPort: true,

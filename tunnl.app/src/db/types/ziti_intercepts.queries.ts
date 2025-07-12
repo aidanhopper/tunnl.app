@@ -86,3 +86,48 @@ const deleteZitiInterceptIR: any = {"usedParamSet":{"id":true},"params":[{"name"
 export const deleteZitiIntercept = new PreparedQuery<IDeleteZitiInterceptParams,IDeleteZitiInterceptResult>(deleteZitiInterceptIR);
 
 
+/** 'UpdateZitiIntercept' parameters type */
+export interface IUpdateZitiInterceptParams {
+  addresses?: stringArray | null | void;
+  id?: string | null | void;
+  name?: string | null | void;
+  port_ranges?: string | null | void;
+  protocol?: protocol | null | void;
+  ziti_id?: string | null | void;
+}
+
+/** 'UpdateZitiIntercept' return type */
+export interface IUpdateZitiInterceptResult {
+  addresses: stringArray;
+  id: string;
+  name: string;
+  port_ranges: string;
+  protocol: protocol;
+  ziti_id: string;
+}
+
+/** 'UpdateZitiIntercept' query type */
+export interface IUpdateZitiInterceptQuery {
+  params: IUpdateZitiInterceptParams;
+  result: IUpdateZitiInterceptResult;
+}
+
+const updateZitiInterceptIR: any = {"usedParamSet":{"ziti_id":true,"name":true,"port_ranges":true,"protocol":true,"addresses":true,"id":true},"params":[{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":39,"b":46}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":58,"b":62}]},{"name":"port_ranges","required":false,"transform":{"type":"scalar"},"locs":[{"a":81,"b":92}]},{"name":"protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":108,"b":116}]},{"name":"addresses","required":false,"transform":{"type":"scalar"},"locs":[{"a":133,"b":142}]},{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":155,"b":157}]}],"statement":"UPDATE ziti_intercepts\nSET\n  ziti_id = :ziti_id,\n  name = :name,\n  port_ranges = :port_ranges,\n  protocol = :protocol,\n  addresses = :addresses\nWHERE id = :id\nRETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * UPDATE ziti_intercepts
+ * SET
+ *   ziti_id = :ziti_id,
+ *   name = :name,
+ *   port_ranges = :port_ranges,
+ *   protocol = :protocol,
+ *   addresses = :addresses
+ * WHERE id = :id
+ * RETURNING *
+ * ```
+ */
+export const updateZitiIntercept = new PreparedQuery<IUpdateZitiInterceptParams,IUpdateZitiInterceptResult>(updateZitiInterceptIR);
+
+
