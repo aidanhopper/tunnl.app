@@ -21,7 +21,6 @@ DELETE FROM ziti_intercepts WHERE id = :id RETURNING *;
 UPDATE ziti_intercepts
 SET
   ziti_id = :ziti_id,
-  name = :name,
   port_ranges = :port_ranges,
   protocol = :protocol,
   addresses = :addresses

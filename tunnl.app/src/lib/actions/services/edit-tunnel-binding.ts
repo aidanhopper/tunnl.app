@@ -1,12 +1,15 @@
 'use server'
 
+import { getIdentityBySlug, getIdentityByZitiId } from "@/db/types/identities.queries";
 import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import { updateZitiHost } from "@/db/types/ziti_hosts.queries";
 import { updateZitiIntercept } from "@/db/types/ziti_intercepts.queries";
 import client from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
+import getHostingIdentitySlug from "@/lib/get-hosting-identity-slug";
 import { patchConfig } from "@/lib/ziti/configs";
+import { getPolicy, patchPolicy } from "@/lib/ziti/policies";
 import { getServerSession } from "next-auth";
 
 const parsePortRange = (input: string) => {
@@ -54,9 +57,6 @@ const editTunnelBinding = async ({
         const intercept = tunnelInterceptFormSchema.parse(interceptConfig);
 
         const proto = host.protocol as 'tcp' | 'udp' | 'tcp/udp';
-
-        console.log(intercept);
-        console.log(host);
 
         // patch the host config
         await patchConfig({
@@ -110,6 +110,7 @@ const editTunnelBinding = async ({
 
         // update the host configs table
         await updateZitiHost.run({
+            id: binding.host_id,
             ziti_id: binding.host_ziti_id,
             address: host.address,
             ...(proto === 'tcp/udp' ? {
@@ -126,15 +127,23 @@ const editTunnelBinding = async ({
 
         // update the intercept configs table
         await updateZitiIntercept.run({
-                ziti_id: binding.intercept_ziti_id,
-                port_ranges: host.portConfig.forwardPorts ?
-                    host.portConfig.portRange : !intercept.portConfig.forwardPorts ?
-                        intercept.portConfig.port : '',
-                addresses: [intercept.address],
-                protocol: proto,
+            id: binding.intercept_id,
+            ziti_id: binding.intercept_ziti_id,
+            port_ranges: host.portConfig.forwardPorts ?
+                host.portConfig.portRange : !intercept.portConfig.forwardPorts ?
+                    intercept.portConfig.port : '',
+            addresses: [intercept.address],
+            protocol: proto,
         }, client);
 
-        // now patch the policies
+        const identityList = await getIdentityBySlug.run({ slug: host.identity }, client)
+        if (identityList.length === 0) throw new Error('Identity does not exist');
+        const identity = identityList[0];
+
+        await patchPolicy({
+            ziti_id: binding.bind_policy_ziti_id,
+            data: { identityRoles: [`@${identity.ziti_id}`] }
+        });
 
         return true;
     } catch (err) {

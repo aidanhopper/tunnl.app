@@ -3,6 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { getIdentitiesByEmail, getIdentityByZitiId } from "@/db/types/identities.queries";
 import { getTunnelBindingBySlug } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";
+import getHostingIdentitySlug from "@/lib/get-hosting-identity-slug";
 import { getPolicy } from "@/lib/ziti/policies";
 import { getServerSession } from "next-auth";
 import { forbidden, unauthorized } from "next/navigation";
@@ -23,15 +24,7 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
     const policy = await getPolicy(binding.bind_policy_ziti_id);
     if (!policy) throw new Error('Policy does not exist');
 
-    let hostingIdentitySlug: string | null = null;
-
-    if (policy.data.identityRoles) {
-        const hostingIdentityZitiId = policy.data.identityRoles[0].substring(1);
-        const identityList = await getIdentityByZitiId.run({ ziti_id: hostingIdentityZitiId }, client);
-        if (identityList.length !== 0)
-            hostingIdentitySlug = identityList[0].slug;
-    }
-
+    const hostingIdentitySlug = await getHostingIdentitySlug(binding.bind_policy_ziti_id);
     const identities = await getIdentitiesByEmail.run({ email: email }, client);
 
     return (

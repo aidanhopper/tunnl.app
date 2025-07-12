@@ -17,12 +17,12 @@ import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import editTunnelBinding from "@/lib/actions/services/edit-tunnel-binding";
+import { useState } from "react";
 
 const combinedSchema = z.object({
     host: tunnelHostFormSchema,
     intercept: tunnelInterceptFormSchema
 })
-
 
 const EditBindingForm = ({
     binding,
@@ -34,6 +34,7 @@ const EditBindingForm = ({
     identities: IGetIdentitiesByEmailResult[]
 }) => {
     const router = useRouter();
+    const [isSaveSuccessful, setIsSaveSuccessful] = useState<boolean | null>(null);
 
     const combinedForm = useForm<z.infer<typeof combinedSchema>>({
         resolver: zodResolver(combinedSchema),
@@ -71,7 +72,7 @@ const EditBindingForm = ({
             interceptConfig: formData.intercept,
             tunnelBindingId: binding.id
         });
-        if (res) router.refresh();
+        setIsSaveSuccessful(res === undefined ? null : res);
     }
 
     return (
@@ -310,6 +311,10 @@ const EditBindingForm = ({
                     type='submit'>
                     Save
                 </Button>
+                <span className='ml-6'>
+                    {isSaveSuccessful !== null && (isSaveSuccessful ?
+                        <>Success!</> : <>Fail</>)}
+                </span>
             </form>
         </Form>
     );
