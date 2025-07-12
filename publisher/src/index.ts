@@ -59,60 +59,73 @@ const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
 // eventType
 // id
 
-const transformEvent = (e: any) => {
+interface ServiceEvent {
+    namespace: 'service',
+    timestamp: Date,
+    serviceId: string,
+    count: number
+}
+
+interface EntityChangeEvent {
+    namespace: 'entityChange',
+    eventType: 'deleted' | 'updated' | 'created',
+    entityType: string,
+    timestamp: Date,
+    id: string
+}
+
+interface SdkEvent {
+    namespace: 'sdk'
+    id: string,
+    eventType: string
+}
+
+const transformEvent = (e: any): SdkEvent | ServiceEvent | EntityChangeEvent | null => {
     switch (e.namespace) {
         case 'entityChange':
             switch (e.eventType) {
                 case 'committed':
-                    return {
-                        namespace: e.namespace,
-                        eventType: e.eventType,
-                        timestamp: e.timestamp,
-                    }
+                    return null
                 case 'updated':
                     return {
-                        namespace: e.namespace,
-                        eventType: e.eventType,
+                        namespace: 'entityChange',
+                        eventType: 'updated',
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.initialState.id
                     }
                 case 'created':
                     return {
-                        namespace: e.namespace,
-                        eventType: e.eventType,
+                        namespace: 'entityChange',
+                        eventType: 'created',
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.finalState.id
                     }
                 case 'deleted':
                     return {
-                        namespace: e.namespace,
-                        eventType: e.eventType,
+                        namespace: 'entityChange',
+                        eventType: 'deleted',
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.initialState.id
                     }
             }
+        case 'sdk':
+            return {
+                namespace: 'sdk',
+                id: e.identity_id,
+                eventType: e.event_type
+            };
         case 'service':
-            console.log(e)
             const ret = {
                 namespace: e.namespace,
-                timestamp: e.timestamp,
-                eventType: e.event_type,
-                entityType: 'service',
-                id: e.identity_id,
+                timestamp: new Date(e.timestamp),
+                serviceId: e.service_id,
+                count: e.count
             }
-            console.log(ret);
             return ret;
-        default:
-            return {
-                namespace: e.namespace,
-                timestamp: e.timestamp,
-                eventType: e.event_type,
-                entityType: 'identities',
-                id: e.identity_id,
-            }
+        default: return null;
     }
 }
 
@@ -120,11 +133,6 @@ const subscribers = new Map<string, RegExp[]>();
 
 const publishEvent = async (topic: string, payload: object) => {
     try {
-        // console.log('publishing', {
-        //     topic: topic,
-        //     payload: payload
-        // })
-
         subscribers.forEach((topics, socketId) => {
             topics.forEach(topicRegex => {
                 if (topicRegex.test(topic)) {
@@ -149,29 +157,25 @@ const main = async () => {
                 { type: "sdk", options: null },
             ],
             onMessage: (msg) => {
-                console.log(msg.namespace);
+                // console.log(msg.namespace);
                 const payload = transformEvent(msg);
 
-                if (!(payload.namespace && payload.entityType && payload.id)) return;
+                if (!payload || !payload.namespace) return;
 
-                if (payload.namespace === 'service')
-                    console.log(payload);
-
-                const isFilteredEvent = [
-                    'apiSessions',
-                    'apiSessionCertificates',
-                    'eventualEvents',
-                    'terminators',
-                    'sessions'
-                ].find(e => e === payload.entityType);
-
-                if (isFilteredEvent) return;
-                const topic = `${payload.namespace}:${payload.entityType}:${payload.id}`;
-
-                if (payload.namespace === 'sdk')
-                    updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
-
-                publishEvent(topic, payload);
+                switch (payload.namespace) {
+                    case 'entityChange':
+                        const topic1 = `${payload.namespace}:${payload.entityType}:${payload.id}`;
+                        publishEvent(topic1, payload);
+                        break;
+                    case 'sdk':
+                        const topic2 = `${payload.namespace}:identities:${payload.id}`;
+                        publishEvent(topic2, payload);
+                        updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
+                        break;
+                    case 'service':
+                        console.log(payload);
+                    default: break;
+                }
             }
         });
 
