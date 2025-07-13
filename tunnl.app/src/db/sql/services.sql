@@ -74,3 +74,13 @@ WHERE user_id = (
     FROM users
     WHERE email = :email
 ) AND id = :id;
+
+/* @name enableServiceDb */
+UPDATE services
+SET enabled = TRUE
+WHERE id = :service_id;
+
+/* @name disableServiceDb */
+UPDATE services
+SET enabled = FALSE
+WHERE id = :service_id;

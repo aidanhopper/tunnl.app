@@ -10,12 +10,14 @@ const AreYouSure = ({
     onClickYes,
     refreshOnYes = false,
     children,
-    yesText = 'Delete'
+    yesText = 'Delete',
+    yesButtonVariant = 'destructive',
 }: {
     onClickYes: () => Promise<void>,
     refreshOnYes?: boolean,
     children?: ReactNode,
-    yesText?: ReactNode
+    yesText?: ReactNode,
+    yesButtonVariant?: 'destructive' | 'default' | 'secondary' | 'outline' | 'ghost'
 }) => {
     const { open, setOpen } = useAreYouSure();
     const router = useRouter();
@@ -30,7 +32,8 @@ const AreYouSure = ({
                 </DialogDescription>
                 <div className='grid grid-cols-2 gap-4'>
                     <Button
-                        variant='destructive'
+                        className='cursor-pointer'
+                        variant={yesButtonVariant}
                         onClick={async () => {
                             await onClickYes();
                             if (refreshOnYes) router.refresh();
@@ -39,6 +42,8 @@ const AreYouSure = ({
                         {yesText}
                     </Button>
                     <Button
+                        variant='secondary'
+                        className='cursor-pointer'
                         onClick={() => setOpen(false)}>
                         I&apos;m not sure
                     </Button>

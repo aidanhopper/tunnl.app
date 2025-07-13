@@ -371,7 +371,7 @@ export interface IGetAutomaticallySharedTunnelBindingsQuery {
   result: IGetAutomaticallySharedTunnelBindingsResult;
 }
 
-const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":52,"b":59}]}],"statement":"SELECT slug \nFROM services\nWHERE services.user_id = :user_id\nAND services.id IN (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n)"};
+const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":52,"b":59}]}],"statement":"SELECT slug \nFROM services\nWHERE services.user_id = :user_id\nAND services.id IN (\n    SELECT service_id\n    FROM tunnel_bindings\n    WHERE share_automatically = true\n) AND services.enabled = true"};
 
 /**
  * Query generated from SQL:
@@ -383,7 +383,7 @@ const getAutomaticallySharedTunnelBindingsIR: any = {"usedParamSet":{"user_id":t
  *     SELECT service_id
  *     FROM tunnel_bindings
  *     WHERE share_automatically = true
- * )
+ * ) AND services.enabled = true
  * ```
  */
 export const getAutomaticallySharedTunnelBindings = new PreparedQuery<IGetAutomaticallySharedTunnelBindingsParams,IGetAutomaticallySharedTunnelBindingsResult>(getAutomaticallySharedTunnelBindingsIR);

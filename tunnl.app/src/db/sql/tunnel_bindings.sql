@@ -136,7 +136,7 @@ AND services.id IN (
     SELECT service_id
     FROM tunnel_bindings
     WHERE share_automatically = true
-);
+) AND services.enabled = true;
 
 /* @name getTunnelBindingBySlug */
 SELECT 

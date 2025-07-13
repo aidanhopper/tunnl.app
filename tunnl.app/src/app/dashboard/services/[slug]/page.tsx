@@ -14,10 +14,13 @@ import deleteShare from "@/lib/actions/shares/delete-share";
 import revokeAllShareLinks from "@/lib/actions/shares/revoke-all-share-links";
 import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
 import client from "@/lib/db";
-import { EllipsisVertical } from "lucide-react";
+import { ArrowDown, EllipsisVertical } from "lucide-react";
 import { notFound } from "next/navigation";
 import DialChart from "@/components/dashboard/services/dial-chart";
 import { getServiceDialsByServiceId } from "@/db/types/service_dials.queries";
+import Link from "next/link";
+import disableService from "@/lib/actions/services/disable-service";
+import enableService from "@/lib/actions/services/enable-service";
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -37,17 +40,19 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
     const serviceDials = await getServiceDialsByServiceId.run({ service_id: service.id }, client);
 
     return (
-        <div className='grid gap-4'>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Usage for the last 24hrs</CardTitle>
-                    <CardDescription>Displays the number of successful dials on the Y axis for that time period</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <DialChart serviceDials={serviceDials}/>
-                </CardContent>
-            </Card>
+        <>
             {tunnelBinding ? <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
+                <Card className='col-span-2'>
+                    <CardHeader>
+                        <CardTitle>Usage for the last 24hrs</CardTitle>
+                        <CardDescription>
+                            Displays the number of successful dials on the Y axis for that time period
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <DialChart serviceDials={serviceDials} />
+                    </CardContent>
+                </Card >
                 <Card>
                     <CardHeader className='grid grid-cols-3 items-center'>
                         <CardTitle className='col-span-2'>
@@ -163,13 +168,61 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                         {shareLinks.length === 0 && <>You have no active share links</>}
                     </CardContent>
                 </Card>
-            </div > : <div>
-                <p className='text-md'>
-                    Create a tunnel binding in the connectivity page to start managing the service
-                </p>
-            </div>
-            }
-        </div>
+                <div>
+                    {!service.enabled ? <>
+                        <AreYouSureProvider>
+                            <AreYouSure
+                                yesButtonVariant='default'
+                                refreshOnYes={true}
+                                yesText=<>Yes I&apos;m sure</>
+                                onClickYes={async () => {
+                                    'use server'
+                                    await enableService(service.id);
+                                }}>
+                                Are you sure you want to enable {service.name}? This will
+                                allow all your identities and shares to access this service again.
+                            </AreYouSure>
+                            <RevokeButton variant='default'>Enable {service.name}</RevokeButton>
+                        </AreYouSureProvider>
+                    </> : <AreYouSureProvider>
+                        <AreYouSure
+                            refreshOnYes={true}
+                            yesText=<>Yes I&apos;m sure</>
+                            onClickYes={async () => {
+                                'use server'
+                                await disableService(service.id);
+                            }}>
+                            Are you sure you want to disable {service.name}? This will disable
+                            the service from being dialed by your identities and shares.
+                            It can be turned back on later.
+                        </AreYouSure>
+                        <RevokeButton variant='secondary'>Disable {service.name}</RevokeButton>
+                    </AreYouSureProvider>}
+                </div>
+            </div> : <div className='flex flex-col gap-4'>
+                <span className='text-left w-96 font-semibold text-2xl flex items-center gap-5'>
+                    <h3>important!</h3>  <ArrowDown />
+                </span>
+                <Card className='w-72'>
+                    <CardHeader>
+                        <CardTitle>
+                            Create a tunnel binding
+                        </CardTitle>
+                        <CardDescription>
+                            Create a tunnel binding in the connectivity page to
+                            start managing the service. This binding will act as the
+                            &quot;plumbing&quot; for your other bindings. You can
+                            also access it directly as well.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className='w-full' asChild>
+                            <Link href={`/dashboard/services/${slug}/connectivity`}>Connectivity &rarr;</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>}
+        </ >
     );
 }
 

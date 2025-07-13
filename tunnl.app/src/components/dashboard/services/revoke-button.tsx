@@ -6,8 +6,10 @@ import { ReactNode } from "react";
 
 const RevokeButton = ({
     children,
+    variant = 'secondary'
 }: {
-    children?: ReactNode
+    children?: ReactNode,
+    variant?: 'destructive' | 'default' | 'secondary' | 'outline' | 'ghost'
 }) => {
     const { setOpen } = useAreYouSure();
     return (
@@ -15,7 +17,7 @@ const RevokeButton = ({
             onClick={() => setOpen(true)}
             className='text-xs cursor-pointer'
             size='sm'
-            variant='secondary'>
+            variant={variant}>
             {children}
         </Button>
     );

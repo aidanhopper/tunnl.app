@@ -193,7 +193,7 @@ export interface IGetShareServiceSlugsQuery {
   result: IGetShareServiceSlugsResult;
 }
 
-const getShareServiceSlugsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":184,"b":191}]}],"statement":"SELECT services.slug\nFROM shares\nJOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services on tunnel_bindings.service_id = services.id\nWHERE shares.user_id = :user_id"};
+const getShareServiceSlugsIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":184,"b":191}]}],"statement":"SELECT services.slug\nFROM shares\nJOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services on tunnel_bindings.service_id = services.id\nWHERE shares.user_id = :user_id AND services.enabled = true"};
 
 /**
  * Query generated from SQL:
@@ -202,7 +202,7 @@ const getShareServiceSlugsIR: any = {"usedParamSet":{"user_id":true},"params":[{
  * FROM shares
  * JOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id
  * JOIN services on tunnel_bindings.service_id = services.id
- * WHERE shares.user_id = :user_id
+ * WHERE shares.user_id = :user_id AND services.enabled = true
  * ```
  */
 export const getShareServiceSlugs = new PreparedQuery<IGetShareServiceSlugsParams,IGetShareServiceSlugsResult>(getShareServiceSlugsIR);
@@ -252,5 +252,42 @@ const deleteShareByIdIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id
  * ```
  */
 export const deleteShareById = new PreparedQuery<IDeleteShareByIdParams,IDeleteShareByIdResult>(deleteShareByIdIR);
+
+
+/** 'GetAllDialUsersByServiceId' parameters type */
+export interface IGetAllDialUsersByServiceIdParams {
+  service_id?: string | null | void;
+}
+
+/** 'GetAllDialUsersByServiceId' return type */
+export interface IGetAllDialUsersByServiceIdResult {
+  user_id: string | null;
+}
+
+/** 'GetAllDialUsersByServiceId' query type */
+export interface IGetAllDialUsersByServiceIdQuery {
+  params: IGetAllDialUsersByServiceIdParams;
+  result: IGetAllDialUsersByServiceIdResult;
+}
+
+const getAllDialUsersByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":58,"b":68},{"a":243,"b":253}]}],"statement":"SELECT services.user_id\nFROM services\nWHERE services.id = :service_id\nUNION ALL\nSELECT shares.user_id\nFROM shares\nWHERE shares.tunnel_binding_id = (\n    SELECT tunnel_bindings.id\n    FROM tunnel_bindings\n    WHERE tunnel_bindings.service_id = :service_id\n)"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT services.user_id
+ * FROM services
+ * WHERE services.id = :service_id
+ * UNION ALL
+ * SELECT shares.user_id
+ * FROM shares
+ * WHERE shares.tunnel_binding_id = (
+ *     SELECT tunnel_bindings.id
+ *     FROM tunnel_bindings
+ *     WHERE tunnel_bindings.service_id = :service_id
+ * )
+ * ```
+ */
+export const getAllDialUsersByServiceId = new PreparedQuery<IGetAllDialUsersByServiceIdParams,IGetAllDialUsersByServiceIdResult>(getAllDialUsersByServiceIdIR);
 
 

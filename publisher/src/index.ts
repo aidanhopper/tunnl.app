@@ -84,12 +84,19 @@ const insertServiceDial = async (e: ServiceEvent) => {
     }
 }
 
+const logEvent = async (e: any) => {
+    try {
+        const out = JSON.stringify(e);
+        fs.appendFile('publisher.log', out + '\n');
+    } catch { }
+}
+
 // to be inserted into the events table the event needs
 // namespace
 // eventType
 // id
 
-const transformEvent = (e: any): SdkEvent | ServiceEvent | EntityChangeEvent | null => {
+const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityChangeEvent | null> => {
     switch (e.namespace) {
         case 'entityChange':
             switch (e.eventType) {
@@ -127,13 +134,15 @@ const transformEvent = (e: any): SdkEvent | ServiceEvent | EntityChangeEvent | n
                 eventType: e.event_type,
             };
         case 'service':
-            return {
+            return e.event_type !== 'service.dial.success' ? null : {
                 namespace: e.namespace,
                 timestamp: new Date(e.timestamp),
                 serviceId: e.service_id,
                 count: e.count,
                 intervalLength: e.interval_length
             }
+        case 'circuit':
+            return null;
         default: return null;
     }
 }
@@ -162,9 +171,11 @@ const main = async () => {
                 { type: "entityChange", options: null },
                 { type: "service", options: null },
                 { type: "sdk", options: null },
+                { type: "circuit", options: null },
             ],
-            onMessage: (msg) => {
-                const payload = transformEvent(msg);
+            onMessage: async (msg) => {
+                await logEvent(msg);
+                const payload = await transformEvent(msg);
 
                 if (!payload || !payload.namespace) return;
 

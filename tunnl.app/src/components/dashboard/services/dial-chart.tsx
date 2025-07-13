@@ -3,7 +3,7 @@
 import { ChartContainer } from "@/components/ui/chart";
 import { type ChartConfig } from "@/components/ui/chart"
 import { IGetServiceDialsByServiceIdResult } from "@/db/types/service_dials.queries";
-import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 
 const fillDialData = (
     serviceDials: { timestamp: Date; dials: number }[]
@@ -17,7 +17,7 @@ const fillDialData = (
     const start = sorted[0].timestamp;
     const now = new Date();
 
-    const interval = 120; // seconds
+    const interval = 60; // seconds
     const result: { timestamp: string; dialCount: number }[] = [];
 
     // Map of rounded timestamps (in seconds) to dials

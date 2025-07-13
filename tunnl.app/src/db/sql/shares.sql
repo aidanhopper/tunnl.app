@@ -69,7 +69,7 @@ SELECT services.slug
 FROM shares
 JOIN tunnel_bindings on shares.tunnel_binding_id = tunnel_bindings.id
 JOIN services on tunnel_bindings.service_id = services.id
-WHERE shares.user_id = :user_id;
+WHERE shares.user_id = :user_id AND services.enabled = true;
 
 /* @name deleteShareById */
 WITH deleted_share AS (
@@ -88,3 +88,16 @@ JOIN tunnel_bindings ON deleted_share.tunnel_binding_id = tunnel_bindings.id
 JOIN services ON tunnel_bindings.service_id = services.id
 JOIN users AS owner_user ON services.user_id = owner_user.id
 JOIN users AS share_user ON deleted_share.user_id = share_user.id;
+
+/* @name getAllDialUsersByServiceId */
+SELECT services.user_id
+FROM services
+WHERE services.id = :service_id
+UNION ALL
+SELECT shares.user_id
+FROM shares
+WHERE shares.tunnel_binding_id = (
+    SELECT tunnel_bindings.id
+    FROM tunnel_bindings
+    WHERE tunnel_bindings.service_id = :service_id
+);

@@ -26,6 +26,7 @@ const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) 
                     <TableHead>Service</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead>Protocol Family</TableHead>
+                    <TableHead>Enabled</TableHead>
                     <TableHead />
                 </TableRow>
             </TableHeader>
@@ -35,6 +36,7 @@ const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) 
                         <TableCell>{service.name}</TableCell>
                         <TableCell>{service.created?.toLocaleString()}</TableCell>
                         <TableCell>{service.protocol.toUpperCase()}</TableCell>
+                        <TableCell>{service.enabled ? 'True' : 'False'}</TableCell>
                         <TableCell className='w-16'>
                             <AreYouSureProvider>
                                 <AreYouSure

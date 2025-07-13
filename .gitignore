@@ -13,3 +13,4 @@ daemon/main
 backend/resources
 backend/ziti-api-data.json
 pgdata
+*publisher.log

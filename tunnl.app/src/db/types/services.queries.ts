@@ -11,6 +11,7 @@ export interface IGetServicesByEmailParams {
 /** 'GetServicesByEmail' return type */
 export interface IGetServicesByEmailResult {
   created: Date | null;
+  enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
@@ -123,6 +124,7 @@ export interface IGetServiceBySlugParams {
 /** 'GetServiceBySlug' return type */
 export interface IGetServiceBySlugResult {
   created: Date | null;
+  enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
@@ -159,6 +161,7 @@ export interface IGetServiceByNameAndEmailParams {
 /** 'GetServiceByNameAndEmail' return type */
 export interface IGetServiceByNameAndEmailResult {
   created: Date | null;
+  enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
@@ -246,6 +249,7 @@ export interface IGetServiceParams {
 /** 'GetService' return type */
 export interface IGetServiceResult {
   created: Date | null;
+  enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
@@ -282,6 +286,7 @@ export interface IGetServiceByIdAndEmailParams {
 /** 'GetServiceByIdAndEmail' return type */
 export interface IGetServiceByIdAndEmailResult {
   created: Date | null;
+  enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
@@ -311,5 +316,59 @@ const getServiceByIdAndEmailIR: any = {"usedParamSet":{"email":true,"id":true},"
  * ```
  */
 export const getServiceByIdAndEmail = new PreparedQuery<IGetServiceByIdAndEmailParams,IGetServiceByIdAndEmailResult>(getServiceByIdAndEmailIR);
+
+
+/** 'EnableServiceDb' parameters type */
+export interface IEnableServiceDbParams {
+  service_id?: string | null | void;
+}
+
+/** 'EnableServiceDb' return type */
+export type IEnableServiceDbResult = void;
+
+/** 'EnableServiceDb' query type */
+export interface IEnableServiceDbQuery {
+  params: IEnableServiceDbParams;
+  result: IEnableServiceDbResult;
+}
+
+const enableServiceDbIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":46,"b":56}]}],"statement":"UPDATE services\nSET enabled = TRUE\nWHERE id = :service_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * UPDATE services
+ * SET enabled = TRUE
+ * WHERE id = :service_id
+ * ```
+ */
+export const enableServiceDb = new PreparedQuery<IEnableServiceDbParams,IEnableServiceDbResult>(enableServiceDbIR);
+
+
+/** 'DisableServiceDb' parameters type */
+export interface IDisableServiceDbParams {
+  service_id?: string | null | void;
+}
+
+/** 'DisableServiceDb' return type */
+export type IDisableServiceDbResult = void;
+
+/** 'DisableServiceDb' query type */
+export interface IDisableServiceDbQuery {
+  params: IDisableServiceDbParams;
+  result: IDisableServiceDbResult;
+}
+
+const disableServiceDbIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":47,"b":57}]}],"statement":"UPDATE services\nSET enabled = FALSE\nWHERE id = :service_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * UPDATE services
+ * SET enabled = FALSE
+ * WHERE id = :service_id
+ * ```
+ */
+export const disableServiceDb = new PreparedQuery<IDisableServiceDbParams,IDisableServiceDbResult>(disableServiceDbIR);
 
 
