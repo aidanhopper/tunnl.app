@@ -38,6 +38,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.55.0",
     "react-qr-code": "^2.0.15",
+    "recharts": "^2.15.4",
     "shadcn": "^2.4.0-canary.17",
     "socket.io-client": "^4.8.1",
     "table": "^6.9.0",

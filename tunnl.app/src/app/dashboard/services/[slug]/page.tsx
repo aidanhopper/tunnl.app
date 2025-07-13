@@ -16,6 +16,8 @@ import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
 import client from "@/lib/db";
 import { EllipsisVertical } from "lucide-react";
 import { notFound } from "next/navigation";
+import DialChart from "@/components/dashboard/services/dial-chart";
+import { getServiceDialsByServiceId } from "@/db/types/service_dials.queries";
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -32,8 +34,19 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
     const tunnelBindingList = await getTunnelBindingsByServiceSlug.run({ slug: slug }, client);
     if (tunnelBindingList.length !== 0) tunnelBinding = tunnelBindingList[0];
 
+    const serviceDials = await getServiceDialsByServiceId.run({ service_id: service.id }, client);
+
     return (
-        <>
+        <div className='grid gap-4'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Usage for the last 24hrs</CardTitle>
+                    <CardDescription>Calcuated by number of successful dials</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <DialChart serviceDials={serviceDials}/>
+                </CardContent>
+            </Card>
             {tunnelBinding ? <div className='grid grid-cols-1 xl:grid-cols-2 gap-4'>
                 <Card>
                     <CardHeader className='grid grid-cols-3 items-center'>
@@ -156,7 +169,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                 </p>
             </div>
             }
-        </>
+        </div>
     );
 }
 
