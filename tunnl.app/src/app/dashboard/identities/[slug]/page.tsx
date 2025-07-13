@@ -12,6 +12,8 @@ import SubscribeProvider from '@/components/subscribe-provider';
 import generateToken from '@/lib/subscribe/generate-token';
 import IdentityStatusCard from '@/components/dashboard/identities/identity-status-card';
 import RefreshOnEvent from '@/components/dashboard/refresh-on-event';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -84,7 +86,12 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                                                     {expires ? (new Date(expires)).toLocaleString() : null}
                                                 </span>
                                             </div>
-                                            <div className='flex justify-end'>
+                                            <div className='flex justify-end gap-8'>
+                                                <Button variant='secondary' asChild>
+                                                    <Link href='/download'>
+                                                        Download Tunneler
+                                                    </Link>
+                                                </Button>
                                                 <EnrollIdentityDialog
                                                     fileName={`${slug}.jwt`}
                                                     value={zitiIdentity.enrollment.ott.jwt} />
