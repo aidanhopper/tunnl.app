@@ -95,12 +95,13 @@ const DashboardSidebar = ({ ...props }) => {
     return (
         <Sidebar {...props}>
             <SidebarContent>
-                <SidebarHeader className='font-bold font-mono text-left ml-3 mt-[5px] text-3xl'>
-                    <Link href='/'>
-                        🚂 tunnl
-                    </Link>
+                <SidebarHeader className='font-bold font-mono text-left text-3xl p-0 m-0 w-full bg-accent/60'>
+                    <div className='h-[95px] flex items-center justify-center border-b w-full pr-16'>
+                        <Link href='/'>
+                            🚂 tunnl
+                        </Link>
+                    </div>
                 </SidebarHeader>
-                <hr />
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>

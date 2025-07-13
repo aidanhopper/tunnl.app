@@ -20,9 +20,11 @@ const Navbar = () => {
         <nav className='w-full h-14 top-0 flex items-center bg-background/60 backdrop-blur-3xl sticky'>
             <Content className='grid grid-cols-2'>
                 <div>
-                    <span className='flex h-full font-mono items-center text-lg'>
-                        tunnl.app
-                    </span>
+                    <Link
+                        href='/'
+                        className='flex h-full font-mono items-center text-lg cursor-pointer'>
+                        🚂 tunnl.app
+                    </Link>
                 </div>
                 <div className='gap-4 flex h-full justify-end items-center'>
                     <Button
@@ -38,8 +40,11 @@ const Navbar = () => {
                     </Button>
                     <Button
                         variant='ghost'
-                        className='text-muted-foreground cursor-pointer hidden md:block'>
-                        Download
+                        className='text-muted-foreground cursor-pointer hidden md:block'
+                        asChild>
+                        <Link href='/download'>
+                            Download
+                        </Link>
                     </Button>
                     {data?.user ? <>
                         <Button
@@ -90,7 +95,10 @@ const Navbar = () => {
                         </DropdownMenu>
                     </> :
                         <>
-                            <Button asChild>
+                            <Button
+                                className='text-muted-foreground'
+                                variant='ghost'
+                                asChild>
                                 <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}`}>
                                     Sign in
                                 </Link>

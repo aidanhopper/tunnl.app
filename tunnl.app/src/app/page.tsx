@@ -2,14 +2,18 @@ import Content from '@/components/content';
 import Navbar from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { getLatestUpdateMessage, IGetLatestUpdateMessageResult } from '@/db/types/update_messages.queries';
+import client from '@/lib/db';
 import Link from 'next/link';
 
-const Home = () => {
+const Home = async () => {
+    let message: IGetLatestUpdateMessageResult | null = null;
+    const messageList = await getLatestUpdateMessage.run(undefined, client);
+    if (messageList.length !== 0) message = messageList[0];
     return (
-        <main>
-            <div
-                className='flex justify-center items-center h-8 bg-accent font-mono text-sm'>
-                Alpha release coming soon! 🚀
+        <main className='min-h-screen flex flex-col'>
+            <div className='flex justify-center items-center text-center p-1 bg-accent font-mono text-sm'>
+                {message?.content}
             </div>
             <Navbar />
             <Content>
@@ -31,12 +35,12 @@ const Home = () => {
                     </div>
                 </div>
                 <div className='grid grid-cols-3 gap-8'>
-                   <Card></Card> 
-                   <Card></Card> 
-                   <Card></Card> 
+                    <Card></Card>
+                    <Card></Card>
+                    <Card></Card>
                 </div>
             </Content>
-            <div className='flex items-end min-h-screen'>
+            <div className='flex items-end flex-1 mt-10'>
                 <div className='w-full text-center bg-accent text-muted-foreground'>
                     Leave feedback at <b>aidanhop1@gmail.com</b>  or my discord  <b>aidan12312</b>
                 </div>
