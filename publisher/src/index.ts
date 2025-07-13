@@ -179,7 +179,6 @@ const main = async () => {
                         updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
                         break;
                     case 'service':
-                        console.log(payload);
                         insertServiceDial(payload);
                     default: break;
                 }

@@ -41,7 +41,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
             <Card>
                 <CardHeader>
                     <CardTitle>Usage for the last 24hrs</CardTitle>
-                    <CardDescription>Calcuated by number of successful dials</CardDescription>
+                    <CardDescription>Displays the number of successful dials on the Y axis for that time period</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <DialChart serviceDials={serviceDials}/>

@@ -3,7 +3,7 @@
 import { ChartContainer } from "@/components/ui/chart";
 import { type ChartConfig } from "@/components/ui/chart"
 import { IGetServiceDialsByServiceIdResult } from "@/db/types/service_dials.queries";
-import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
 
 const fillDialData = (
     serviceDials: { timestamp: Date; dials: number }[]
@@ -17,7 +17,7 @@ const fillDialData = (
     const start = sorted[0].timestamp;
     const now = new Date();
 
-    const interval = 60; // seconds
+    const interval = 120; // seconds
     const result: { timestamp: string; dialCount: number }[] = [];
 
     // Map of rounded timestamps (in seconds) to dials
@@ -35,6 +35,35 @@ const fillDialData = (
     }
 
     return result;
+};
+
+import { TooltipProps } from 'recharts';
+
+type CustomTooltipProps = TooltipProps<number, string>;
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+    if (!active || !payload || payload.length === 0) return null;
+
+    return (
+        <div className="rounded-lg bg-white dark:bg-zinc-900 p-3 shadow-lg border text-sm">
+            <div className="font-medium text-zinc-700 dark:text-zinc-200">
+                {label}
+            </div>
+            <ul className="mt-1 space-y-1">
+                {payload.map((entry, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                        <span
+                            className="inline-block h-2 w-2 rounded-full"
+                            style={{ backgroundColor: entry.color }}
+                        />
+                        <span className="text-zinc-800 dark:text-zinc-100">
+                            {entry.name} in the last minute: {entry.value}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 };
 
 const chartConfig = {
@@ -66,20 +95,21 @@ const DialChart = ({ serviceDials }: { serviceDials: IGetServiceDialsByServiceId
                 <CartesianGrid vertical={true} />
                 <XAxis
                     dataKey="timestamp"
+                    name="Time"
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
-                // tickFormatter={(value) => value.slice(0, 3)}
                 />
                 <YAxis />
                 <Area
                     dataKey="dialCount"
+                    name="Dials"
                     type="natural"
                     fill="url(#fillDesktop)"
                     stroke="var(--color-desktop)"
                     stackId="a"
                 />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
             </AreaChart>
         </ChartContainer>
     );

@@ -77,10 +77,6 @@ const createTunnelBinding = async ({
 
         assert(host.portConfig.forwardPorts === intercept.portConfig.forwardPorts);
 
-        console.log(host);
-        console.log(intercept);
-        console.log(share);
-
         if (host.portConfig.forwardPorts) parsePortRange(host.portConfig.portRange);
 
         const proto = host.protocol as 'tcp' | 'udp' | 'tcp/udp';
@@ -260,7 +256,7 @@ const createTunnelBinding = async ({
         if (dialPolicyDb.length === 0) throw new Error('dial insert failed');
         if (bindPolicyDb.length === 0) throw new Error('bind insert failed');
 
-        const tunnelBindingDb = await insertTunnelBinding.run(
+        await insertTunnelBinding.run(
             {
                 service_id: user.service_id,
                 intercept_id: interceptDb[0].id,
@@ -272,8 +268,6 @@ const createTunnelBinding = async ({
             },
             client
         );
-
-        console.log(tunnelBindingDb.length !== 0 ? tunnelBindingDb[0] : 'Failed to insert tunnel binding');
 
         await updateDialRoles(user.user_id);
 

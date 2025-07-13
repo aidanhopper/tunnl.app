@@ -13,8 +13,6 @@ const Topbar = () => {
     const f = () => bar.isMobile ? window.innerWidth : bar.open ? window.innerWidth - 255 : window.innerWidth;
     const [topbarWidth, setTopbarWidth] = useState(f());
 
-    console.log(bar.isMobile)
-
     useEffect(() => {
         const handleResize = () =>
             setTopbarWidth(bar.isMobile ? window.innerWidth : bar.open ? window.innerWidth - 255 : window.innerWidth)
@@ -43,7 +41,7 @@ const DashboardLayout = ({ children }: { children?: ReactNode }) => {
         <ValidateUserSession>
             <SidebarProvider>
                 <DashboardSidebar />
-                <main className='bg-red-100'>
+                <main>
                     <Topbar />
                     <Content className='py-4 mt-20'>
                         {children}
