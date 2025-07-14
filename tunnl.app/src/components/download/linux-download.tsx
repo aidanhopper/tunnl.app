@@ -4,7 +4,7 @@ import DownloadButton from "./download-button";
 
 const LinuxDownload = () => {
     return (
-        <div className='w-96 flex flex-col gap-4'>
+        <div className='max-w-96 flex flex-col gap-4'>
             <p>
                 I recommend using Docker for hosting on Linux. For hosting <b>and</b> accessing
                 services on Linux you need to download the Ziti Edge Tunnel binary

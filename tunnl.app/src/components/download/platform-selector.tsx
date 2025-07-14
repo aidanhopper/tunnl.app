@@ -24,8 +24,8 @@ const PlatformSelector = () => {
                         onClick={() => setPlatform(e)}
                         key={e}
                         variant={platform === e ? 'default' : 'secondary'}
-                        className='cursor-pointer p-0 m-0 h-36 w-36 flex 
-                                    items-center justify-center text-2xl font-bold'>
+                        className='cursor-pointer p-0 m-0 w-20 h-20 lg:h-36 lg:w-36 flex 
+                                    items-center justify-center lg:text-2xl font-bold'>
                         {e}
                     </Button>
                 );

@@ -19,12 +19,12 @@ const DownloadPage = async () => {
             </div>
             <Navbar />
             <Content className='grid gap-8'>
-                <Card className='p-12 mt-12'>
+                <Card className='mt-12'>
                     <CardHeader>
-                        <CardTitle className='text-5xl text-center'>
+                        <CardTitle className='lg:text-5xl text-center'>
                             Download
                         </CardTitle>
-                        <CardDescription className='text-center text-lg'>
+                        <CardDescription className='text-center lg:text-lg'>
                             Install the app and register an identity to get started
                         </CardDescription>
                     </CardHeader>

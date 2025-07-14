@@ -15,7 +15,6 @@ const Navbar = () => {
     const { data } = useLocalSession();
     const router = useRouter();
     const cachedAvatar = useCachedImage(data?.user?.image);
-
     return (
         <nav className='w-full h-14 top-0 flex items-center bg-background/60 backdrop-blur-3xl sticky'>
             <Content className='grid grid-cols-2'>
@@ -26,11 +25,11 @@ const Navbar = () => {
                         🚂 tunnl.app
                     </Link>
                 </div>
-                <div className='gap-4 flex h-full justify-end items-center'>
+                <div className=' md:gap-4 flex h-full justify-end items-center'>
                     <Button
                         size='icon'
                         variant='ghost'
-                        className='cursor-pointer text-muted-foreground'
+                        className='cursor-pointer text-muted-foreground hidden md:flex'
                         asChild>
                         <Link
                             target='_blank'
@@ -40,7 +39,7 @@ const Navbar = () => {
                     </Button>
                     <Button
                         variant='ghost'
-                        className='text-muted-foreground cursor-pointer hidden md:block'
+                        className='text-muted-foreground cursor-pointer block'
                         asChild>
                         <Link href='/download'>
                             Download
@@ -77,7 +76,7 @@ const Navbar = () => {
                                         Dashboard
                                     </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className='cursor-pointer md:hidden'>
+                                <DropdownMenuItem className='cursor-pointer'>
                                     <Download />
                                     Download
                                 </DropdownMenuItem>
