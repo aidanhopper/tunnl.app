@@ -103,7 +103,7 @@ const Navbar = () => {
                                 className='text-muted-foreground'
                                 variant='ghost'
                                 asChild>
-                                <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}`}>
+                                <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}&autologin`}>
                                     Sign in
                                 </Link>
                             </Button>

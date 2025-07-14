@@ -85,3 +85,25 @@ export const useCachedImage = (url: string | null | undefined) => {
 
     return image;
 }
+
+export function useSessionState<T>(key: string, defaultValue: T) {
+    const [state, setState] = useState<T>(() => {
+        if (typeof window === 'undefined') return defaultValue
+        try {
+            const stored = sessionStorage.getItem(key)
+            return stored ? JSON.parse(stored) as T : defaultValue
+        } catch {
+            return defaultValue
+        }
+    })
+
+    useEffect(() => {
+        try {
+            sessionStorage.setItem(key, JSON.stringify(state))
+        } catch {
+            // Ignore write errors (e.g. storage quota)
+        }
+    }, [key, state])
+
+    return [state, setState] as const
+}

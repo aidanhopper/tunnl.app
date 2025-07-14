@@ -10,12 +10,12 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResult }) => {
+const ShareLinkPage = async ({ shareLink, autojoin = false }: { shareLink: IGetShareLinkBySlugResult, autojoin?: boolean }) => {
     if (shareLink.expires < new Date()) notFound();
 
     const session = await getServerSession();
     const email = session?.user?.email;
-    if (!email) redirect(`/login?redirect=${encodeURIComponent('/' + shareLink.slug)}`);
+    // if (!email) redirect(`/login?redirect=${encodeURIComponent('/' + shareLink.slug)}`);
 
     const ownerEmailList = await getShareLinkOwnerEmail.run({ slug: shareLink.slug }, client);
     if (ownerEmailList.length === 0) return <></>;
@@ -33,9 +33,12 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
 
     const handleJoin = async () => {
         'use server'
+        if (!email) redirect(`/login?autologin&redirect=${encodeURIComponent('/' + shareLink.slug + '?autojoin')}`)
         await createShare(shareLink.slug);
         redirect('/dashboard/shares');
     }
+
+    if (autojoin) await handleJoin();
 
     return (
         <Content className='min-h-screen flex items-center justify-center py-16 px-1'>
@@ -58,7 +61,7 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>How to Enroll WIndows &amp; MacOS Identities</CardTitle>
+                        <CardTitle>How to Enroll Windows &amp; MacOS Identities</CardTitle>
                     </CardHeader>
                     <CardContent className='justify-center flex'>
                         <iframe
@@ -92,15 +95,24 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
     );
 }
 
-const DynamicPage = async ({ params }: { params: Promise<{ slug: string }> }) => {
+const DynamicPage = async ({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ slug: string }>,
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) => {
     const slug = (await params).slug;
+    const search = await searchParams;
 
     if (slug.toString().length !== 12) return notFound();
 
     const shareLinkList = await getShareLinkBySlug.run({ slug: slug }, client);
 
     if (shareLinkList.length !== 0)
-        return <ShareLinkPage shareLink={shareLinkList[0]} />
+        return <ShareLinkPage
+            autojoin={search?.autojoin !== undefined}
+            shareLink={shareLinkList[0]} />
 
     return notFound();
 }

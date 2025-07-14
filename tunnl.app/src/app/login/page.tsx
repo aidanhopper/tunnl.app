@@ -2,12 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSessionState } from "@/lib/hooks";
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
 const Login = () => {
+    const [autoLoginExecuted, setAutoLoginExecuted] = useSessionState<boolean>('login executed', false);
     const params = useSearchParams();
     const redirect = params?.get('redirect');
+    const autologin = params?.get('autologin') !== undefined;
+    const handleClick = () => signIn('keycloak', { callbackUrl: redirect ?? '/' });
+    if (autologin && !autoLoginExecuted) {
+        setAutoLoginExecuted(true);
+        handleClick();
+    }
     return (
         <div className='flex justify-center items-center w-screen h-screen'>
             <Card>
@@ -18,7 +26,7 @@ const Login = () => {
                             Login or register your <span className='font-semibold'>tunnl.app</span> account
                         </p>
                         <Button
-                            onClick={() => signIn('keycloak', { callbackUrl: redirect ?? '/' })}
+                            onClick={handleClick}
                             className="w-64 cursor-pointer">
                             Login
                         </Button>

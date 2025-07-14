@@ -28,7 +28,7 @@ const Home = async () => {
                             the internet.
                         </p>
                         <Button asChild>
-                            <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}`} className='w-full'>
+                            <Link href={`/login?redirect=${encodeURIComponent('/dashboard')}&autologin`} className='w-full'>
                                 Start here &rarr;
                             </Link>
                         </Button>
