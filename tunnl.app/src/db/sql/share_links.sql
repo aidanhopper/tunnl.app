@@ -2,7 +2,8 @@
 INSERT INTO share_links (
     expires,
     slug,
-    tunnel_binding_id
+    tunnel_binding_id,
+    one_time_use
 ) VALUES (
     :expires,
     :slug,
@@ -11,7 +12,8 @@ INSERT INTO share_links (
         FROM tunnel_bindings
         WHERE service_id = :service_id
         LIMIT 1
-    )
+    ),
+    :one_time_use
 ) RETURNING *;
 
 /* @name getShareLinkBySlug */

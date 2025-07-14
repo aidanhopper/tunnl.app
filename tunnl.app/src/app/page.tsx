@@ -13,7 +13,7 @@ const Home = async () => {
     return (
         <main className='min-h-screen flex flex-col'>
             <div className='flex justify-center items-center text-center p-1 bg-accent font-mono text-sm'>
-                {message?.content}
+                {message?.content ?? <>&nbsp;</>}
             </div>
             <Navbar />
             <Content>

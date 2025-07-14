@@ -17,7 +17,7 @@ const ThemeSwitcher = () => {
 
     const handleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light')
 
-    return !isMounted ? null : (
+    return (
         <div>
             <TooltipProvider>
                 <Tooltip>
@@ -30,9 +30,10 @@ const ThemeSwitcher = () => {
                             asChild
                         >
                             {
-                                theme === 'dark' ?
-                                    <Moon />
-                                    : <Sun />
+                                isMounted ?
+                                    (theme === 'dark' ?
+                                        <Moon />
+                                        : <Sun />) : <Moon />
                             }
                         </Button>
                     </TooltipTrigger>

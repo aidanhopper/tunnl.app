@@ -34,16 +34,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import AreYouSure from "@/components/are-you-sure";
 import deleteIdentity from "@/lib/actions/identities/delete-identity";
+import userIsApproved from "@/lib/user-is-approved";
 
 const Identities = async () => {
     const session = await getServerSession();
     const email = session?.user?.email;
-    const identities = await getIdentitiesByEmail.run(
-        {
-            email: email
-        },
-        client
-    );
+
+    const approved = await userIsApproved(email);
+    console.log(approved);
+
+    const identities = await getIdentitiesByEmail.run({ email: email }, client);
 
     const token = generateToken({ topics: identities.map(i => i.ziti_id) });
 
@@ -63,7 +63,11 @@ const Identities = async () => {
                         </div>
                         <div className='flex justify-end items-center'>
                             <Dialog>
-                                <Button className='cursor-pointer' variant='secondary' asChild>
+                                <Button
+                                    className='cursor-pointer'
+                                    variant='secondary'
+                                    disabled={!approved}
+                                    asChild>
                                     <DialogTrigger>
                                         Create
                                     </DialogTrigger>
@@ -82,6 +86,9 @@ const Identities = async () => {
                             </Dialog>
                         </div>
                     </div>
+                    {!approved && <h3 className='pt-10 text-2xl font-semibold text-red-400'>
+                        Your account must be approved to create an identity
+                    </h3>}
                     <Card className='mt-10'>
                         <CardHeader>
                             <CardTitle>

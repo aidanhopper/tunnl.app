@@ -10,8 +10,11 @@ import Content from '@/components/content';
 import { clearLocalSession, useCachedImage, useLocalSession } from '@/lib/hooks';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const Navbar = () => {
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => { setIsMounted(true) }, []);
     const { data } = useLocalSession();
     const router = useRouter();
     const cachedAvatar = useCachedImage(data?.user?.image);
@@ -46,54 +49,56 @@ const Navbar = () => {
                         </Link>
                     </Button>
                     {data?.user ? <>
-                        <Button
-                            variant='ghost'
-                            className='cursor-pointer text-muted-foreground hidden md:block'
-                            asChild>
-                            <Link href='/dashboard'>
-                                Dashboard
-                            </Link>
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger>
-                                <Button variant='ghost' className='cursor-pointer' asChild>
-                                    <Avatar className="h-9 w-9 p-0">
-                                        <AvatarImage
-                                            src={cachedAvatar ?? ''}
-                                        />
-                                        <AvatarFallback className="rounded-lg">A</AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuItem className='cursor-pointer'>
-                                    <BadgeCheck />
-                                    Account
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className='cursor-pointer md:hidden' asChild>
-                                    <Link href='/dashboard'>
-                                        <Terminal />
-                                        Dashboard
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className='cursor-pointer'>
-                                    <Download />
-                                    Download
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => {
-                                        signOut({ redirect: false });
-                                        clearLocalSession();
-                                        router.push('/');
-                                    }}
-                                    className='cursor-pointer'>
-                                    <LogOut />
-                                    Log Out
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </> :
-                        <>
+                        <div className='w-48 flex items-center justify-center gap-8'>
+                            <Button
+                                variant='ghost'
+                                className='cursor-pointer text-muted-foreground hidden md:block'
+                                asChild>
+                                <Link href='/dashboard'>
+                                    Dashboard
+                                </Link>
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger>
+                                    <Button variant='ghost' className='cursor-pointer' asChild>
+                                        <Avatar className="h-9 w-9 p-0">
+                                            <AvatarImage
+                                                src={cachedAvatar ?? ''}
+                                            />
+                                            <AvatarFallback className="rounded-lg">A</AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuItem className='cursor-pointer'>
+                                        <BadgeCheck />
+                                        Account
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className='cursor-pointer md:hidden' asChild>
+                                        <Link href='/dashboard'>
+                                            <Terminal />
+                                            Dashboard
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className='cursor-pointer'>
+                                        <Download />
+                                        Download
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            signOut({ redirect: false });
+                                            clearLocalSession();
+                                            router.push('/');
+                                        }}
+                                        className='cursor-pointer'>
+                                        <LogOut />
+                                        Log Out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </> : isMounted ?
+                        <span className='w-48'>
                             <Button
                                 className='text-muted-foreground'
                                 variant='ghost'
@@ -102,7 +107,7 @@ const Navbar = () => {
                                     Sign in
                                 </Link>
                             </Button>
-                        </>
+                        </span> : <span className='w-48' />
                     }
                     <ThemeSwitcher />
                 </div>

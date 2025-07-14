@@ -1,6 +1,5 @@
 import Content from "@/components/content";
 import JoinShareButton from "@/components/join-share-button";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getService } from "@/db/types/services.queries";
 import { getShareLinkBySlug, IGetShareLinkBySlugResult, getShareLinkOwnerEmail } from "@/db/types/share_links.queries";
@@ -35,14 +34,14 @@ const ShareLinkPage = async ({ shareLink }: { shareLink: IGetShareLinkBySlugResu
     const handleJoin = async () => {
         'use server'
         await createShare(shareLink.slug);
-        redirect('/dashboard');
+        redirect('/dashboard/shares');
     }
 
     return (
         <Content className='min-h-screen flex items-center justify-center py-16 px-1'>
             <div className='flex flex-col gap-8 max-w-lg mx-auto'>
-                <h3 className='text-5xl font-bold'>
-                    Hey there! &nbsp; &nbsp; 👋
+                <h3 className='text-6xl font-bold'>
+                    Hey there! &nbsp; 👋
                 </h3>
                 <h3 className='text-3xl font-bold'>
                     You have recieved an invite to join a service share on <Link href='/' className='font-mono'>tunnl.app</Link>

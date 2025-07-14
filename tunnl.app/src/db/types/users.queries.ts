@@ -67,6 +67,7 @@ export interface IGetUserByEmailResult {
   email: string;
   id: string;
   last_login: Date | null;
+  roles: string;
 }
 
 /** 'GetUserByEmail' query type */

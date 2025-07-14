@@ -16,11 +16,14 @@ import client from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { unauthorized } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import userIsApproved from "@/lib/user-is-approved";
 
 const Services = async () => {
     const session = await getServerSession();
     const email = session?.user?.email;
     if (!email) unauthorized();
+
+    const approved = await userIsApproved(email);
 
     const services = await getServicesByEmail.run({ email: email }, client);
 
@@ -33,7 +36,11 @@ const Services = async () => {
                 </div>
                 <div className='flex justify-end items-center'>
                     <Dialog>
-                        <Button className='cursor-pointer' variant='secondary' asChild>
+                        <Button
+                            className='cursor-pointer'
+                            variant='secondary'
+                            disabled={!approved}
+                            asChild>
                             <DialogTrigger>
                                 Create
                             </DialogTrigger>
@@ -52,6 +59,9 @@ const Services = async () => {
                     </Dialog>
                 </div>
             </div>
+            {!approved && <h3 className='pt-10 text-2xl font-semibold text-red-400'>
+                Your account must be approved to create a service
+            </h3>}
             <Card className='mt-10'>
                 <CardHeader>
                     <CardTitle>

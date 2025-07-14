@@ -44,7 +44,11 @@ const BindingDropdown = ({
         setCopied(false);
         setShareLinkData(null);
         console.log('generating share link')
-        setShareLinkData(await createShareLink(service_id));
+        setShareLinkData(await createShareLink({
+            service_id: service_id,
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            isOneTimeUse: true
+        }));
     }
 
     const toUrl = (slug: string) => window.location.protocol + '//' + window.location.host + '/' + slug

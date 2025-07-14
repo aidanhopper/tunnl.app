@@ -13,6 +13,7 @@ import { getAutomaticallySharedTunnelBindingSlugsByEmail } from '@/db/types/tunn
 import dialRole from '@/lib/ziti/dial-role';
 import updateDialRoles from '@/lib/update-dial-roles';
 import { getUserByEmail } from '@/db/types/users.queries';
+import userIsApproved from '@/lib/user-is-approved';
 
 const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const session = await getServerSession();
@@ -23,6 +24,7 @@ const createIdentity = async (formData: z.infer<typeof identitySchema>) => {
     const slug = slugify(name);
 
     try {
+        if (!await userIsApproved(email)) throw new Error('Forbidden');
         const userList = await getUserByEmail.run({ email: email }, client);
         if (userList.length === 0) throw new Error('User does not exist');
         const user = userList[0];

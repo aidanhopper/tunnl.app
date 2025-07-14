@@ -5,10 +5,9 @@ import ThemeSwitcher from "../theme-switcher";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import DashboardBreadcrumb from "./dashboard-breadcrumb";
 
-const Topbar = ({ message = <></> }: { message?: ReactNode }) => {
+const Topbar = ({ message = <>&nbsp;</> }: { message?: ReactNode }) => {
     const bar = useSidebar();
-    const f = () => bar.isMobile ? window.innerWidth : bar.open ? window.innerWidth - 255 : window.innerWidth;
-    const [topbarWidth, setTopbarWidth] = useState(f());
+    const [topbarWidth, setTopbarWidth] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         const handleResize = () =>
@@ -24,9 +23,9 @@ const Topbar = ({ message = <></> }: { message?: ReactNode }) => {
                 {message}
             </div>
             <div
-                style={{ width: topbarWidth }}
-                className='flex px-4 h-[66px] items-center 
-                border-b overflow-x-hidden '>
+                style={{ width: topbarWidth ?? `calc(100vw - 255px)` }}
+                className={`flex px-4 h-[66px] items-center 
+                border-b overflow-x-hidden`}>
                 <div className='flex w-full flex-1 items-center gap-8'>
                     <SidebarTrigger />
                     <DashboardBreadcrumb />

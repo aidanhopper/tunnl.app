@@ -6,6 +6,7 @@ export type DateOrString = Date | string;
 /** 'CreateShareLinkByServiceId' parameters type */
 export interface ICreateShareLinkByServiceIdParams {
   expires?: DateOrString | null | void;
+  one_time_use?: boolean | null | void;
   service_id?: string | null | void;
   slug?: string | null | void;
 }
@@ -14,6 +15,8 @@ export interface ICreateShareLinkByServiceIdParams {
 export interface ICreateShareLinkByServiceIdResult {
   expires: Date;
   id: string;
+  one_time_use: boolean;
+  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -24,7 +27,7 @@ export interface ICreateShareLinkByServiceIdQuery {
   result: ICreateShareLinkByServiceIdResult;
 }
 
-const createShareLinkByServiceIdIR: any = {"usedParamSet":{"expires":true,"slug":true,"service_id":true},"params":[{"name":"expires","required":false,"transform":{"type":"scalar"},"locs":[{"a":86,"b":93}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":100,"b":104}]},{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":187,"b":197}]}],"statement":"INSERT INTO share_links (\n    expires,\n    slug,\n    tunnel_binding_id\n) VALUES (\n    :expires,\n    :slug,\n    (\n        SELECT id\n        FROM tunnel_bindings\n        WHERE service_id = :service_id\n        LIMIT 1\n    )\n) RETURNING *"};
+const createShareLinkByServiceIdIR: any = {"usedParamSet":{"expires":true,"slug":true,"service_id":true,"one_time_use":true},"params":[{"name":"expires","required":false,"transform":{"type":"scalar"},"locs":[{"a":104,"b":111}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":118,"b":122}]},{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":205,"b":215}]},{"name":"one_time_use","required":false,"transform":{"type":"scalar"},"locs":[{"a":244,"b":256}]}],"statement":"INSERT INTO share_links (\n    expires,\n    slug,\n    tunnel_binding_id,\n    one_time_use\n) VALUES (\n    :expires,\n    :slug,\n    (\n        SELECT id\n        FROM tunnel_bindings\n        WHERE service_id = :service_id\n        LIMIT 1\n    ),\n    :one_time_use\n) RETURNING *"};
 
 /**
  * Query generated from SQL:
@@ -32,7 +35,8 @@ const createShareLinkByServiceIdIR: any = {"usedParamSet":{"expires":true,"slug"
  * INSERT INTO share_links (
  *     expires,
  *     slug,
- *     tunnel_binding_id
+ *     tunnel_binding_id,
+ *     one_time_use
  * ) VALUES (
  *     :expires,
  *     :slug,
@@ -41,7 +45,8 @@ const createShareLinkByServiceIdIR: any = {"usedParamSet":{"expires":true,"slug"
  *         FROM tunnel_bindings
  *         WHERE service_id = :service_id
  *         LIMIT 1
- *     )
+ *     ),
+ *     :one_time_use
  * ) RETURNING *
  * ```
  */
@@ -57,6 +62,8 @@ export interface IGetShareLinkBySlugParams {
 export interface IGetShareLinkBySlugResult {
   expires: Date;
   id: string;
+  one_time_use: boolean;
+  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -156,6 +163,8 @@ export interface IGetServiceShareLinksParams {
 export interface IGetServiceShareLinksResult {
   expires: Date;
   id: string;
+  one_time_use: boolean;
+  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -227,6 +236,8 @@ export interface IDeleteShareLinkByIdAndEmailParams {
 export interface IDeleteShareLinkByIdAndEmailResult {
   expires: Date;
   id: string;
+  one_time_use: boolean;
+  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }

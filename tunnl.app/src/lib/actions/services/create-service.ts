@@ -8,11 +8,13 @@ import { insertServiceByEmail } from "@/db/types/services.queries";
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import * as ziti from '@/lib/ziti/services';
+import userIsApproved from "@/lib/user-is-approved";
 
 const createService = async (formData: z.infer<typeof serviceSchema>) => {
     const session = await getServerSession();
     if (!session?.user?.email) return;
     const email = session.user.email;
+    if (!await userIsApproved(email)) throw new Error('Forbidden');
 
     const name = formData.name;
     const slug = slugify(name);

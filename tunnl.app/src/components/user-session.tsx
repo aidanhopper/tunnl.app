@@ -18,8 +18,8 @@ export const ValidateUserSession = ({ children }: { children: React.ReactNode })
             {children}
         </>
     ) : (
-        <div className='flex items-center justify-center h-screen'>
-            <span className='text-2xl font-bold'>Loading...</span>
+        <div className='flex items-center bg-background justify-center h-screen'>
+            <span className='text-2xl font-bold'>...</span>
         </div>
     )
 }

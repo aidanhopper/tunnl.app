@@ -13,19 +13,19 @@ const DashboardLayout = async ({ children }: { children?: ReactNode }) => {
     const messageList = await getLatestUpdateMessage.run(undefined, client);
     if (messageList.length !== 0) message = messageList[0];
     return (
-        <ValidateUserSession>
-            <SidebarProvider>
-                <DashboardSidebar />
-                <main>
-                    <Topbar message={<>
-                        {message?.content}
-                    </>} />
+        <SidebarProvider>
+            <DashboardSidebar />
+            <main>
+                <Topbar message={<>
+                    {message?.content}
+                </>} />
+                <ValidateUserSession>
                     <Content className='py-4 mt-28'>
                         {children}
                     </Content>
-                </main>
-            </SidebarProvider>
-        </ValidateUserSession>
+                </ValidateUserSession>
+            </main>
+        </SidebarProvider>
     )
 }
 

@@ -9,7 +9,7 @@ const JoinShareButton = ({ onClick }: { onClick: () => Promise<void> }) => {
             className='w-full cursor-pointer'>
             Accept
         </Button>
-    )
+    );
 }
 
 export default JoinShareButton;
