@@ -6,11 +6,5 @@ acls.json
 *dist
 *build
 *release
-daemon/ziti
-daemon/__pycache__
-daemon/main.spec
-daemon/main
-backend/resources
-backend/ziti-api-data.json
 pgdata
 *publisher.log
