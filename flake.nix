@@ -29,6 +29,7 @@
             dbmate
             go
             tree
+            sshpass
           ]; 
         };
       });
