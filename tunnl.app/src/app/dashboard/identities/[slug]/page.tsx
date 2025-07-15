@@ -100,15 +100,15 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                                             <div className='font-bold flex-1'>
                                                 Enrollment expired
                                             </div>
-                                            <div className='flex justify-end'>
-                                                <ResetIdentityEnrollmentButton name={slug} />
-                                            </div>
+                                            {/* <div className='flex justify-end'> */}
+                                            {/*     <ResetIdentityEnrollmentButton name={slug} /> */}
+                                            {/* </div> */}
                                         </div>}
                                 </div> :
                                 <div className='grid gap-12'>
-                                    <div>
-                                        <ResetIdentityEnrollmentButton name={slug} />
-                                    </div>
+                                    {/* <div> */}
+                                    {/*     <ResetIdentityEnrollmentButton name={slug} /> */}
+                                    {/* </div> */}
                                     <IdentityStatusCard identity={identity} />
                                 </div>}
                         </div>

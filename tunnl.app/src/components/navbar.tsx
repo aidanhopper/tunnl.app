@@ -70,19 +70,15 @@ const Navbar = () => {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
-                                    <DropdownMenuItem className='cursor-pointer'>
-                                        <BadgeCheck />
-                                        Account
-                                    </DropdownMenuItem>
+                                    {/* <DropdownMenuItem className='cursor-pointer'> */}
+                                    {/*     <BadgeCheck /> */}
+                                    {/*     Account */}
+                                    {/* </DropdownMenuItem> */}
                                     <DropdownMenuItem className='cursor-pointer md:hidden' asChild>
                                         <Link href='/dashboard'>
                                             <Terminal />
                                             Dashboard
                                         </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className='cursor-pointer'>
-                                        <Download />
-                                        Download
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onClick={() => {

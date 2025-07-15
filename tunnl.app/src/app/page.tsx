@@ -1,7 +1,6 @@
 import Content from '@/components/content';
 import Navbar from '@/components/navbar';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { getLatestUpdateMessage, IGetLatestUpdateMessageResult } from '@/db/types/update_messages.queries';
 import client from '@/lib/db';
 import Link from 'next/link';
@@ -16,7 +15,7 @@ const Home = async () => {
                 {message?.content ?? <>&nbsp;</>}
             </div>
             <Navbar />
-            <Content>
+            <Content className='flex flex-col gap-8'>
                 <div className=' w-full grid grid-rows-2 md:grid-cols-3 gap-x-8 flex-1 mt-24'>
                     <div className='flex h-full items-center font-bold text-center md:text-left md:col-span-2'>
                         <span className='text-6xl'>Easily share private services across networks.</span>
@@ -35,9 +34,6 @@ const Home = async () => {
                     </div>
                 </div>
                 <div className='grid grid-cols-3 gap-8'>
-                    <Card></Card>
-                    <Card></Card>
-                    <Card></Card>
                 </div>
             </Content>
             <div className='flex items-end flex-1 mt-10'>

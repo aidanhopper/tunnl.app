@@ -19,11 +19,11 @@ const DashboardLayout = async ({ children }: { children?: ReactNode }) => {
                 <Topbar message={<>
                     {message?.content}
                 </>} />
-                <ValidateUserSession>
-                    <Content className='py-4 mt-28'>
+                <Content className='py-4 mt-28'>
+                    <ValidateUserSession>
                         {children}
-                    </Content>
-                </ValidateUserSession>
+                    </ValidateUserSession>
+                </Content>
             </main>
         </SidebarProvider>
     )

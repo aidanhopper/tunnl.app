@@ -16,7 +16,7 @@ const isSlug = (token: string) => {
     const tokenSplit = token.split('-');
     if (tokenSplit.length < 2) return false;
     const end = tokenSplit[tokenSplit.length - 1];
-    if (/^[a-z0-9]{12}$/.test(end)) return true;
+    if (/^[a-zA-Z0-9]{12}$/.test(end)) return true;
 }
 
 const DashboardBreadcrumb = () => {

@@ -156,12 +156,12 @@ const DashboardSidebar = ({ ...props }) => {
                                     <UserPanel />
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem className='cursor-pointer'>
-                                        <BadgeCheck />
-                                        Account
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
+                                {/* <DropdownMenuGroup> */}
+                                {/*     <DropdownMenuItem className='cursor-pointer'> */}
+                                {/*         <BadgeCheck /> */}
+                                {/*         Account */}
+                                {/*     </DropdownMenuItem> */}
+                                {/* </DropdownMenuGroup> */}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={() => {
