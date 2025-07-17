@@ -1,15 +1,4 @@
 services:
-  web:
-    build:
-      context: webapp
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    ports:
-      - 3000:3000
-    env_file:
-      - .env
-    restart: unless-stopped
   db:
     container_name: postgres
     image: postgres:latest
@@ -28,10 +17,21 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:3002:80"
-    links:
-      - db:database
+#   links:
+#     - db:database
     depends_on:
-      - postgres
+      - db
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: password
+  web:
+    build:
+      context: webapp
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped

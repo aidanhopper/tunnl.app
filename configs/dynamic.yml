@@ -3,6 +3,15 @@ http:
     insecureTransport:
       insecureSkipVerify: true
   routers:
+    tunnl-router:
+      rule: 'HOST(`tunnl.app`)'
+      service: tunnl-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "tunnl.app" 
     keycloak-router:
       rule: 'HOST(`auth.tunnl.app`)'
       service: keycloak-service
@@ -31,6 +40,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://127.0.0.1:8080"
+    tunnl-service:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3000"
 tcp:
   routers:
     controller-router:
