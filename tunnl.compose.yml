@@ -17,8 +17,6 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:3002:80"
-#   links:
-#     - db:database
     depends_on:
       - db
     environment:
@@ -32,6 +30,17 @@ services:
       - db
     ports:
       - "127.0.0.1:3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
+  publisher:
+    build:
+      context: publisher
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:3444:3444"
     env_file:
       - .env
     restart: unless-stopped
