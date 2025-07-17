@@ -5,6 +5,8 @@ import { getLatestUpdateMessage, IGetLatestUpdateMessageResult } from '@/db/type
 import client from '@/lib/db';
 import Link from 'next/link';
 
+export const dynamic = "force-dynamic";
+
 const Home = async () => {
     let message: IGetLatestUpdateMessageResult | null = null;
     const messageList = await getLatestUpdateMessage.run(undefined, client);
