@@ -1,0 +1,12 @@
+services: 
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    network_mode: host
+    volumes:
+      - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./configs/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./data/letsencrypt:/letsencrypt
+    restart: unless-stopped
+    env_file:
+      - .traefik.env

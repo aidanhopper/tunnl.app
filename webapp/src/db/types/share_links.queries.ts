@@ -16,7 +16,6 @@ export interface ICreateShareLinkByServiceIdResult {
   expires: Date;
   id: string;
   one_time_use: boolean;
-  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -63,7 +62,6 @@ export interface IGetShareLinkBySlugResult {
   expires: Date;
   id: string;
   one_time_use: boolean;
-  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -164,7 +162,6 @@ export interface IGetServiceShareLinksResult {
   expires: Date;
   id: string;
   one_time_use: boolean;
-  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }
@@ -237,7 +234,6 @@ export interface IDeleteShareLinkByIdAndEmailResult {
   expires: Date;
   id: string;
   one_time_use: boolean;
-  revoked: boolean;
   slug: string;
   tunnel_binding_id: string;
 }

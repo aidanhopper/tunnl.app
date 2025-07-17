@@ -1,0 +1,58 @@
+http:
+  serversTransports:
+    insecureTransport:
+      insecureSkipVerify: true
+  routers:
+    keycloak-router:
+      rule: 'HOST(`auth.tunnl.app`)'
+      service: keycloak-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.tunnl.app" 
+    ziti-router:
+      rule: 'HOST(`ziti.tunnl.app`)'
+      service: http-controller-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.tunnl.app" 
+  services:
+    http-controller-service:
+      loadBalancer:
+        serversTransport: insecureTransport
+        servers:
+          - url: "https://127.0.0.1:10443"
+    keycloak-service:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8080"
+tcp:
+  routers:
+    controller-router:
+      entryPoints:
+        - tcp_tls
+      rule: "HostSNI(`ctrl.ziti.tunnl.app`)"
+      service: controller-service
+      tls:
+        passthrough: true
+    edge-router:
+      entryPoints:
+        - tcp_tls
+      rule: "HostSNI(`er1.ziti.tunnl.app`)"
+      service: edge-service
+      tls:
+        passthrough: true
+  services:
+    controller-service:
+      loadBalancer:
+        servers:
+          - address: 127.0.0.1:10443
+    edge-service:
+      loadBalancer:
+        servers:
+          - address: 127.0.0.1:11443

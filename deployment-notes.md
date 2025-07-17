@@ -53,3 +53,11 @@ tcp:
 ## Setup Instructions
 
 Configure the edge router and controller using the OpenZiti quickstart, then run the service with systemd for easy management and automatic startup.
+
+Use the host anywhere quick start & watch this video for help deploying ziti https://www.youtube.com/watch?v=eQIgxaQ0gfU
+
+Instructions on installing the ZAC https://openziti.io/docs/learn/quickstarts/zac/
+
+For advertising 443 in ziti you must go into the controller config and edge router config and change all advertised ports to 443. Leave the bind ports.
+
+Will need an email provider to verify email.
