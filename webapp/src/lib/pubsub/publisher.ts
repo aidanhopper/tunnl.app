@@ -14,13 +14,13 @@ class ZitiPublisher implements IPublisher {
         if (this.started) return;
         this.started = true;
 
-        this.interval = setInterval(async () => {
-            const data = {
-                message: 'hello world!'
-            }
-
-            this.publish('hello', data);
-        }, 2000);
+        // this.interval = setInterval(async () => {
+        //     const data = {
+        //         message: 'hello world!'
+        //     }
+        //
+        //     this.publish('hello', data);
+        // }, 2000);
     }
 }
 
