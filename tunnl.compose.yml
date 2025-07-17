@@ -3,6 +3,8 @@ services:
     build:
       context: webapp
       dockerfile: Dockerfile
+    depends_on:
+      - postgres
     ports:
       - 3000:3000
     env_file:
@@ -28,8 +30,8 @@ services:
       - "127.0.0.1:3002:80"
     links:
       - db:database
+    depends_on:
+      - postgres
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: password
-volumes:
-  pgdata:
