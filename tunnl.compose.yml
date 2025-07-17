@@ -10,7 +10,7 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - ./data/tunnl-data:/var/lib/postgresql/data
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4:latest

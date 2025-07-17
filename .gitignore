@@ -8,3 +8,4 @@ acls.json
 *release
 pgdata
 *publisher.log
+data/*
