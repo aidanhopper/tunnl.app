@@ -1,6 +1,8 @@
 import CommunityForm from "@/components/dashboard/communities/community-form";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 
+export const dynamic = "force-dynamic";
+
 const CreateCommunity = () => {
     return (
         <DashboardLayout>
