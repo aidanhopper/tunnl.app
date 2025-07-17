@@ -6,7 +6,7 @@ import { useSessionState } from "@/lib/hooks";
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
-const LoginCLient = () => {
+const LoginClient = () => {
     const [autoLoginExecuted, setAutoLoginExecuted] = useSessionState<boolean>('login executed', false);
     const params = useSearchParams();
     const redirect = params?.get('redirect');
