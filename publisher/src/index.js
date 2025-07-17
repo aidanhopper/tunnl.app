@@ -1,66 +1,50 @@
-import fs from 'fs/promises';
-import { Client } from 'pg';
-import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import createZitiEventWebSocket from './ziti-ws';
-
-dotenv.config();
-
-interface Payload {
-    topics: string[],
-    iat: string,
-    exp: string
-}
-
-interface ServiceEvent {
-    namespace: 'service',
-    timestamp: Date,
-    serviceId: string,
-    count: number,
-    intervalLength: number
-}
-
-interface EntityChangeEvent {
-    namespace: 'entityChange',
-    eventType: 'deleted' | 'updated' | 'created',
-    entityType: string,
-    timestamp: Date,
-    id: string
-}
-
-interface SdkEvent {
-    namespace: 'sdk'
-    id: string,
-    eventType: string
-}
-
-const client = new Client({
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const promises_1 = __importDefault(require("fs/promises"));
+const pg_1 = require("pg");
+const socket_io_1 = require("socket.io");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const ziti_ws_1 = __importDefault(require("./ziti-ws"));
+dotenv_1.default.config({
+    path: './../.env',
+});
+const client = new pg_1.Client({
     connectionString: process.env.DATABASE_URL,
 });
-
-const io = new Server(Number(process.env.PUBLISHER_PORT || 1234), {
+const io = new socket_io_1.Server(Number(process.env.PUBLISHER_PORT || 1234), {
     cors: {
         origin: "*",
     },
 });
-
-const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
+const updateIdentityStatus = (ziti_id, is_online) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        await client.query(`
+        yield client.query(`
         UPDATE identities
         SET is_online = $1,
             last_seen = NOW()
         WHERE ziti_id = $2
     `, [is_online, ziti_id]);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
     }
-}
-
-const insertServiceDial = async (e: ServiceEvent) => {
+});
+const insertServiceDial = (e) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        await client.query(`
+        yield client.query(`
         INSERT INTO service_dials (
             timestamp,
             dials,
@@ -77,29 +61,28 @@ const insertServiceDial = async (e: ServiceEvent) => {
         ON CONFLICT (service_id, timestamp)
         DO UPDATE SET dials = service_dials.dials + EXCLUDED.dials;
         `, [e.timestamp, e.count, e.serviceId]);
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
     }
-}
-
-const logEvent = async (e: any) => {
+});
+const logEvent = (e) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const out = JSON.stringify(e);
-        fs.appendFile('publisher.log', out + '\n');
-    } catch { }
-}
-
+        promises_1.default.appendFile('publisher.log', out + '\n');
+    }
+    catch (_a) { }
+});
 // to be inserted into the events table the event needs
 // namespace
 // eventType
 // id
-
-const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityChangeEvent | null> => {
+const transformEvent = (e) => __awaiter(void 0, void 0, void 0, function* () {
     switch (e.namespace) {
         case 'entityChange':
             switch (e.eventType) {
                 case 'committed':
-                    return null
+                    return null;
                 case 'updated':
                     return {
                         namespace: 'entityChange',
@@ -107,7 +90,7 @@ const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityC
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.initialState.id
-                    }
+                    };
                 case 'created':
                     return {
                         namespace: 'entityChange',
@@ -115,7 +98,7 @@ const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityC
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.finalState.id
-                    }
+                    };
                 case 'deleted':
                     return {
                         namespace: 'entityChange',
@@ -123,7 +106,7 @@ const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityC
                         entityType: e.entityType,
                         timestamp: e.timestamp,
                         id: e.initialState.id
-                    }
+                    };
             }
         case 'sdk':
             return {
@@ -138,16 +121,14 @@ const transformEvent = async (e: any): Promise<SdkEvent | ServiceEvent | EntityC
                 serviceId: e.service_id,
                 count: e.count,
                 intervalLength: e.interval_length
-            }
+            };
         case 'circuit':
             return null;
         default: return null;
     }
-}
-
-const subscribers = new Map<string, RegExp[]>();
-
-const publishEvent = async (topic: string, payload: object) => {
+});
+const subscribers = new Map();
+const publishEvent = (topic, payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         subscribers.forEach((topics, socketId) => {
             topics.forEach(topicRegex => {
@@ -155,28 +136,26 @@ const publishEvent = async (topic: string, payload: object) => {
                     io.to(socketId).emit('event', payload);
             });
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
     }
-}
-
-const main = async () => {
-    await client.connect();
-
+});
+const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    yield client.connect();
     try {
-        createZitiEventWebSocket({
+        (0, ziti_ws_1.default)({
             subscriptions: [
                 { type: "entityChange", options: null },
                 { type: "service", options: null },
                 { type: "sdk", options: null },
                 { type: "circuit", options: null },
             ],
-            onMessage: async (msg) => {
-                await logEvent(msg);
-                const payload = await transformEvent(msg);
-
-                if (!payload || !payload.namespace) return;
-
+            onMessage: (msg) => __awaiter(void 0, void 0, void 0, function* () {
+                yield logEvent(msg);
+                const payload = yield transformEvent(msg);
+                if (!payload || !payload.namespace)
+                    return;
                 switch (payload.namespace) {
                     case 'entityChange':
                         const topic1 = `${payload.namespace}:${payload.entityType}:${payload.id}`;
@@ -185,39 +164,36 @@ const main = async () => {
                     case 'sdk':
                         const topic2 = `${payload.namespace}:identities:${payload.id}`;
                         publishEvent(topic2, payload);
-                        updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
+                        updateIdentityStatus(payload.id, payload.eventType === 'sdk-online');
                         break;
                     case 'service':
                         insertServiceDial(payload);
                     default: break;
                 }
-            }
+            })
         });
-
         io.on("connection", (socket) => {
             const { token } = socket.handshake.auth;
-
-            if (!process.env.PUBLISHER_JWT_SECRET) throw new Error('No jwt secret defined')
-
+            if (!process.env.PUBLISHER_JWT_SECRET)
+                throw new Error('No jwt secret defined');
             try {
-                const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET) as {} as Payload;
+                const payload = jsonwebtoken_1.default.verify(token, process.env.PUBLISHER_JWT_SECRET);
                 // console.log('connect');
-
                 subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
-
                 socket.on("disconnect", () => {
                     subscribers.delete(socket.id);
                     // console.log('disconnect');
                 });
-            } catch (err) {
-                console.error(err)
+            }
+            catch (err) {
+                console.error(err);
                 socket.disconnect();
                 return;
             }
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
     }
-}
-
-export default main();
+});
+exports.default = main();
