@@ -44,14 +44,14 @@ const Identities = async () => {
 
     const identities = await getIdentitiesByEmail.run({ email: email }, client);
 
-    const token = generateToken({ topics: identities.map(i => i.ziti_id) });
+    if (!process.env.NEXT_PUBLIC_PUBLISHER_URL) return <>Error</>;
 
-    console.log('NEXT_PUBLIC_PUBLISHER_URL', process.env.NEXT_PUBLIC_PUBLISHER_URL);
+    const token = generateToken({ topics: identities.map(i => i.ziti_id) });
 
     return (
         <DashboardLayout>
             <div className='flex gap-8 flex-col'>
-                <SubscribeProvider token={token}>
+                <SubscribeProvider url={process.env.NEXT_PUBLIC_PUBLISHER_URL} token={token}>
                     <RefreshOnEvent onEvent={async (payload) => {
                         'use server'
                         return payload.namespace === 'sdk'

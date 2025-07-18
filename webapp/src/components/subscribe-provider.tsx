@@ -31,16 +31,14 @@ export const useSubscription = (fn: (e: EventPayload) => void) => {
     }, [subscribe, fn])
 }
 
-const SubscribeProvider = ({ children, token }: { children?: ReactNode, token: string }) => {
+const SubscribeProvider = ({ children, token, url }: { children?: ReactNode, token: string, url: string }) => {
     const socketRef = useRef<Socket | null>(null);
     const listenersRef = useRef(new Set<(e: EventPayload) => void>());
 
     useEffect(() => {
-        console.log('create socket with NEXT_PUBLIC_PUBLISHER_URL:', process.env.NEXT_PUBLIC_PUBLISHER_URL)
-        const socket = io(process.env.NEXT_PUBLIC_PUBLISHER_URL, {
+        const socket = io(url, {
             auth: { token: token }
         });
-        console.log('Done creating socket')
 
         socketRef.current = socket;
 
