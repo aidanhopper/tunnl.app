@@ -19,7 +19,7 @@ export const generateMetadata = async ({
 
     const defaultMetadata: Metadata = {
         title: "Tunnl.app — Not Found",
-        description: "Tunnl.app makes it easy to share private services yourself and your friends over the internet.",
+        description: "Tunnl.app makes it easy to share private services with yourself and your friends over the internet.",
     }
 
     const slug = (await params).slug;
