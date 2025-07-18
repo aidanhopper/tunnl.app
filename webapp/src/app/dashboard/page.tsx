@@ -1,11 +1,6 @@
 import ApprovalCard from "@/components/dashboard/approval-card";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import HomeSkeleton from "@/components/dashboard/home/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getIdentitiesByEmail } from "@/db/types/identities.queries";
-import { getServicesByEmail } from "@/db/types/services.queries";
-import { getSharesByEmail } from "@/db/types/shares.queries";
-import client from "@/lib/db";
 import userIsApproved from "@/lib/user-is-approved";
 import { Home } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -14,7 +9,6 @@ const Dashboard = async () => {
     const session = await getServerSession();
     const email = session?.user?.email;
     const approved = await userIsApproved(email);
-
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>

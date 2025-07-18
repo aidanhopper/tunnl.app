@@ -6,9 +6,49 @@ import { getShareLinkBySlug, IGetShareLinkBySlugResult, getShareLinkOwnerEmail }
 import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import createShare from "@/lib/actions/shares/create-share";
 import client from "@/lib/db";
+import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+
+export const generateMetadata = async ({
+    params,
+}: {
+    params: Promise<{ slug: string }>,
+}): Promise<Metadata> => {
+
+    const defaultMetadata: Metadata = {
+        title: "Tunnl.app — Not Found",
+        description: "Tunnl.app makes it easy to share private services yourself and your friends over the internet.",
+    }
+
+    const slug = (await params).slug;
+
+    const shareLinkList = await getShareLinkBySlug.run({ slug: slug }, client);
+    if (shareLinkList.length === 0) return defaultMetadata;
+    const shareLink = shareLinkList[0];
+
+    const ownerEmailList = await getShareLinkOwnerEmail.run({ slug: shareLink.slug }, client);
+    if (ownerEmailList.length === 0) return defaultMetadata;
+    const ownerEmail = ownerEmailList[0].email;
+
+    if (shareLinkList.length !== 0) {
+        const tunnelBindingList = await getTunnelBinding.run({ id: shareLink.tunnel_binding_id }, client);
+        if (tunnelBindingList.length === 0) return defaultMetadata;
+        const tunnelBinding = tunnelBindingList[0];
+
+        const serviceList = await getService.run({ id: tunnelBinding.service_id }, client);
+        if (serviceList.length === 0) return defaultMetadata;
+        const service = serviceList[0];
+
+        return {
+            title: `Tunnl.app — Invite to ${service.name} service share`,
+            description: `Click the link to join the ${service.name} from ${ownerEmail}`,
+        }
+    }
+
+    return defaultMetadata;
+}
 
 const ShareLinkPage = async ({ shareLink, autojoin = false }: { shareLink: IGetShareLinkBySlugResult, autojoin?: boolean }) => {
     if (shareLink.expires < new Date()) notFound();

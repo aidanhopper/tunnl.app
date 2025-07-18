@@ -7,7 +7,6 @@ import Topbar from "./topbar";
 import { getLatestUpdateMessage, IGetLatestUpdateMessageResult } from "@/db/types/update_messages.queries";
 import client from "@/lib/db";
 
-
 const DashboardLayout = async ({ children }: { children?: ReactNode }) => {
     let message: IGetLatestUpdateMessageResult | null = null;
     const messageList = await getLatestUpdateMessage.run(undefined, client);
