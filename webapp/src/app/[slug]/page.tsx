@@ -42,8 +42,8 @@ export const generateMetadata = async ({
         const service = serviceList[0];
 
         return {
-            title: `Tunnl.app — Invite to ${service.name} service share`,
-            description: `Click the link to join the ${service.name} from ${ownerEmail}`,
+            title: `Tunnl.app — Invite to a ${service.name} service share`,
+            description: `Click the link to join a ${service.name} service share from ${ownerEmail}.`,
         }
     }
 
