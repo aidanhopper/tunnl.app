@@ -36,9 +36,11 @@ const SubscribeProvider = ({ children, token }: { children?: ReactNode, token: s
     const listenersRef = useRef(new Set<(e: EventPayload) => void>());
 
     useEffect(() => {
+        console.log('create socket with NEXT_PUBLIC_PUBLISHER_URL:', process.env.NEXT_PUBLIC_PUBLISHER_URL)
         const socket = io(process.env.NEXT_PUBLIC_PUBLISHER_URL, {
             auth: { token: token }
         });
+        console.log('Done creating socket')
 
         socketRef.current = socket;
 
