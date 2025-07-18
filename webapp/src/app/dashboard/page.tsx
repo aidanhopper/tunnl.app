@@ -15,10 +15,6 @@ const Dashboard = async () => {
     const email = session?.user?.email;
     const approved = await userIsApproved(email);
 
-    const services = await getServicesByEmail.run({ email: email }, client);
-    const identites = await getIdentitiesByEmail.run({ email: email }, client);
-    const shares = await getSharesByEmail.run({ email: email }, client);
-
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>
@@ -27,17 +23,17 @@ const Dashboard = async () => {
                     <h1>Home</h1>
                 </div>
                 {!approved ? <ApprovalCard email={email} /> :
-                    <div className='grid gap-8 mx-auto w-fit'>
-                        <div className='w-72'>
+                    <div className='grid gap-8 mx-auto w-full max-w-xl'>
+                        <div className='text-center'>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>
+                                    <CardTitle className='text-2xl'>
                                         Tutorials you might find useful
                                     </CardTitle>
                                 </CardHeader>
                             </Card>
                         </div>
-                        <div className='flex gap-8 flex-col'>
+                        <div className='flex gap-8 flex-col text-center'>
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
@@ -46,8 +42,7 @@ const Dashboard = async () => {
                                 </CardHeader>
                                 <CardContent>
                                     <iframe
-                                        width="427"
-                                        height="240"
+                                        className='h-full w-full aspect-video'
                                         src="https://www.youtube.com/embed/erYEcA-F5zQ"
                                         title="What To Do When You&#39;ve An Invite on Tunnl.app"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -63,8 +58,7 @@ const Dashboard = async () => {
                                 </CardHeader>
                                 <CardContent>
                                     <iframe
-                                        width="427"
-                                        height="240"
+                                        className='h-full w-full aspect-video'
                                         src="https://www.youtube.com/embed/HrnGIJx_auA"
                                         title="How to Enroll Android &amp; iOS Identities in Tunnl.app"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -80,8 +74,7 @@ const Dashboard = async () => {
                                 </CardHeader>
                                 <CardContent>
                                     <iframe
-                                        width="427"
-                                        height="240"
+                                        className='h-full w-full aspect-video'
                                         src="https://www.youtube.com/embed/8vt5JISH28Y"
                                         title="How to Enroll WIndows &amp; MacOS Identities in Tunnl.app"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
