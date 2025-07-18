@@ -37,14 +37,14 @@ const Dashboard = async () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>
-                                        What To Do When You&#39;ve An Invite
+                                        What To Do When You&#39;ve Received An Invite
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <iframe
                                         className='h-full w-full aspect-video'
                                         src="https://www.youtube.com/embed/erYEcA-F5zQ"
-                                        title="What To Do When You&#39;ve An Invite on Tunnl.app"
+                                        title="What To Do When You&#39;ve Received An Invite on Tunnl.app"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         referrerPolicy="strict-origin-when-cross-origin"
                                         allowFullScreen></iframe>
@@ -79,6 +79,21 @@ const Dashboard = async () => {
                                         title="How to Enroll WIndows &amp; MacOS Identities in Tunnl.app"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                         referrerPolicy="strict-origin-when-cross-origin"
+                                        allowFullScreen></iframe>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>
+                                        How to Create a Service in The Tunnl.app Dashboard
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <iframe
+                                        className='h-full w-full aspect-video'
+                                        src="https://www.youtube.com/embed/PZj9LY_5DyI"
+                                        title="How to Create a Service in The Tunnl.app Dashboard"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin"
                                         allowFullScreen></iframe>
                                 </CardContent>
                             </Card>
