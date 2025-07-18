@@ -46,6 +46,8 @@ const Identities = async () => {
 
     const token = generateToken({ topics: identities.map(i => i.ziti_id) });
 
+    console.log('NEXT_PUBLIC_PUBLISHER_URL', process.env.NEXT_PUBLIC_PUBLISHER_URL);
+
     return (
         <DashboardLayout>
             <div className='flex gap-8 flex-col'>
