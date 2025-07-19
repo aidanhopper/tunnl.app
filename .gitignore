@@ -9,3 +9,4 @@ acls.json
 pgdata
 *publisher.log
 data/*
+*identities
