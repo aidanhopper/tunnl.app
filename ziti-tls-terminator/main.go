@@ -10,29 +10,28 @@ import (
 	"strings"
 	"time"
 
+	"github.com/openziti/edge-api/rest_model"
 	"github.com/openziti/sdk-golang/ziti"
 )
 
-type ZitiConnInfo struct {
-	ConnID         uint32
-	SvcID          string
-	SourceIdentity string
+type ServiceBindConfig struct {
+	Name     string
+	Address  string
+	Port     string
+	Protocol string
+}
+
+type ServiceHandler struct {
+	Stop   func()
+	Config ServiceBindConfig
 }
 
 func main() {
-	forward_ := flag.String("forward-to", "", "The address to forward traffic to")
 	identityPath_ := flag.String("identity-path", "", "The path of your enrolled identity file")
 
 	flag.Parse()
 
-	forward := *forward_
 	identityPath := *identityPath_
-
-	if forward == "" {
-		log.Println("Error: --forward-to is required")
-		flag.Usage()
-		os.Exit(1)
-	}
 
 	if identityPath == "" {
 		log.Println("Error: --identity-path is required")
@@ -40,48 +39,135 @@ func main() {
 		os.Exit(1)
 	}
 
-	options := ziti.ListenOptions{
-		ConnectTimeout: 5 * time.Minute,
-		MaxConnections: 3,
-	}
+	cfg, err := ziti.NewConfigFromFile(identityPath)
 
-	ctx, err := ziti.NewContextFromFile(identityPath)
+	cfg.ConfigTypes = append(cfg.ConfigTypes, "all")
+
+	ctx, err := ziti.NewContext(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	serviceNames := getBindServices(ctx)
-	if len(serviceNames) == 0 {
-		log.Fatalf("No services to bind to")
-	}
-
-	fmt.Println(serviceNames[0])
-	listener, err := ctx.ListenWithOptions(serviceNames[0], &options)
-	if err != nil {
-		fmt.Println("Error binding service")
-		panic(err)
-	}
-	defer listener.Close()
+	handlers := make(map[string]ServiceHandler)
 
 	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			panic(err)
-		}
-
-		go handleConnection(conn, forward, serviceNames[0])
+		zitiServices := getBindServices(ctx)
+		services := transformZitiServices(zitiServices)
+		listenToServices(ctx, services, handlers)
+		time.Sleep(1 * time.Second)
+		ctx.RefreshServices()
 	}
 }
 
-func handleConnection(conn1 net.Conn, conn2Address, serviceName string) {
+func listenToService(ctx ziti.Context, service ServiceBindConfig) (func(), error) {
+	options := ziti.ListenOptions{
+		ConnectTimeout: 5 * time.Minute,
+	}
+
+	listener, err := ctx.ListenWithOptions(service.Name, &options)
+	if err != nil {
+		return nil, err
+	}
+
+	stopChan := make(chan struct{})
+
+	listen := func() {
+		defer listener.Close()
+		for {
+			select {
+			case <-stopChan:
+				return
+			default:
+				conn, err := listener.Accept()
+				if err != nil {
+					log.Printf("Accept error %v", err)
+					return
+				}
+				go handleConnection(conn, service)
+			}
+		}
+	}
+
+	go listen()
+
+	stop := func() {
+		close(stopChan)
+		_ = listener.Close()
+		log.Println("CLOSING LISTENER FOR", service.Name)
+	}
+
+	return stop, nil
+}
+
+func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, handlers map[string]ServiceHandler) {
+	for name, handler := range handlers {
+		if _, ok := services[name]; !ok {
+			handler.Stop()
+			delete(handlers, name)
+		}
+	}
+
+	for _, service := range services {
+		needToListen := true
+
+		if handler, ok := handlers[service.Name]; ok {
+			if handler.Config != service {
+				handler.Stop()
+			} else {
+				needToListen = false
+			}
+		}
+
+		if needToListen {
+			stop, err := listenToService(ctx, service)
+			if err == nil {
+				handlers[service.Name] = ServiceHandler{
+					Config: service,
+					Stop:   stop,
+				}
+			} else {
+				log.Println(err)
+			}
+		}
+	}
+}
+
+func transformZitiServices(services []rest_model.ServiceDetail) map[string]ServiceBindConfig {
+	ret := make(map[string]ServiceBindConfig)
+	for _, service := range services {
+		value := transformZitiService(service)
+		key := value.Name
+		ret[key] = value
+	}
+	return ret
+}
+
+func transformZitiService(service rest_model.ServiceDetail) ServiceBindConfig {
+	zitiHostConfig := service.Config["host.v1"]
+
+	protocol := zitiHostConfig["protocol"]
+	if protocol == nil {
+		protocol = "tcp"
+	}
+
+	port := fmt.Sprintf("%.0f", zitiHostConfig["port"])
+	return ServiceBindConfig{
+		Address:  zitiHostConfig["address"].(string),
+		Port:     port,
+		Protocol: protocol.(string),
+		Name:     *service.Name,
+	}
+}
+
+func handleConnection(conn1 net.Conn, service ServiceBindConfig) {
 	defer conn1.Close()
 
 	sourceIdentity := getSourceIdentity(conn1)
 	fmt.Println(sourceIdentity)
 
-	conn2, err := net.DialTimeout("tcp", conn2Address, 10*time.Second)
+	conn2, err := net.DialTimeout(service.Protocol, service.Address+":"+service.Port, 10*time.Second)
 	if err != nil {
-		panic(err)
+		return
 	}
 	defer conn2.Close()
 
@@ -107,7 +193,7 @@ func forwardTraffic(src, dst net.Conn, termiateTLS bool) {
 
 		_, err = dst.Write(buffer[:n])
 		if err != nil {
-				log.Println("Error", err)
+			log.Println("Error", err)
 			break
 		}
 	}
@@ -117,16 +203,17 @@ func getSourceIdentity(conn net.Conn) string {
 	return strings.Split(strings.Split(conn.LocalAddr().String(), " ")[3], "=")[1]
 }
 
-func getBindServices(ctx ziti.Context) []string {
+func getBindServices(ctx ziti.Context) []rest_model.ServiceDetail {
 	services, err := ctx.GetServices()
 	if err != nil {
 		panic(err)
 	}
 
-	var ret []string
+	var ret []rest_model.ServiceDetail
 
 	for _, service := range services {
 		hasBindPermission := false
+		// fmt.Println(service.Configs)
 
 		for _, perm := range service.Permissions {
 			if perm == "Bind" {
@@ -135,7 +222,7 @@ func getBindServices(ctx ziti.Context) []string {
 		}
 
 		if hasBindPermission {
-			ret = append(ret, *service.Name)
+			ret = append(ret, service)
 		}
 	}
 
