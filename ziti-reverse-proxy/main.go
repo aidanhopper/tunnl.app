@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -48,18 +52,24 @@ func main() {
 		panic(err)
 	}
 
+	cert, err := tls.LoadX509KeyPair("./identities/cert.pem", "./identities/key.pem")
+	if err != nil {
+		panic(err)
+	}
+	tlsConfig := &tls.Config{Certificates: []tls.Certificate{cert}}
+
 	handlers := make(map[string]ServiceHandler)
 
 	for {
 		zitiServices := getBindServices(ctx)
 		services := transformZitiServices(zitiServices)
-		listenToServices(ctx, services, handlers)
+		listenToServices(ctx, services, handlers, tlsConfig)
 		time.Sleep(1 * time.Second)
 		ctx.RefreshServices()
 	}
 }
 
-func listenToService(ctx ziti.Context, service ServiceBindConfig) (func(), error) {
+func listenToService(ctx ziti.Context, service ServiceBindConfig, tlsConfig *tls.Config) (func(), error) {
 	options := ziti.ListenOptions{
 		ConnectTimeout: 5 * time.Minute,
 	}
@@ -83,7 +93,7 @@ func listenToService(ctx ziti.Context, service ServiceBindConfig) (func(), error
 					log.Printf("Accept error %v", err)
 					return
 				}
-				go handleConnection(conn, service)
+				go handleConnection(conn, service, tlsConfig)
 			}
 		}
 	}
@@ -99,7 +109,7 @@ func listenToService(ctx ziti.Context, service ServiceBindConfig) (func(), error
 	return stop, nil
 }
 
-func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, handlers map[string]ServiceHandler) {
+func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, handlers map[string]ServiceHandler, tlsConfig *tls.Config) {
 	for name, handler := range handlers {
 		if _, ok := services[name]; !ok {
 			handler.Stop()
@@ -119,7 +129,7 @@ func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, h
 		}
 
 		if needToListen {
-			stop, err := listenToService(ctx, service)
+			stop, err := listenToService(ctx, service, tlsConfig)
 			if err == nil {
 				handlers[service.Name] = ServiceHandler{
 					Config: service,
@@ -159,44 +169,65 @@ func transformZitiService(service rest_model.ServiceDetail) ServiceBindConfig {
 	}
 }
 
-func handleConnection(conn1 net.Conn, service ServiceBindConfig) {
+func handleConnection(conn1 net.Conn, service ServiceBindConfig, tlsConfig *tls.Config) {
 	defer conn1.Close()
-
-	sourceIdentity := getSourceIdentity(conn1)
-	fmt.Println(sourceIdentity)
 
 	conn2, err := net.DialTimeout(service.Protocol, service.Address+":"+service.Port, 10*time.Second)
 	if err != nil {
 		return
 	}
-	defer conn2.Close()
 
-	go forwardTraffic(conn1, conn2, true)
-	forwardTraffic(conn2, conn1, false)
+	forwardTraffic(conn1, conn2, tlsConfig)
 }
 
-func forwardTraffic(src, dst net.Conn, termiateTLS bool) {
-	defer func() {
-		// Close the destination connection when forwarding is done
-		dst.Close()
+func forwardTraffic(client, server net.Conn, tlsConfig *tls.Config) {
+	defer client.Close()
+	defer server.Close()
+
+	tlsConn := tls.Server(client, tlsConfig)
+	err := tlsConn.Handshake()
+	if err != nil {
+		log.Println("TLS handshake error:", err)
+		client.Close()
+		return
+	}
+
+	// Read and parse the HTTP request to get Host header
+	reader := bufio.NewReader(tlsConn)
+	req, err := http.ReadRequest(reader)
+	if err != nil {
+		log.Printf("Error reading HTTP request: %v", err)
+		return
+	}
+
+	// Inspect the Host header
+	sourceIdentity := getSourceIdentity(client)
+	if !isValidRequest(sourceIdentity, req) {
+		server.Close()
+		client.Close()
+		log.Printf("Invalid request")
+		return
+	}
+
+
+	var requestBuffer bytes.Buffer
+	req.Write(&requestBuffer)
+
+	// Send the complete request to the backend server
+	_, err = server.Write(requestBuffer.Bytes())
+	if err != nil {
+		return
+	}
+
+	// Forward data bidirectionally between TLS client and HTTP server
+	go func() {
+		defer server.Close()
+		defer tlsConn.Close()
+		io.Copy(server, tlsConn)
 	}()
 
-	buffer := make([]byte, 4096)
-	for {
-		n, err := src.Read(buffer)
-		if err != nil {
-			if err != io.EOF {
-				log.Println("Error", err)
-			}
-			break
-		}
-
-		_, err = dst.Write(buffer[:n])
-		if err != nil {
-			log.Println("Error", err)
-			break
-		}
-	}
+	// Forward data from server back to client
+	_, err = io.Copy(tlsConn, server)
 }
 
 func getSourceIdentity(conn net.Conn) string {
@@ -227,4 +258,8 @@ func getBindServices(ctx ziti.Context) []rest_model.ServiceDetail {
 	}
 
 	return ret
+}
+
+func isValidRequest(identityName string, req *http.Request) bool {
+	return true
 }
