@@ -2,16 +2,15 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/openziti/edge-api/rest_model"
@@ -25,9 +24,52 @@ type ServiceBindConfig struct {
 	Protocol string
 }
 
+type ServiceDialConfig struct {
+	Name    string
+	Address string
+	Port    string
+}
+
 type ServiceHandler struct {
 	Stop   func()
 	Config ServiceBindConfig
+}
+
+type SharedDials struct {
+	mu    sync.RWMutex
+	dials map[string]ServiceDialConfig
+}
+
+func (sd *SharedDials) Get(name string) (ServiceDialConfig, bool) {
+	sd.mu.RLock()
+	defer sd.mu.RUnlock()
+	val, ok := sd.dials[name]
+	return val, ok
+}
+
+func (sd *SharedDials) Update(newDials map[string]ServiceDialConfig) {
+	sd.mu.RLock()
+	// Check if the maps are equal
+	same := len(sd.dials) == len(newDials)
+	if same {
+		for k, v := range newDials {
+			old, ok := sd.dials[k]
+			if !ok || old != v {
+				same = false
+				break
+			}
+		}
+	}
+	sd.mu.RUnlock()
+
+	if same {
+		return // no change, skip update
+	}
+
+	// Now do the actual update with a write lock
+	sd.mu.Lock()
+	defer sd.mu.Unlock()
+	sd.dials = newDials
 }
 
 func main() {
@@ -60,21 +102,28 @@ func main() {
 
 	handlers := make(map[string]ServiceHandler)
 
+	sharedDials := &SharedDials{
+		dials: make(map[string]ServiceDialConfig),
+	}
+
 	for {
-		zitiServices := getBindServices(ctx)
-		services := transformZitiServices(zitiServices)
-		listenToServices(ctx, services, handlers, tlsConfig)
+		zitiBinds := getBindServices(ctx)
+		zitiDials := getDialServices(ctx)
+		binds := transformZitiBinds(zitiBinds)
+		dials := transformZitiDials(zitiDials)
+		sharedDials.Update(dials)
+		listenToServices(ctx, binds, sharedDials, handlers, tlsConfig)
 		time.Sleep(1 * time.Second)
 		ctx.RefreshServices()
 	}
 }
 
-func listenToService(ctx ziti.Context, service ServiceBindConfig, tlsConfig *tls.Config) (func(), error) {
+func listenToService(ctx ziti.Context, bind ServiceBindConfig, sharedDials *SharedDials, tlsConfig *tls.Config) (func(), error) {
 	options := ziti.ListenOptions{
 		ConnectTimeout: 5 * time.Minute,
 	}
 
-	listener, err := ctx.ListenWithOptions(service.Name, &options)
+	listener, err := ctx.ListenWithOptions(bind.Name, &options)
 	if err != nil {
 		return nil, err
 	}
@@ -89,11 +138,12 @@ func listenToService(ctx ziti.Context, service ServiceBindConfig, tlsConfig *tls
 				return
 			default:
 				conn, err := listener.Accept()
+				defer conn.Close()
 				if err != nil {
 					log.Printf("Accept error %v", err)
 					return
 				}
-				go handleConnection(conn, service, tlsConfig)
+				go handleConnection(ctx, conn, sharedDials, tlsConfig)
 			}
 		}
 	}
@@ -103,25 +153,24 @@ func listenToService(ctx ziti.Context, service ServiceBindConfig, tlsConfig *tls
 	stop := func() {
 		close(stopChan)
 		_ = listener.Close()
-		log.Println("CLOSING LISTENER FOR", service.Name)
 	}
 
 	return stop, nil
 }
 
-func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, handlers map[string]ServiceHandler, tlsConfig *tls.Config) {
+func listenToServices(ctx ziti.Context, binds map[string]ServiceBindConfig, sharedDials *SharedDials, handlers map[string]ServiceHandler, tlsConfig *tls.Config) {
 	for name, handler := range handlers {
-		if _, ok := services[name]; !ok {
+		if _, ok := binds[name]; !ok {
 			handler.Stop()
 			delete(handlers, name)
 		}
 	}
 
-	for _, service := range services {
+	for _, bind := range binds {
 		needToListen := true
 
-		if handler, ok := handlers[service.Name]; ok {
-			if handler.Config != service {
+		if handler, ok := handlers[bind.Name]; ok {
+			if handler.Config != bind {
 				handler.Stop()
 			} else {
 				needToListen = false
@@ -129,10 +178,10 @@ func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, h
 		}
 
 		if needToListen {
-			stop, err := listenToService(ctx, service, tlsConfig)
+			stop, err := listenToService(ctx, bind, sharedDials, tlsConfig)
 			if err == nil {
-				handlers[service.Name] = ServiceHandler{
-					Config: service,
+				handlers[bind.Name] = ServiceHandler{
+					Config: bind,
 					Stop:   stop,
 				}
 			} else {
@@ -142,17 +191,29 @@ func listenToServices(ctx ziti.Context, services map[string]ServiceBindConfig, h
 	}
 }
 
-func transformZitiServices(services []rest_model.ServiceDetail) map[string]ServiceBindConfig {
+func transformZitiDials(services []rest_model.ServiceDetail) map[string]ServiceDialConfig {
+	ret := make(map[string]ServiceDialConfig)
+	for _, service := range services {
+		value, err := transformZitiDial(service)
+		if err == nil {
+			key := value.Address
+			ret[key] = value
+		}
+	}
+	return ret
+}
+
+func transformZitiBinds(services []rest_model.ServiceDetail) map[string]ServiceBindConfig {
 	ret := make(map[string]ServiceBindConfig)
 	for _, service := range services {
-		value := transformZitiService(service)
+		value := transformZitiBind(service)
 		key := value.Name
 		ret[key] = value
 	}
 	return ret
 }
 
-func transformZitiService(service rest_model.ServiceDetail) ServiceBindConfig {
+func transformZitiBind(service rest_model.ServiceDetail) ServiceBindConfig {
 	zitiHostConfig := service.Config["host.v1"]
 
 	protocol := zitiHostConfig["protocol"]
@@ -169,21 +230,37 @@ func transformZitiService(service rest_model.ServiceDetail) ServiceBindConfig {
 	}
 }
 
-func handleConnection(conn1 net.Conn, service ServiceBindConfig, tlsConfig *tls.Config) {
-	defer conn1.Close()
+func transformZitiDial(service rest_model.ServiceDetail) (ServiceDialConfig, error) {
+	zitiInterceptConfig := service.Config["intercept.v1"]
 
-	conn2, err := net.DialTimeout(service.Protocol, service.Address+":"+service.Port, 10*time.Second)
-	if err != nil {
-		return
+	address := ""
+	if addresses := zitiInterceptConfig["addresses"]; addresses != nil {
+		if arr := addresses.([]any); arr != nil {
+			address = arr[0].(string)
+		}
 	}
 
-	forwardTraffic(conn1, conn2, tlsConfig)
+	if address == "" {
+		return ServiceDialConfig{}, fmt.Errorf("Dial service has no address")
+	}
+
+	var port float64
+	port = -1
+	if portRanges := zitiInterceptConfig["portRanges"]; portRanges != nil {
+		port = portRanges.([]any)[0].(map[string]any)["high"].(float64)
+	}
+
+	if port == -1 {
+		return ServiceDialConfig{}, fmt.Errorf("No port")
+	}
+
+	return ServiceDialConfig{
+		Address: address,
+		Port:    fmt.Sprintf("%.0f", port),
+	}, nil
 }
 
-func forwardTraffic(client, server net.Conn, tlsConfig *tls.Config) {
-	defer client.Close()
-	defer server.Close()
-
+func handleConnection(ctx ziti.Context, client net.Conn, sharedDials *SharedDials, tlsConfig *tls.Config) {
 	tlsConn := tls.Server(client, tlsConfig)
 	err := tlsConn.Handshake()
 	if err != nil {
@@ -192,7 +269,6 @@ func forwardTraffic(client, server net.Conn, tlsConfig *tls.Config) {
 		return
 	}
 
-	// Read and parse the HTTP request to get Host header
 	reader := bufio.NewReader(tlsConn)
 	req, err := http.ReadRequest(reader)
 	if err != nil {
@@ -200,34 +276,51 @@ func forwardTraffic(client, server net.Conn, tlsConfig *tls.Config) {
 		return
 	}
 
-	// Inspect the Host header
+	dial, ok := sharedDials.Get(req.Host)
+	if !ok {
+		return
+	}
+
+	fmt.Println(dial)
+
 	sourceIdentity := getSourceIdentity(client)
 	if !isValidRequest(sourceIdentity, req) {
-		server.Close()
 		client.Close()
 		log.Printf("Invalid request")
 		return
 	}
 
+	// options := ziti.DialOptions{
+	// 	ConnectTimeout: 5 * time.Minute,
+	// }
+	// ctx.DialWithOptions(, &options)
 
-	var requestBuffer bytes.Buffer
-	req.Write(&requestBuffer)
+	// forwardTraffic(conn1, conn2, tlsConfig)
+}
 
-	// Send the complete request to the backend server
-	_, err = server.Write(requestBuffer.Bytes())
-	if err != nil {
-		return
-	}
+func forwardTraffic(client, server net.Conn, tlsConfig *tls.Config) {
+	// Read and parse the HTTP request to get Host header
 
-	// Forward data bidirectionally between TLS client and HTTP server
-	go func() {
-		defer server.Close()
-		defer tlsConn.Close()
-		io.Copy(server, tlsConn)
-	}()
+	// Inspect the Host header
 
-	// Forward data from server back to client
-	_, err = io.Copy(tlsConn, server)
+	// var requestBuffer bytes.Buffer
+	// req.Write(&requestBuffer)
+	//
+	// // Send the complete request to the backend server
+	// _, err = server.Write(requestBuffer.Bytes())
+	// if err != nil {
+	// 	return
+	// }
+	//
+	// // Forward data bidirectionally between TLS client and HTTP server
+	// go func() {
+	// 	defer server.Close()
+	// 	defer tlsConn.Close()
+	// 	io.Copy(server, tlsConn)
+	// }()
+	//
+	// // Forward data from server back to client
+	// _, err = io.Copy(tlsConn, server)
 }
 
 func getSourceIdentity(conn net.Conn) string {
@@ -260,6 +353,31 @@ func getBindServices(ctx ziti.Context) []rest_model.ServiceDetail {
 	return ret
 }
 
+func getDialServices(ctx ziti.Context) []rest_model.ServiceDetail {
+	services, err := ctx.GetServices()
+	if err != nil {
+		panic(err)
+	}
+
+	var ret []rest_model.ServiceDetail
+
+	for _, service := range services {
+		hasDialPermission := false
+		// fmt.Println(service.Configs)
+
+		for _, perm := range service.Permissions {
+			if perm == "Dial" {
+				hasDialPermission = true
+			}
+		}
+
+		if hasDialPermission {
+			ret = append(ret, service)
+		}
+	}
+
+	return ret
+}
 func isValidRequest(identityName string, req *http.Request) bool {
 	return true
 }

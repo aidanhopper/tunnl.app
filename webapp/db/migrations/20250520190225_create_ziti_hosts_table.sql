@@ -9,7 +9,7 @@ CREATE TABLE ziti_hosts (
         (forward_protocol = TRUE AND protocol IS NULL) OR 
         (forward_protocol = FALSE AND protocol IN ('tcp', 'udp'))
     ),
-    address INET NOT NULL,
+    address VARCHAR(256) NOT NULL,
     CHECK (
         (family(address) = 4 AND masklen(address) = 32) OR
         (family(address) = 6 AND masklen(address) = 128)
