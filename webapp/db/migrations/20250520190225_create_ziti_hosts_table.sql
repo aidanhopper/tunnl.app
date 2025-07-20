@@ -10,10 +10,6 @@ CREATE TABLE ziti_hosts (
         (forward_protocol = FALSE AND protocol IN ('tcp', 'udp'))
     ),
     address VARCHAR(256) NOT NULL,
-    CHECK (
-        (family(address) = 4 AND masklen(address) = 32) OR
-        (family(address) = 6 AND masklen(address) = 128)
-    ),
     forward_ports BOOLEAN NOT NULL,
     allowed_port_ranges TEXT,
     CHECK (
