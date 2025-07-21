@@ -9,7 +9,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
+import { IGetServiceBySlugResult } from "@/db/types/services.queries";
+import { IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
+import createPrivateHttpsBinding from "@/lib/actions/services/create-private-https-binding";
 import createTunnelBinding from "@/lib/actions/services/create-tunnel-binding";
+import privateHttpsFormSchema from "@/lib/form-schemas/create-private-https-binding-form-schema";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
@@ -20,13 +24,21 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-type BindingType = 'tunnel' | 'proxy' | 'port' | null;
+type BindingType = 'tunnel' | 'private-https' | 'port' | null;
 
 const bindingTypeSchema = z.object({
     type: z.string().nonempty()
 });
 
-const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdentitiesByEmailResult[], serviceSlug: string }) => {
+const CreateBindingForm = ({
+    identities,
+    tunnelBinding,
+    service,
+}: {
+    identities: IGetIdentitiesByEmailResult[],
+    tunnelBinding: IGetTunnelBindingsByServiceSlugResult | null,
+    service: IGetServiceBySlugResult,
+}) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
     const [tunnelHostConfig, setTunnelHostConfig] = useState<null | z.infer<typeof tunnelHostFormSchema>>(null);
@@ -41,6 +53,13 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             type: '',
         },
     });
+
+    const privateHttpsForm = useForm<z.infer<typeof privateHttpsFormSchema>>({
+        resolver: zodResolver(privateHttpsFormSchema),
+        defaultValues: {
+            domain: ''
+        }
+    })
 
     const tunnelHostForm = useForm<z.infer<typeof tunnelHostFormSchema>>({
         resolver: zodResolver(tunnelHostFormSchema),
@@ -105,9 +124,8 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                                             <SelectValue placeholder='Binding' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>
-                                            {/* <SelectItem className='cursor-pointer' value="port">Port</SelectItem> */}
-                                            {/* <SelectItem className='cursor-pointer' value="proxy">Proxy</SelectItem> */}
+                                            {!tunnelBinding && <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>}
+                                            {tunnelBinding && <SelectItem className='cursor-pointer' value="private-https">Private HTTPS</SelectItem>}
                                         </SelectContent>
                                     </Select>
                                 </FormControl>
@@ -311,7 +329,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                             // setTunnelInterceptConfig(formData);
                             if (!tunnelHostConfig) return;
                             const res = await createTunnelBinding({
-                                serviceSlug: serviceSlug,
+                                serviceSlug: service.slug,
                                 hostConfig: tunnelHostConfig,
                                 interceptConfig: formData,
                                 shareConfig: { type: 'automatic' }
@@ -392,7 +410,7 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
                         onSubmit={tunnelShareForm.handleSubmit(async (formData: z.infer<typeof tunnelShareFormSchema>) => {
                             if (!tunnelHostConfig) return;
                             const res = await createTunnelBinding({
-                                serviceSlug: serviceSlug,
+                                serviceSlug: service.slug,
                                 hostConfig: tunnelHostConfig,
                                 interceptConfig: tunnelInterceptConfig,
                                 shareConfig: formData
@@ -481,17 +499,85 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             </>
         ];
 
+        const privateHttpsPages = [
+            <>
+                {tunnelBinding && <Form {...privateHttpsForm}>
+                    <form
+                        onSubmit={privateHttpsForm.handleSubmit(async (formData: z.infer<typeof privateHttpsFormSchema>) => {
+                            await createPrivateHttpsBinding({
+                                privateHttpsFormData: formData,
+                                tunnelBindingId: tunnelBinding.id,
+                                mainDomain: ".cs.tunnl.app",
+                            });
+                        })}
+                        className='space-y-8'>
+                        <FormField
+                            control={privateHttpsForm.control}
+                            name='domain'
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Domain</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input
+                                                placeholder="my-service"
+                                                {...field}
+                                                className="pr-[9rem]" // leave space for the suffix
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                                                .cs.tunnl.app
+                                            </span>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                    <FormDescription>
+                                        The domain the service will be accessible on
+                                    </FormDescription>
+                                </FormItem>
+                            )}
+                        />
+                        <div className='w-full flex'>
+                            <span className='flex-1'>
+                                <Button
+                                    onClick={() => setPageIndex(pageIndex - 1)}
+                                    type='button'
+                                    className='cursor-pointer'>
+                                    <ArrowLeft />
+                                </Button>
+                            </span>
+                            <span>
+                                <Button
+                                    type='submit'
+                                    className='cursor-pointer'>
+                                    Submit
+                                </Button>
+                            </span>
+                        </div>
+                    </form>
+                </Form>}
+            </>
+        ]
+
         switch (pageIndex) {
             case 0: return bindingTypePage
             default:
                 switch (bindingType) {
-                    case 'tunnel': return tunnelPages[pageIndex - 1]
+                    case 'tunnel': return <>{tunnelPages[pageIndex - 1]}</>;
+                    case 'private-https': return <>{privateHttpsPages[pageIndex - 1]}</>;
                     default: return <Button
                         className='cursor-pointer'
                         onClick={() => setPageIndex(pageIndex - 1)}>
                         <ArrowLeft />
                     </Button>;
                 }
+        }
+    }
+
+    const bindingTitles = (type: string) => {
+        switch (type) {
+            case 'private-https': return 'Private HTTPS';
+            case 'tunnel': return 'Private HTTPS';
+            default: return type
         }
     }
 
@@ -508,8 +594,8 @@ const CreateBindingForm = ({ identities, serviceSlug }: { identities: IGetIdenti
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
-                        Create a <span className='capitalize'>{
-                            bindingType && pageIndex !== 0 ? bindingType : ''}
+                        Create a <span>{
+                            bindingType && pageIndex !== 0 ? bindingTitles(bindingType) : ''}
                         </span> Binding
                     </DialogTitle>
                 </DialogHeader>

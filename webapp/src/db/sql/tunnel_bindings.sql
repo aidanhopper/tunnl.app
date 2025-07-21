@@ -101,7 +101,8 @@ SELECT
   bind_policy.type AS bind_policy_type,
   bind_policy.semantic AS bind_policy_semantic,
   bind_policy.service_roles AS bind_policy_service_roles,
-  bind_policy.identity_roles AS bind_policy_identity_roles
+  bind_policy.identity_roles AS bind_policy_identity_roles,
+  services.slug AS service_slug
 
 FROM tunnel_bindings
 JOIN services ON services.id = tunnel_bindings.service_id

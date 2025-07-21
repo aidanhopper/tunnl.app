@@ -1,8 +1,8 @@
 import { del, get, post, patch } from './methods';
-import { PatchServiceData, PostServiceData, Service, ServiceListResponse } from './types';
+import { PatchServiceData, PostServiceData, PostServiceResponse, Service, ServiceListResponse } from './types';
 
 export const postService = async (data: PostServiceData) => {
-    return await post({
+    return await post<PostServiceResponse>({
         route: '/services',
         data: data
     });

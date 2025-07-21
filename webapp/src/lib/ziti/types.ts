@@ -330,6 +330,12 @@ export interface PostConfigResponse {
     meta: Meta;
 };
 
+export interface PostServiceResponse {
+    data: { id: string };
+    _links: Links;
+    meta: Meta;
+};
+
 export interface GetPolicyResponse {
     data: ServicePolicyDetail;
     _links: {

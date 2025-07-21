@@ -209,6 +209,7 @@ export interface IGetTunnelBindingResult {
   intercept_protocol: protocol;
   intercept_ziti_id: string;
   service_id: string;
+  service_slug: string;
   share_automatically: boolean;
   slug: string;
   user_email: string;
@@ -221,7 +222,7 @@ export interface IGetTunnelBindingQuery {
   result: IGetTunnelBindingResult;
 }
 
-const getTunnelBindingIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":1865,"b":1867}]}],"statement":"SELECT \n  tunnel_bindings.*,\n  users.id AS user_id,\n  users.email AS user_email,\n  -- ziti_hosts.id AS host_id,\n  ziti_hosts.name AS host_name,\n  ziti_hosts.forward_ports AS host_forward_ports,\n  ziti_hosts.protocol AS host_protocol,\n  ziti_hosts.ziti_id AS host_ziti_id,\n  ziti_hosts.address AS host_address,\n  ziti_hosts.forward_protocol AS host_forward_protocol,\n  ziti_hosts.allowed_port_ranges AS host_allowed_port_ranges,\n  ziti_hosts.port AS host_port,\n\n  -- ziti_intercepts.id AS intercept_id,\n  ziti_intercepts.ziti_id AS intercept_ziti_id,\n  ziti_intercepts.name AS intercept_name,\n  ziti_intercepts.port_ranges AS intercept_port_ranges,\n  ziti_intercepts.protocol AS intercept_protocol,\n  ziti_intercepts.addresses AS intercept_addresses,\n\n  -- dial_policy.id AS dial_policy_id,\n  dial_policy.name AS dial_policy_name,\n  dial_policy.ziti_id AS dial_policy_ziti_id,\n  dial_policy.type AS dial_policy_type,\n  dial_policy.semantic AS dial_policy_semantic,\n  dial_policy.service_roles AS dial_policy_service_roles,\n  dial_policy.identity_roles AS dial_policy_identity_roles,\n\n  -- bind_policy.id AS bind_policy_id,\n  bind_policy.name AS bind_policy_name,\n  bind_policy.ziti_id AS bind_policy_ziti_id,\n  bind_policy.type AS bind_policy_type,\n  bind_policy.semantic AS bind_policy_semantic,\n  bind_policy.service_roles AS bind_policy_service_roles,\n  bind_policy.identity_roles AS bind_policy_identity_roles\n\nFROM tunnel_bindings\nJOIN services ON services.id = tunnel_bindings.service_id\nJOIN users ON users.id = services.user_id\nJOIN ziti_hosts ON ziti_hosts.id = tunnel_bindings.host_id\nJOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id\nJOIN ziti_policies AS dial_policy ON dial_policy.id = tunnel_bindings.dial_policy_id\nJOIN ziti_policies AS bind_policy ON bind_policy.id = tunnel_bindings.bind_policy_id\nWHERE tunnel_bindings.id = :id"};
+const getTunnelBindingIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":1898,"b":1900}]}],"statement":"SELECT \n  tunnel_bindings.*,\n  users.id AS user_id,\n  users.email AS user_email,\n  -- ziti_hosts.id AS host_id,\n  ziti_hosts.name AS host_name,\n  ziti_hosts.forward_ports AS host_forward_ports,\n  ziti_hosts.protocol AS host_protocol,\n  ziti_hosts.ziti_id AS host_ziti_id,\n  ziti_hosts.address AS host_address,\n  ziti_hosts.forward_protocol AS host_forward_protocol,\n  ziti_hosts.allowed_port_ranges AS host_allowed_port_ranges,\n  ziti_hosts.port AS host_port,\n\n  -- ziti_intercepts.id AS intercept_id,\n  ziti_intercepts.ziti_id AS intercept_ziti_id,\n  ziti_intercepts.name AS intercept_name,\n  ziti_intercepts.port_ranges AS intercept_port_ranges,\n  ziti_intercepts.protocol AS intercept_protocol,\n  ziti_intercepts.addresses AS intercept_addresses,\n\n  -- dial_policy.id AS dial_policy_id,\n  dial_policy.name AS dial_policy_name,\n  dial_policy.ziti_id AS dial_policy_ziti_id,\n  dial_policy.type AS dial_policy_type,\n  dial_policy.semantic AS dial_policy_semantic,\n  dial_policy.service_roles AS dial_policy_service_roles,\n  dial_policy.identity_roles AS dial_policy_identity_roles,\n\n  -- bind_policy.id AS bind_policy_id,\n  bind_policy.name AS bind_policy_name,\n  bind_policy.ziti_id AS bind_policy_ziti_id,\n  bind_policy.type AS bind_policy_type,\n  bind_policy.semantic AS bind_policy_semantic,\n  bind_policy.service_roles AS bind_policy_service_roles,\n  bind_policy.identity_roles AS bind_policy_identity_roles,\n  services.slug AS service_slug\n\nFROM tunnel_bindings\nJOIN services ON services.id = tunnel_bindings.service_id\nJOIN users ON users.id = services.user_id\nJOIN ziti_hosts ON ziti_hosts.id = tunnel_bindings.host_id\nJOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id\nJOIN ziti_policies AS dial_policy ON dial_policy.id = tunnel_bindings.dial_policy_id\nJOIN ziti_policies AS bind_policy ON bind_policy.id = tunnel_bindings.bind_policy_id\nWHERE tunnel_bindings.id = :id"};
 
 /**
  * Query generated from SQL:
@@ -261,7 +262,8 @@ const getTunnelBindingIR: any = {"usedParamSet":{"id":true},"params":[{"name":"i
  *   bind_policy.type AS bind_policy_type,
  *   bind_policy.semantic AS bind_policy_semantic,
  *   bind_policy.service_roles AS bind_policy_service_roles,
- *   bind_policy.identity_roles AS bind_policy_identity_roles
+ *   bind_policy.identity_roles AS bind_policy_identity_roles,
+ *   services.slug AS service_slug
  * 
  * FROM tunnel_bindings
  * JOIN services ON services.id = tunnel_bindings.service_id

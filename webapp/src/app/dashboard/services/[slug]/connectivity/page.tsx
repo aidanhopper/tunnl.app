@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
-import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
+import { getTunnelBindingsByServiceSlug, IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { notFound, unauthorized } from "next/navigation";
@@ -14,9 +14,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
     const slug = (await params).slug;
 
     const session = await getServerSession();
-
     if (!session?.user?.email) unauthorized();
-
     const email = session.user.email;
 
     const serviceList = await getServiceBySlug.run({ slug: slug }, client);
@@ -25,7 +23,9 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
 
     const identities = await getIdentitiesByEmail.run({ email: email }, client)
 
+    let tunnelBinding: null | IGetTunnelBindingsByServiceSlugResult = null;
     const tunnelBindings = await getTunnelBindingsByServiceSlug.run({ slug: slug }, client);
+    if (tunnelBindings.length !== 0) tunnelBinding = tunnelBindings[0];
 
     return (
         <Card>
@@ -36,10 +36,10 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                         <CardDescription>Connectivity settings for {service.name}</CardDescription>
                     </div>
                     <div className='justify-end grid items-center'>
-                        {tunnelBindings.length === 0 &&
-                            <CreateBindingForm
-                                serviceSlug={slug}
-                                identities={identities} />}
+                        <CreateBindingForm
+                            tunnelBinding={tunnelBinding}
+                            serviceSlug={slug}
+                            identities={identities} />
                     </div>
                 </div>
             </CardHeader>
@@ -56,33 +56,29 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {tunnelBindings.map((e, i) => {
-                                return (
-                                    <TableRow key={i}>
-                                        <TableCell>Tunnel</TableCell>
-                                        <TableCell>Private</TableCell>
-                                        <TableCell className='grid grid-cols-1'>
-                                            <div className='flex flex-col'>
-                                                <span>
-                                                    {service.protocol === 'http' ? 'http' : e.host_protocol}
-                                                </span>
-                                                <span>{e.intercept_addresses[0]}</span>
-                                                <span>{e.intercept_port_ranges}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className='flex justify-end'>
-                                                <BindingDropdown
-                                                    serviceName={service.name}
-                                                    binding_slug={e.slug}
-                                                    slug={slug}
-                                                    tunnel_binding_id={e.id}
-                                                    service_id={service.id} />
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                            {tunnelBinding && <TableRow>
+                                <TableCell>Tunnel</TableCell>
+                                <TableCell>Private</TableCell>
+                                <TableCell className='grid grid-cols-1'>
+                                    <div className='flex flex-col'>
+                                        <span>
+                                            {service.protocol === 'http' ? 'http' : tunnelBinding.host_protocol}
+                                        </span>
+                                        <span>{tunnelBinding.intercept_addresses[0]}</span>
+                                        <span>{tunnelBinding.intercept_port_ranges}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className='flex justify-end'>
+                                        <BindingDropdown
+                                            serviceName={service.name}
+                                            binding_slug={tunnelBinding.slug}
+                                            slug={slug}
+                                            tunnel_binding_id={tunnelBinding.id}
+                                            service_id={service.id} />
+                                    </div>
+                                </TableCell>
+                            </TableRow>}
                         </TableBody>
                     </Table>
                 </AreYouSureProvider>

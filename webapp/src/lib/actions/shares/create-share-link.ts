@@ -7,7 +7,7 @@ import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { notFound, unauthorized } from "next/navigation";
 
-const createShareLink = async ({
+const createTunnelBindingShareLink = async ({
     service_id,
     expires,
     isOneTimeUse
@@ -51,4 +51,4 @@ const createShareLink = async ({
     }
 }
 
-export default createShareLink;
+export default createTunnelBindingShareLink;

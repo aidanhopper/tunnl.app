@@ -26,7 +26,7 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
                     Enroll
                 </Button>
             </DialogTrigger>
-            <DialogContent className='w-[350px]'>
+            <DialogContent className='w-fit'>
                 <DialogHeader>
                     <DialogTitle className='text-center'>
                         Enroll the Identity
@@ -35,11 +35,14 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
                         Enroll with a file or scan the QR code in a Ziti edge app.
                     </DialogDescription>
                 </DialogHeader>
-                <div className='flex justify-center content-center flex-col gap-8 w-full h-full'>
-                    <QRCode
-                        className='border-4 border-white block'
-                        size={300}
-                        value={value} />
+                <div className='flex justify-center content-center flex-col gap-6 w-full h-full'>
+                    <span className='w-full flex justify-center'>
+                        <span className='w-fit p-1 bg-white'>
+                            <QRCode
+                                size={330}
+                                value={value} />
+                        </span>
+                    </span>
                     <Button
                         className='cursor-pointer w-[300px]'
                         onClick={downloadFile}>

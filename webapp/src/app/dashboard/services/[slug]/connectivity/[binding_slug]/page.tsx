@@ -6,7 +6,7 @@ import client from "@/lib/db";
 import getHostingIdentitySlug from "@/lib/get-hosting-identity-slug";
 import { getPolicy } from "@/lib/ziti/policies";
 import { getServerSession } from "next-auth";
-import { forbidden, unauthorized } from "next/navigation";
+import { forbidden, notFound, unauthorized } from "next/navigation";
 
 const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding_slug: string }> }) => {
     const session = await getServerSession();
@@ -48,6 +48,3 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
 }
 
 export default BindingPage;
-function notFound() {
-    throw new Error("Function not implemented.");
-}

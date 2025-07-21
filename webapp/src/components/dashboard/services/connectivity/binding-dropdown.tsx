@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Copy, Delete, Edit, EllipsisVertical, Share } from "lucide-react";
 import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import createShareLink from "@/lib/actions/shares/create-share-link";
+import createTunnelBindingShareLink from "@/lib/actions/shares/create-share-link";
 import { useState } from "react";
 import AreYouSure from "@/components/are-you-sure";
 import { useAreYouSure } from "@/components/are-you-sure-provider";
@@ -44,7 +44,7 @@ const BindingDropdown = ({
         setCopied(false);
         setShareLinkData(null);
         console.log('generating share link')
-        setShareLinkData(await createShareLink({
+        setShareLinkData(await createTunnelBindingShareLink({
             service_id: service_id,
             expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
             isOneTimeUse: true
