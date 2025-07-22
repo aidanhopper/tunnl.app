@@ -38,7 +38,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                     <div className='justify-end grid items-center'>
                         <CreateBindingForm
                             tunnelBinding={tunnelBinding}
-                            serviceSlug={slug}
+                            service={service}
                             identities={identities} />
                     </div>
                 </div>

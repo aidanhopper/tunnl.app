@@ -1,11 +1,28 @@
 import fs from 'fs/promises';
 import { Client } from 'pg';
-import { Server } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import createZitiEventWebSocket from './ziti-ws';
+import http from 'http'
+import express, { Request, Response, NextFunction } from 'express';
 
 dotenv.config();
+
+if (!process.env.PUBLISHER_PORT) throw new Error("Must specify port");
+if (!process.env.PUBLISHER_JWT_SECRET) throw new Error("Must specify jwt secret");
+
+const app = express();
+
+app.use(express.json());
+
+app.get('/api/v1/intercept/:identity/:host', async (req: Request, res: Response) => {
+    try {
+        res.json({ message: req.params.identity })
+    } catch (err) {
+        res.status(500).json({ error: err });
+    }
+});
 
 interface Payload {
     topics: string[],
@@ -39,7 +56,8 @@ const client = new Client({
     connectionString: process.env.DATABASE_URL,
 });
 
-const io = new Server(Number(process.env.PUBLISHER_PORT || 1234), {
+const httpServer = http.createServer(app);
+const io = new SocketIOServer(httpServer, {
     cors: {
         origin: "*",
     },
@@ -201,13 +219,11 @@ const main = async () => {
 
             try {
                 const payload = jwt.verify(token, process.env.PUBLISHER_JWT_SECRET) as {} as Payload;
-                // console.log('connect');
 
                 subscribers.set(socket.id, payload.topics.map(s => RegExp(s)));
 
                 socket.on("disconnect", () => {
                     subscribers.delete(socket.id);
-                    // console.log('disconnect');
                 });
             } catch (err) {
                 console.error(err)
@@ -215,9 +231,14 @@ const main = async () => {
                 return;
             }
         });
+
+        httpServer.listen(process.env.PUBLISHER_PORT, () => {
+            console.log(`Server listening on ${process.env.PUBLISHER_PORT}`);
+        });
     } catch (err) {
         console.error(err);
     }
 }
+
 
 export default main();

@@ -7,10 +7,12 @@ import privateHttpsFormSchema from "@/lib/form-schemas/create-private-https-bind
 import { getServerSession } from "next-auth";
 import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import slugify from "@/lib/slugify";
-import { postService } from "@/lib/ziti/services";
+import { patchService, postService } from "@/lib/ziti/services";
 import { getConfigIds, postConfig } from "@/lib/ziti/configs";
 import { postPolicy } from "@/lib/ziti/policies";
 import * as ziti from "@/lib/ziti/identities";
+import dialRole from "@/lib/ziti/dial-role";
+import updateDialRoles from "@/lib/update-dial-roles";
 
 const createPrivateHttpsBinding = async ({
     privateHttpsFormData,
@@ -45,31 +47,10 @@ const createPrivateHttpsBinding = async ({
         if (!reverseProxyIdentity) throw new Error("Need to create the reverse proxy identity")
 
         const serviceName = `${tunnelBinding.service_slug}-private-https`;
-        const { hostV1Id, interceptV1Id } = await getConfigIds();
+        const { interceptV1Id } = await getConfigIds();
 
         if (tunnelBinding.host_forward_ports)
             throw new Error("Invalid port");
-
-        const hostPort = tunnelBinding.intercept_port_ranges.trim();
-
-        // Insert the host config
-        const hostZitiName = serviceName + '-host-config';
-        const hostZiti = await postConfig({
-            name: hostZitiName,
-            configTypeId: hostV1Id,
-            data: {
-                forwardProtocol: true,
-                allowedProtocols: [
-                    'tcp',
-                    'udp'
-                ],
-                address: tunnelBinding.intercept_addresses[0],
-                port: hostPort,
-            },
-            tags: {}
-        });
-
-        if (!hostZiti) throw new Error('Failed to post configs to Ziti');
 
         // insert the intercept config
         const interceptZitiName = serviceName + '-intercept-config';
@@ -77,10 +58,13 @@ const createPrivateHttpsBinding = async ({
             name: interceptZitiName,
             configTypeId: interceptV1Id,
             data: {
-                portRanges: {
-                    low: 443,
-                    high: 443
-                },
+                addresses: [domain],
+                portRanges: [
+                    {
+                        low: 443,
+                        high: 443
+                    }
+                ],
                 protocols: [
                     'tcp',
                     'udp'
@@ -95,7 +79,6 @@ const createPrivateHttpsBinding = async ({
             encryptionRequired: true,
             configs: [
                 interceptZiti.data.id,
-                hostZiti.data.id
             ]
         });
 
@@ -138,12 +121,22 @@ const createPrivateHttpsBinding = async ({
         await insertPrivateHttpsBinding.run({
             tunnel_binding_id: tunnelBinding.id,
             slug: slugify("binding"),
-            domain: domain
+            domain: domain,
+            ziti_id: serviceData.data.id
         }, client);
 
-        // patchService()
+        const roleAttributes = reverseProxyIdentity.roleAttributes ?? [];
+        roleAttributes.push(dialRole(tunnelBinding.service_slug));
+        await ziti.patchIdentity({
+            ziti_id: reverseProxyIdentity.id,
+            data: {
+                roleAttributes: roleAttributes
+            }
+        });
 
-        return false;
+        await updateDialRoles(user.id);
+
+        return true;
     } catch (err) {
         console.error(err)
         return false;

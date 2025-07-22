@@ -119,7 +119,7 @@ export const patch = async ({ route, data }: { route: string, data: object }) =>
         );
         return r.status === 200 || r.status === 404;
     } catch (err) {
-        console.error(err);
+        console.error(err.response.data);
         return false
     }
 }

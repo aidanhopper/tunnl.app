@@ -522,7 +522,7 @@ const CreateBindingForm = ({
                                             <Input
                                                 placeholder="my-service"
                                                 {...field}
-                                                className="pr-[9rem]" // leave space for the suffix
+                                                className="pr-[9rem]"
                                             />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                                                 .cs.tunnl.app

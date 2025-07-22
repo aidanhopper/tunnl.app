@@ -1,36 +1,24 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"crypto/tls"
-	"flag"
 	"fmt"
 	"io"
 
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/openziti/edge-api/rest_model"
 	"github.com/openziti/sdk-golang/ziti"
 )
 
 type ServiceBindConfig struct {
-	Name     string
-	Address  string
-	Port     string
-	Protocol string
-}
-
-type ServiceDialConfig struct {
 	Name    string
-	Address string
-	Port    string
+	Forward string
 }
 
 type ServiceHandler struct {
@@ -39,19 +27,21 @@ type ServiceHandler struct {
 }
 
 func main() {
-	identityPath_ := flag.String("identity-path", "", "The path of your enrolled identity file")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 
-	flag.Parse()
-
-	identityPath := *identityPath_
-
-	if identityPath == "" {
-		log.Println("Error: --identity-path is required")
-		flag.Usage()
+	identity := os.Getenv("IDENTITY")
+	if identity == "" {
+		fmt.Println("Must specify an identity")
 		os.Exit(1)
 	}
 
-	cfg, err := ziti.NewConfigFromFile(identityPath)
+	cfg, err := ziti.NewConfigFromFile(identity)
+	if err != nil {
+		panic(err)
+	}
 
 	cfg.ConfigTypes = append(cfg.ConfigTypes, "all")
 
@@ -68,6 +58,7 @@ func main() {
 
 	handlers := make(map[string]ServiceHandler)
 
+	log.Println("Starting listeners")
 	for {
 		zitiBinds := getBindServices(ctx)
 		binds := transformZitiBinds(zitiBinds)
@@ -102,7 +93,7 @@ func listenToService(ctx ziti.Context, bind ServiceBindConfig, tlsConfig *tls.Co
 					log.Printf("Accept error %v", err)
 					return
 				}
-				go handleConnection(ctx, conn, tlsConfig)
+				go handleConnection(ctx, conn, bind.Forward, tlsConfig)
 			}
 		}
 	}
@@ -129,7 +120,7 @@ func listenToServices(ctx ziti.Context, binds map[string]ServiceBindConfig, hand
 		needToListen := true
 
 		if handler, ok := handlers[bind.Name]; ok {
-			if handler.Config != bind {
+			if handler.Config.Forward != bind.Forward {
 				handler.Stop()
 			} else {
 				needToListen = false
@@ -161,23 +152,14 @@ func transformZitiBinds(services []rest_model.ServiceDetail) map[string]ServiceB
 }
 
 func transformZitiBind(service rest_model.ServiceDetail) ServiceBindConfig {
-	zitiHostConfig := service.Config["host.v1"]
-
-	protocol := zitiHostConfig["protocol"]
-	if protocol == nil {
-		protocol = "tcp"
-	}
-
-	port := fmt.Sprintf("%.0f", zitiHostConfig["port"])
 	return ServiceBindConfig{
-		Address:  zitiHostConfig["address"].(string),
-		Port:     port,
-		Protocol: protocol.(string),
-		Name:     *service.Name,
+		Forward: strings.ReplaceAll(*service.Name, "-private-https", ""),
+		Name:    *service.Name,
 	}
 }
 
-func handleConnection(ctx ziti.Context, client net.Conn, tlsConfig *tls.Config) {
+func handleConnection(ctx ziti.Context, client net.Conn, dial string, tlsConfig *tls.Config) {
+	log.Println("Handling connection")
 	tlsConn := tls.Server(client, tlsConfig)
 	err := tlsConn.Handshake()
 	if err != nil {
@@ -186,30 +168,10 @@ func handleConnection(ctx ziti.Context, client net.Conn, tlsConfig *tls.Config) 
 		return
 	}
 
-	reader := bufio.NewReader(tlsConn)
-	req, err := http.ReadRequest(reader)
-	if err != nil {
-		log.Printf("Error reading HTTP request: %v", err)
-		return
-	}
-
-	dial, err := getDialServiceName(getSourceIdentity(client), req)
-	if err != nil {
-		return
-	}
-
 	server, err := ctx.Dial(dial)
 	if err != nil {
-		log.Println("Error dialing service")
-		return
-	}
-
-	var requestBuffer bytes.Buffer
-	req.Write(&requestBuffer)
-
-	// Send the complete request to the backend server
-	_, err = server.Write(requestBuffer.Bytes())
-	if err != nil {
+		log.Println("Error dialing", dial, "service", err)
+		tlsConn.Close()
 		return
 	}
 
@@ -222,10 +184,6 @@ func handleConnection(ctx ziti.Context, client net.Conn, tlsConfig *tls.Config) 
 
 	// Forward data from server back to client
 	_, err = io.Copy(tlsConn, server)
-}
-
-func getSourceIdentity(conn net.Conn) string {
-	return strings.Split(strings.Split(conn.LocalAddr().String(), " ")[3], "=")[1]
 }
 
 func getBindServices(ctx ziti.Context) []rest_model.ServiceDetail {
@@ -251,33 +209,4 @@ func getBindServices(ctx ziti.Context) []rest_model.ServiceDetail {
 	}
 
 	return ret
-}
-
-func getDialServices(ctx ziti.Context) []rest_model.ServiceDetail {
-	services, err := ctx.GetServices()
-	if err != nil {
-		panic(err)
-	}
-
-	var ret []rest_model.ServiceDetail
-
-	for _, service := range services {
-		hasDialPermission := false
-		// fmt.Println(service.Configs)
-
-		for _, perm := range service.Permissions {
-			if perm == "Dial" {
-				hasDialPermission = true
-			}
-		}
-
-		if hasDialPermission {
-			ret = append(ret, service)
-		}
-	}
-
-	return ret
-}
-func getDialServiceName(identityName string, req *http.Request) (string, error) {
-	return "portfolio-NTlOTyc2QETy", nil
 }
