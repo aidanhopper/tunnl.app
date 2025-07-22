@@ -2,6 +2,8 @@ import { deletePrivateHttpsBindingDb, getPrivateHttpsBinding } from "@/db/types/
 import client from "@/lib/db";
 import { getServerSession } from "next-auth";
 import * as zitiServices from '@/lib/ziti/services';
+import * as zitiConfigs from '@/lib/ziti/configs';
+import * as zitiPolicies from '@/lib/ziti/policies';
 
 const deletePrivateHttpsBinding = async (id: string) => {
     try {
@@ -15,14 +17,12 @@ const deletePrivateHttpsBinding = async (id: string) => {
 
         if (privateHttpsBinding.email !== email) throw new Error("Forbidden");
 
-        const zitiService = await zitiServices.getService(privateHttpsBinding.ziti_id);
+        await zitiServices.deleteService(privateHttpsBinding.ziti_service_id);
+        await zitiConfigs.deleteConfig(privateHttpsBinding.ziti_intercept_id);
+        await zitiPolicies.deletePolicy(privateHttpsBinding.ziti_bind_id);
+        await zitiPolicies.deletePolicy(privateHttpsBinding.ziti_dial_id);
 
         await deletePrivateHttpsBindingDb.run({ id: privateHttpsBinding.id }, client);
-
-        // zitiService?.terminatorStrategy
-        // zitiService?.configs.forEach(e => {
-        //
-        // });
 
         return true;
     } catch (err) {

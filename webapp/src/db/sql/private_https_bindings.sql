@@ -4,7 +4,10 @@ INSERT INTO private_https_bindings (
     tunnel_binding_id,
     slug,
     domain,
-    ziti_id
+    ziti_service_id,
+    ziti_intercept_id,
+    ziti_bind_id,
+    ziti_dial_id
 ) VALUES (
     (
         SELECT user_id
@@ -18,7 +21,10 @@ INSERT INTO private_https_bindings (
     :tunnel_binding_id,
     :slug,
     :domain,
-    :ziti_id
+    :ziti_service_id,
+    :ziti_intercept_id,
+    :ziti_bind_id,
+    :ziti_dial_id
 );
 
 
@@ -45,3 +51,8 @@ WHERE private_https_bindings.id = :id;
 /* @name deletePrivateHttpsBindingDb */
 DELETE FROM private_https_bindings
 WHERE private_https_bindings.id = :id;
+
+/* @name getPrivateHttpsBindingsByTunnelBinding */
+SELECT *
+FROM private_https_bindings
+WHERE tunnel_binding_id = :tunnel_binding_id;

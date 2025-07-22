@@ -14,6 +14,8 @@ import { getService } from "@/db/types/services.queries";
 import dialRole from "@/lib/ziti/dial-role";
 import { deleteAllServiceShares } from "@/db/types/shares.queries";
 import updateDialRoles from "@/lib/update-dial-roles";
+import { getPrivateHttpsBindingsByTunnelBinding } from "@/db/types/private_https_bindings.queries";
+import deletePrivateHttpsBinding from "./delete-private-https-binding";
 
 export const deleteTunnelBinding = async (id: string) => {
     try {
@@ -34,6 +36,13 @@ export const deleteTunnelBinding = async (id: string) => {
         if (service.user_id !== user.id) return;
 
         // session is validated after this point
+
+        // delete private https binding
+        const privateHttpsBindingList = await getPrivateHttpsBindingsByTunnelBinding.run({
+            tunnel_binding_id: tunnelBinding.id
+        }, client);
+        if (privateHttpsBindingList.length !== 0)
+            deletePrivateHttpsBinding(privateHttpsBindingList[0].id);
 
         // remove the shares
         const shares = await deleteAllServiceShares.run({ service_id: service.id }, client);

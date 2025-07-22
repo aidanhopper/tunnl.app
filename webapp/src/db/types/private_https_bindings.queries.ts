@@ -6,7 +6,10 @@ export interface IInsertPrivateHttpsBindingParams {
   domain?: string | null | void;
   slug?: string | null | void;
   tunnel_binding_id?: string | null | void;
-  ziti_id?: string | null | void;
+  ziti_bind_id?: string | null | void;
+  ziti_dial_id?: string | null | void;
+  ziti_intercept_id?: string | null | void;
+  ziti_service_id?: string | null | void;
 }
 
 /** 'InsertPrivateHttpsBinding' return type */
@@ -18,7 +21,7 @@ export interface IInsertPrivateHttpsBindingQuery {
   result: IInsertPrivateHttpsBindingResult;
 }
 
-const insertPrivateHttpsBindingIR: any = {"usedParamSet":{"tunnel_binding_id":true,"slug":true,"domain":true,"ziti_id":true},"params":[{"name":"tunnel_binding_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":277,"b":294},{"a":317,"b":334}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":341,"b":345}]},{"name":"domain","required":false,"transform":{"type":"scalar"},"locs":[{"a":352,"b":358}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":365,"b":372}]}],"statement":"INSERT INTO private_https_bindings (\n    user_id,\n    tunnel_binding_id,\n    slug,\n    domain,\n    ziti_id\n) VALUES (\n    (\n        SELECT user_id\n        FROM services\n        WHERE id = (\n            SELECT service_id \n            FROM tunnel_bindings\n            WHERE id = :tunnel_binding_id\n        )\n    ),\n    :tunnel_binding_id,\n    :slug,\n    :domain,\n    :ziti_id\n)"};
+const insertPrivateHttpsBindingIR: any = {"usedParamSet":{"tunnel_binding_id":true,"slug":true,"domain":true,"ziti_service_id":true,"ziti_intercept_id":true,"ziti_bind_id":true,"ziti_dial_id":true},"params":[{"name":"tunnel_binding_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":344,"b":361},{"a":384,"b":401}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":408,"b":412}]},{"name":"domain","required":false,"transform":{"type":"scalar"},"locs":[{"a":419,"b":425}]},{"name":"ziti_service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":432,"b":447}]},{"name":"ziti_intercept_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":454,"b":471}]},{"name":"ziti_bind_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":478,"b":490}]},{"name":"ziti_dial_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":497,"b":509}]}],"statement":"INSERT INTO private_https_bindings (\n    user_id,\n    tunnel_binding_id,\n    slug,\n    domain,\n    ziti_service_id,\n    ziti_intercept_id,\n    ziti_bind_id,\n    ziti_dial_id\n) VALUES (\n    (\n        SELECT user_id\n        FROM services\n        WHERE id = (\n            SELECT service_id \n            FROM tunnel_bindings\n            WHERE id = :tunnel_binding_id\n        )\n    ),\n    :tunnel_binding_id,\n    :slug,\n    :domain,\n    :ziti_service_id,\n    :ziti_intercept_id,\n    :ziti_bind_id,\n    :ziti_dial_id\n)"};
 
 /**
  * Query generated from SQL:
@@ -28,7 +31,10 @@ const insertPrivateHttpsBindingIR: any = {"usedParamSet":{"tunnel_binding_id":tr
  *     tunnel_binding_id,
  *     slug,
  *     domain,
- *     ziti_id
+ *     ziti_service_id,
+ *     ziti_intercept_id,
+ *     ziti_bind_id,
+ *     ziti_dial_id
  * ) VALUES (
  *     (
  *         SELECT user_id
@@ -42,7 +48,10 @@ const insertPrivateHttpsBindingIR: any = {"usedParamSet":{"tunnel_binding_id":tr
  *     :tunnel_binding_id,
  *     :slug,
  *     :domain,
- *     :ziti_id
+ *     :ziti_service_id,
+ *     :ziti_intercept_id,
+ *     :ziti_bind_id,
+ *     :ziti_dial_id
  * )
  * ```
  */
@@ -62,7 +71,10 @@ export interface IGetPrivateHttpsBindingsByUserResult {
   slug: string;
   tunnel_binding_id: string;
   user_id: string;
-  ziti_id: string;
+  ziti_bind_id: string;
+  ziti_dial_id: string;
+  ziti_intercept_id: string;
+  ziti_service_id: string;
 }
 
 /** 'GetPrivateHttpsBindingsByUser' query type */
@@ -102,7 +114,10 @@ export interface IGetPrivateHttpsBindingResult {
   slug: string;
   tunnel_binding_id: string;
   user_id: string;
-  ziti_id: string;
+  ziti_bind_id: string;
+  ziti_dial_id: string;
+  ziti_intercept_id: string;
+  ziti_service_id: string;
 }
 
 /** 'GetPrivateHttpsBinding' query type */
@@ -154,5 +169,42 @@ const deletePrivateHttpsBindingDbIR: any = {"usedParamSet":{"id":true},"params":
  * ```
  */
 export const deletePrivateHttpsBindingDb = new PreparedQuery<IDeletePrivateHttpsBindingDbParams,IDeletePrivateHttpsBindingDbResult>(deletePrivateHttpsBindingDbIR);
+
+
+/** 'GetPrivateHttpsBindingsByTunnelBinding' parameters type */
+export interface IGetPrivateHttpsBindingsByTunnelBindingParams {
+  tunnel_binding_id?: string | null | void;
+}
+
+/** 'GetPrivateHttpsBindingsByTunnelBinding' return type */
+export interface IGetPrivateHttpsBindingsByTunnelBindingResult {
+  domain: string;
+  id: string;
+  slug: string;
+  tunnel_binding_id: string;
+  user_id: string;
+  ziti_bind_id: string;
+  ziti_dial_id: string;
+  ziti_intercept_id: string;
+  ziti_service_id: string;
+}
+
+/** 'GetPrivateHttpsBindingsByTunnelBinding' query type */
+export interface IGetPrivateHttpsBindingsByTunnelBindingQuery {
+  params: IGetPrivateHttpsBindingsByTunnelBindingParams;
+  result: IGetPrivateHttpsBindingsByTunnelBindingResult;
+}
+
+const getPrivateHttpsBindingsByTunnelBindingIR: any = {"usedParamSet":{"tunnel_binding_id":true},"params":[{"name":"tunnel_binding_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":63,"b":80}]}],"statement":"SELECT *\nFROM private_https_bindings\nWHERE tunnel_binding_id = :tunnel_binding_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM private_https_bindings
+ * WHERE tunnel_binding_id = :tunnel_binding_id
+ * ```
+ */
+export const getPrivateHttpsBindingsByTunnelBinding = new PreparedQuery<IGetPrivateHttpsBindingsByTunnelBindingParams,IGetPrivateHttpsBindingsByTunnelBindingResult>(getPrivateHttpsBindingsByTunnelBindingIR);
 
 

@@ -2,48 +2,15 @@
 CREATE TABLE tunnel_bindings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID UNIQUE NOT NULL,
-    host_id UUID NOT NULL,
-    intercept_id UUID NOT NULL,
-    dial_policy_id UUID NOT NULL,
-    bind_policy_id UUID NOT NULL,
-    share_automatically BOOLEAN NOT NULL,
-    slug VARCHAR(32) UNIQUE NOT NULL,
-    FOREIGN KEY (service_id) REFERENCES services(id),
-    FOREIGN KEY (host_id) REFERENCES ziti_hosts(id),
-    FOREIGN KEY (intercept_id) REFERENCES ziti_intercepts(id),
-    FOREIGN KEY (dial_policy_id) REFERENCES ziti_policies(id),
-    FOREIGN KEY (bind_policy_id) REFERENCES ziti_policies(id)
+    ziti_host_id VARCHAR(32) NOT NULL,
+    ziti_intercept_id VARCHAR(32) NOT NULL,
+    ziti_dial_id VARCHAR(32) NOT NULL,
+    ziti_bind_id VARCHAR(32) NOT NULL,
+    entry_point BOOLEAN NOT NULL,
+    slug VARCHAR(64) UNIQUE NOT NULL,
+    created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE
 );
 
-CREATE OR REPLACE FUNCTION enforce_binding_policy_type()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- Check dial_policy_id is a binding policy
-  IF NEW.dial_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM ziti_policies WHERE id = NEW.dial_policy_id AND type = 'Dial';
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'dial_policy_id % must reference a policy of type Dial', NEW.dial_policy_id;
-    END IF;
-  END IF;
-
-  -- Check bind_policy_id is a binding policy
-  IF NEW.bind_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM ziti_policies WHERE id = NEW.bind_policy_id AND type = 'Bind';
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'bind_policy_id % must reference a policy of type Bind', NEW.bind_policy_id;
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER check_binding_policy_type
-BEFORE INSERT OR UPDATE ON tunnel_bindings
-FOR EACH ROW
-EXECUTE FUNCTION enforce_binding_policy_type();
-
 -- migrate:down
-DROP TRIGGER check_binding_policy_type ON tunnel_bindings;
-DROP FUNCTION enforce_binding_policy_type;
 DROP TABLE tunnel_bindings;

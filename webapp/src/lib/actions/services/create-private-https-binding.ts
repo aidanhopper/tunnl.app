@@ -122,7 +122,10 @@ const createPrivateHttpsBinding = async ({
             tunnel_binding_id: tunnelBinding.id,
             slug: slugify("binding"),
             domain: domain,
-            ziti_id: serviceData.data.id
+            ziti_service_id: serviceData.data.id,
+            ziti_intercept_id: interceptZiti.data.id,
+            ziti_dial_id: dialPolicyZiti.data.id,
+            ziti_bind_id: bindPolicyZiti.data.id
         }, client);
 
         const roleAttributes = reverseProxyIdentity.roleAttributes ?? [];
