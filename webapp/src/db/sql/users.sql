@@ -10,7 +10,7 @@ UPDATE users
 SET last_login = NOW()
 WHERE email = :email;
 
-/* @name getUserByEmail */
+/* @name selectUserByEmail */
 SELECT *
 FROM users
 WHERE email = :email

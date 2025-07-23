@@ -1,6 +1,6 @@
 import KeycloakProvider from 'next-auth/providers/keycloak';
 import { NextAuthOptions } from "next-auth";
-import client from '@/lib/db';
+import pool from '@/lib/db';
 import { insertUser, updateUserLogin } from '@/db/types/users.queries';
 
 export const authOptions: NextAuthOptions = {
@@ -13,18 +13,21 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async signIn({ user }) {
+            const client = await pool.connect()
             try {
-                insertUser.run(
+                await insertUser.run(
                     { email: user.email },
                     client
                 )
             } catch {
                 updateUserLogin.run(
-                    { email: 'aidanhop1@gmail.com' },
+                    { email: user.email },
                     client
                 )
+            } finally {
+                client.release();
+                return true;
             }
-            return true;
         }
     },
     secret: process.env.NEXTAUTH_SECRET,

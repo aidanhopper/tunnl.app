@@ -3,7 +3,6 @@
 import { deleteShareLink, getShareLinkBySlug } from "@/db/types/share_links.queries";
 import { insertShareByEmail } from "@/db/types/shares.queries";
 import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
-import { getUserByEmail } from "@/db/types/users.queries";
 import client from "@/lib/db";
 import updateDialRoles from "@/lib/update-dial-roles";
 import { getServerSession } from "next-auth";

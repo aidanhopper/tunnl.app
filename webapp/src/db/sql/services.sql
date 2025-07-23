@@ -32,7 +32,8 @@ WHERE user_id = (
 ) AND name = :name;
 
 /* @name getServiceBySlug */
-SELECT *
+SELECT 
+    *
 FROM services
 WHERE slug = :slug;
 

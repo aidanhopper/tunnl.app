@@ -22,9 +22,6 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import CreateIdentityForm from "@/components/dashboard/identities/create-identity-form";
-import { getServerSession } from 'next-auth';
-import { getIdentitiesByEmail } from "@/db/types/identities.queries";
-import client from '@/lib/db';
 import DeleteIdentityDropdownButton from "@/components/dashboard/identities/delete-identity-dropdown-button";
 import Link from "next/link";
 import SubscribeProvider from "@/components/subscribe-provider";
@@ -33,21 +30,20 @@ import RefreshOnEvent from "@/components/dashboard/refresh-on-event";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import AreYouSure from "@/components/are-you-sure";
-import deleteIdentity from "@/lib/actions/identities/delete-identity";
-import userIsApproved from "@/lib/user-is-approved";
 import ApprovalCard from "@/components/dashboard/approval-card";
+import { UserManager } from "@/lib/models/user";
+import pool from "@/lib/db";
 
 const Identities = async () => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    const approved = await userIsApproved(email);
-
-    const identities = await getIdentitiesByEmail.run({ email: email }, client);
+    const user = await new UserManager(pool).auth()
+    if (!user) throw new Error("Unauthorized");
 
     if (!process.env.NEXT_PUBLIC_PUBLISHER_URL) return <>Error</>;
 
-    const token = generateToken({ topics: identities.map(i => i.ziti_id) });
+    const identityManager = user.getIdentityManager();
+    const identities = await identityManager.getIdentities();
 
+    const token = generateToken({ topics: identities.map(i => i.getZitiId()) });
     return (
         <DashboardLayout>
             <div className='flex gap-8 flex-col'>
@@ -68,7 +64,7 @@ const Identities = async () => {
                                     <Button
                                         className='cursor-pointer'
                                         variant='secondary'
-                                        disabled={!approved}
+                                        disabled={!user.isApproved()}
                                         asChild>
                                         <DialogTrigger>
                                             Create
@@ -88,9 +84,9 @@ const Identities = async () => {
                                 </Dialog>
                             </div>
                         </div>
-                        {!approved &&
+                        {!user.isApproved() &&
                             <ApprovalCard
-                                email={email} />}
+                                email={user.getEmail()} />}
                         <Card>
                             <CardHeader>
                                 <CardTitle>
@@ -112,12 +108,12 @@ const Identities = async () => {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {identities.map((item, i) => (
+                                        {identities.map(e => e.getClientData()).map((item, i) => (
                                             <TableRow key={i}>
                                                 <TableCell>{item.name}</TableCell>
                                                 <TableCell>{item.created?.toLocaleDateString()}</TableCell>
                                                 <TableCell>
-                                                    {item.is_online ?
+                                                    {item.isOnline ?
                                                         <div className='flex gap-4 items-center'>
                                                             <div className='w-10'>
                                                                 Online
@@ -137,7 +133,9 @@ const Identities = async () => {
                                                             refreshOnYes={true}
                                                             onClickYes={async () => {
                                                                 'use server'
-                                                                await deleteIdentity(item.name)
+                                                                await (await new UserManager(pool).auth())?.
+                                                                    getIdentityManager()
+                                                                    .deleteIdentityBySlug(item.slug);
                                                             }}>
                                                             Are you sure you want to delete this identity
                                                         </AreYouSure >
@@ -168,7 +166,7 @@ const Identities = async () => {
                     </RefreshOnEvent>
                 </SubscribeProvider>
             </div>
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }
 

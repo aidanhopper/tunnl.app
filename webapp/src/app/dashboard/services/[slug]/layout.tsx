@@ -1,7 +1,6 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import ServiceNavButton from "@/components/dashboard/services/service-nav-button";
 import { getServiceBySlug } from "@/db/types/services.queries";
-import { getUserByEmail } from "@/db/types/users.queries";
 import client from "@/lib/db";
 import { HelpingHand } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -20,10 +19,6 @@ const DashboardServiceLayout = async ({ children, params }: { children: ReactNod
     if (serviceList.length === 0) notFound();
     const service = serviceList[0]
 
-    const userList = await getUserByEmail.run({ email: email }, client);
-    if (userList.length === 0) unauthorized();
-    const user = userList[0];
-    if (user.id !== service.user_id) forbidden();
 
     return (
         <DashboardLayout>

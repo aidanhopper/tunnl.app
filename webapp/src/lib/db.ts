@@ -5,20 +5,20 @@ declare global {
     var pgClient: pg.Pool | undefined; // Define pgClient type here
 }
 
-const client = global.pgClient || new pg.Pool({
+const pool = global.pgClient || new pg.Pool({
     connectionString: process.env.DATABASE_URL
 });
 
 if (!global.pgClient) {
-    client.connect()
+    pool.connect()
         .then(() => console.log("Connected to PostgreSQL DB"))
         .catch(() => console.error("Error"));
-    global.pgClient = client;
+    global.pgClient = pool;
 }
 
 export const disconnectClient = async () => {
     try {
-        await client.end(); // Close the connection
+        await pool.end(); // Close the connection
         console.log('Disconnected from PostgreSQL DB');
     } catch {
         console.error('Error during disconnection');
@@ -39,4 +39,4 @@ if (process.env.NODE_ENV !== 'production') {
 
 global.pgClient = pgClient;
 
-export default client;
+export default pool;

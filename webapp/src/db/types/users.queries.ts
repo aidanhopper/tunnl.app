@@ -57,26 +57,26 @@ const updateUserLoginIR: any = {"usedParamSet":{"email":true},"params":[{"name":
 export const updateUserLogin = new PreparedQuery<IUpdateUserLoginParams,IUpdateUserLoginResult>(updateUserLoginIR);
 
 
-/** 'GetUserByEmail' parameters type */
-export interface IGetUserByEmailParams {
+/** 'SelectUserByEmail' parameters type */
+export interface ISelectUserByEmailParams {
   email?: string | null | void;
 }
 
-/** 'GetUserByEmail' return type */
-export interface IGetUserByEmailResult {
+/** 'SelectUserByEmail' return type */
+export interface ISelectUserByEmailResult {
   email: string;
   id: string;
-  last_login: Date | null;
+  last_login: Date;
   roles: string;
 }
 
-/** 'GetUserByEmail' query type */
-export interface IGetUserByEmailQuery {
-  params: IGetUserByEmailParams;
-  result: IGetUserByEmailResult;
+/** 'SelectUserByEmail' query type */
+export interface ISelectUserByEmailQuery {
+  params: ISelectUserByEmailParams;
+  result: ISelectUserByEmailResult;
 }
 
-const getUserByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":39}]}],"statement":"SELECT *\nFROM users\nWHERE email = :email\nLIMIT 1"};
+const selectUserByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":39}]}],"statement":"SELECT *\nFROM users\nWHERE email = :email\nLIMIT 1"};
 
 /**
  * Query generated from SQL:
@@ -87,6 +87,6 @@ const getUserByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"
  * LIMIT 1
  * ```
  */
-export const getUserByEmail = new PreparedQuery<IGetUserByEmailParams,IGetUserByEmailResult>(getUserByEmailIR);
+export const selectUserByEmail = new PreparedQuery<ISelectUserByEmailParams,ISelectUserByEmailResult>(selectUserByEmailIR);
 
 

@@ -1,38 +1,12 @@
 'use server'
 
-import { deleteIdentityByEmail, getIdentityByNameAndEmail } from "@/db/types/identities.queries"
-import client from '@/lib/db';
-import { getServerSession } from "next-auth";
-import * as ziti from '@/lib/ziti/identities';
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 
-const deleteIdentity = async (name: string) => {
-    const session = await getServerSession();
-
-    const email = session?.user?.email;
-
-    if (!email) return;
-
-    const identity = await getIdentityByNameAndEmail.run(
-        {
-            name: name,
-            email: email
-        },
-        client
-    );
-
-    try {
-        await deleteIdentityByEmail.run(
-            {
-                name: name,
-                email: email
-            },
-            client
-        );
-        await ziti.deleteIdentity(identity[0].ziti_id);
-
-    } catch (err) {
-        console.error(err);
-    }
+const deleteIdentity = async (id: string) => {
+    const user = await new UserManager(pool).auth()
+    if (!user) throw new Error("Unauthorized");
+    
 }
 
 export default deleteIdentity;

@@ -65,6 +65,7 @@ export interface IGetPrivateHttpsBindingsByUserParams {
 
 /** 'GetPrivateHttpsBindingsByUser' return type */
 export interface IGetPrivateHttpsBindingsByUserResult {
+  created: Date;
   domain: string;
   id: string;
   service_slug: string;
@@ -107,6 +108,7 @@ export interface IGetPrivateHttpsBindingParams {
 
 /** 'GetPrivateHttpsBinding' return type */
 export interface IGetPrivateHttpsBindingResult {
+  created: Date;
   domain: string;
   email: string;
   id: string;
@@ -178,6 +180,7 @@ export interface IGetPrivateHttpsBindingsByTunnelBindingParams {
 
 /** 'GetPrivateHttpsBindingsByTunnelBinding' return type */
 export interface IGetPrivateHttpsBindingsByTunnelBindingResult {
+  created: Date;
   domain: string;
   id: string;
   slug: string;

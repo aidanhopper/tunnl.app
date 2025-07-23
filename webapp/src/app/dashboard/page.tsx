@@ -1,14 +1,13 @@
 import ApprovalCard from "@/components/dashboard/approval-card";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import userIsApproved from "@/lib/user-is-approved";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 import { Home } from "lucide-react";
-import { getServerSession } from "next-auth";
 
 const Dashboard = async () => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    const approved = await userIsApproved(email);
+    const user = await new UserManager(pool).auth()
+    if (!user) throw new Error("Unauthorized");
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>
@@ -16,7 +15,7 @@ const Dashboard = async () => {
                     <Home size={48} />
                     <h1>Home</h1>
                 </div>
-                {!approved ? <ApprovalCard email={email} /> :
+                {!user?.isApproved ? <ApprovalCard email={user.getEmail()} /> :
                     <div className='grid gap-8 mx-auto w-full max-w-xl'>
                         <div className='text-center'>
                             <Card>

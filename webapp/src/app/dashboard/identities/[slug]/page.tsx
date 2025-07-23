@@ -1,58 +1,32 @@
 import DashboardLayout from '@/components/dashboard/dashboard-layout';
-import { getIdentityBySlug } from '@/db/types/identities.queries';
-import { getUserByEmail } from '@/db/types/users.queries';
-import client from '@/lib/db';
 import { Monitor } from 'lucide-react';
-import { getServerSession } from 'next-auth';
-import { notFound, forbidden, unauthorized } from 'next/navigation';
-import * as ziti from '@/lib/ziti/identities';
 import EnrollIdentityDialog from '@/components/dashboard/identities/enroll-identity-dialog';
-import ResetIdentityEnrollmentButton from '@/components/dashboard/identities/reset-identity-enrollment-button';
 import SubscribeProvider from '@/components/subscribe-provider';
 import generateToken from '@/lib/subscribe/generate-token';
 import IdentityStatusCard from '@/components/dashboard/identities/identity-status-card';
 import RefreshOnEvent from '@/components/dashboard/refresh-on-event';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { UserManager } from '@/lib/models/user';
+import pool from '@/lib/db';
 
 const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
 
-    const session = await getServerSession();
+    const user = await new UserManager(pool).auth()
+    if (!user) throw new Error("Unauthorized");
 
-    if (!session?.user?.email) unauthorized();
+    const identity = await user.getIdentityManager().getIdentityBySlug(slug);
+    if (!identity) throw new Error("Not found");
 
-    const email = session.user.email;
-
-    const identity = (await getIdentityBySlug.run(
-        {
-            slug: slug
-        },
-        client
-    ))[0];
-
-    if (!identity) notFound();
-
-    const user = (await getUserByEmail.run(
-        {
-            email: email
-        },
-        client
-    ))[0];
-
-    if (user.id !== identity.user_id) forbidden();
-
-    const zitiIdentity = await ziti.getIdentityByName(slug);
-
-    if (!zitiIdentity) notFound();
-
-    const expires = zitiIdentity.enrollment.ott?.expiresAt;
+    const enrollment = await identity.getEnrollment();
+    const expires = enrollment?.ott?.expiresAt;
     const isExpired = expires ? new Date(expires) <= new Date() : null;
 
     const token = generateToken({
         topics: [
-            zitiIdentity.id,
-            zitiIdentity.enrollment.ott ?? ''
+            identity.getZitiId(),
+            enrollment?.ott ?? ''
         ]
     });
 
@@ -74,11 +48,11 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                         <div className='flex'>
                             <div className='flex flex-1 items-center gap-8'>
                                 <Monitor size={48} />
-                                <h1>{identity.name}</h1>
+                                <h1>{identity.getName()}</h1>
                             </div>
                         </div>
                         <div className='mt-12'>
-                            {zitiIdentity?.enrollment.ott?.jwt ?
+                            {enrollment?.ott?.jwt ?
                                 <div>
                                     {!isExpired ?
                                         <div className='flex items-center'>
@@ -96,7 +70,7 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                                                 </Button>
                                                 <EnrollIdentityDialog
                                                     fileName={`${slug}.jwt`}
-                                                    value={zitiIdentity.enrollment.ott.jwt} />
+                                                    value={enrollment.ott.jwt} />
                                             </div>
                                         </div> : <div className='flex items-center'>
                                             <div className='font-bold flex-1'>
@@ -111,7 +85,7 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                                     {/* <div> */}
                                     {/*     <ResetIdentityEnrollmentButton name={slug} /> */}
                                     {/* </div> */}
-                                    <IdentityStatusCard identity={identity} />
+                                    <IdentityStatusCard identity={identity.getClientData()} />
                                 </div>}
                         </div>
                     </RefreshOnEvent>

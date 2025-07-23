@@ -3,7 +3,6 @@ import BindingDropdown from "@/components/dashboard/services/connectivity/bindin
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getIdentitiesByEmail } from "@/db/types/identities.queries";
 import { getServiceBySlug } from "@/db/types/services.queries";
 import { getTunnelBindingsByServiceSlug, IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
 import client from "@/lib/db";

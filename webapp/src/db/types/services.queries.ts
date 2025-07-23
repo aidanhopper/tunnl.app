@@ -10,14 +10,13 @@ export interface IGetServicesByEmailParams {
 
 /** 'GetServicesByEmail' return type */
 export interface IGetServicesByEmailResult {
-  created: Date | null;
+  created: Date;
   enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
   slug: string;
   user_id: string;
-  ziti_id: string;
 }
 
 /** 'GetServicesByEmail' query type */
@@ -44,23 +43,13 @@ const getServicesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"nam
 export const getServicesByEmail = new PreparedQuery<IGetServicesByEmailParams,IGetServicesByEmailResult>(getServicesByEmailIR);
 
 
-/** 'InsertServiceByEmail' parameters type */
-export interface IInsertServiceByEmailParams {
-  email?: string | null | void;
-  name?: string | null | void;
-  protocol?: protocol | null | void;
-  slug?: string | null | void;
-  ziti_id?: string | null | void;
-}
+/** Query 'InsertServiceByEmail' is invalid, so its result is assigned type 'never'.
+ *  */
+export type IInsertServiceByEmailResult = never;
 
-/** 'InsertServiceByEmail' return type */
-export type IInsertServiceByEmailResult = void;
-
-/** 'InsertServiceByEmail' query type */
-export interface IInsertServiceByEmailQuery {
-  params: IInsertServiceByEmailParams;
-  result: IInsertServiceByEmailResult;
-}
+/** Query 'InsertServiceByEmail' is invalid, so its parameters are assigned type 'never'.
+ *  */
+export type IInsertServiceByEmailParams = never;
 
 const insertServiceByEmailIR: any = {"usedParamSet":{"email":true,"slug":true,"name":true,"ziti_id":true,"protocol":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":135,"b":140}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":148,"b":152}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":159,"b":163}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":170,"b":177}]},{"name":"protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":184,"b":192}]}],"statement":"INSERT INTO services (\n    user_id,\n    slug, \n    name,\n    ziti_id,\n    protocol \n) VALUES (\n    (SELECT id FROM users WHERE email = :email),\n    :slug,\n    :name,\n    :ziti_id,\n    :protocol\n)"};
 
@@ -123,14 +112,13 @@ export interface IGetServiceBySlugParams {
 
 /** 'GetServiceBySlug' return type */
 export interface IGetServiceBySlugResult {
-  created: Date | null;
+  created: Date;
   enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
   slug: string;
   user_id: string;
-  ziti_id: string;
 }
 
 /** 'GetServiceBySlug' query type */
@@ -139,12 +127,13 @@ export interface IGetServiceBySlugQuery {
   result: IGetServiceBySlugResult;
 }
 
-const getServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":36,"b":40}]}],"statement":"SELECT *\nFROM services\nWHERE slug = :slug"};
+const getServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":45}]}],"statement":"SELECT \n    *\nFROM services\nWHERE slug = :slug"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT *
+ * SELECT 
+ *     *
  * FROM services
  * WHERE slug = :slug
  * ```
@@ -160,14 +149,13 @@ export interface IGetServiceByNameAndEmailParams {
 
 /** 'GetServiceByNameAndEmail' return type */
 export interface IGetServiceByNameAndEmailResult {
-  created: Date | null;
+  created: Date;
   enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
   slug: string;
   user_id: string;
-  ziti_id: string;
 }
 
 /** 'GetServiceByNameAndEmail' query type */
@@ -193,29 +181,13 @@ const getServiceByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":tru
 export const getServiceByNameAndEmail = new PreparedQuery<IGetServiceByNameAndEmailParams,IGetServiceByNameAndEmailResult>(getServiceByNameAndEmailIR);
 
 
-/** 'GetUserServiceAndIdentityBySlugs' parameters type */
-export interface IGetUserServiceAndIdentityBySlugsParams {
-  identity_slug?: string | null | void;
-  service_slug?: string | null | void;
-}
+/** Query 'GetUserServiceAndIdentityBySlugs' is invalid, so its result is assigned type 'never'.
+ *  */
+export type IGetUserServiceAndIdentityBySlugsResult = never;
 
-/** 'GetUserServiceAndIdentityBySlugs' return type */
-export interface IGetUserServiceAndIdentityBySlugsResult {
-  email: string;
-  identity_id: string;
-  identity_slug: string;
-  identity_ziti_id: string;
-  service_id: string;
-  service_slug: string;
-  service_ziti_id: string;
-  user_id: string;
-}
-
-/** 'GetUserServiceAndIdentityBySlugs' query type */
-export interface IGetUserServiceAndIdentityBySlugsQuery {
-  params: IGetUserServiceAndIdentityBySlugsParams;
-  result: IGetUserServiceAndIdentityBySlugsResult;
-}
+/** Query 'GetUserServiceAndIdentityBySlugs' is invalid, so its parameters are assigned type 'never'.
+ *  */
+export type IGetUserServiceAndIdentityBySlugsParams = never;
 
 const getUserServiceAndIdentityBySlugsIR: any = {"usedParamSet":{"service_slug":true,"identity_slug":true},"params":[{"name":"service_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":412,"b":424}]},{"name":"identity_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":450,"b":463}]}],"statement":"SELECT\n    users.id AS user_id,\n    users.email AS email,\n    services.id AS service_id,\n    services.ziti_id AS service_ziti_id,\n    services.slug AS service_slug,\n    identities.id AS identity_id,\n    identities.ziti_id AS identity_ziti_id,\n    identities.slug AS identity_slug\nFROM services\nJOIN users ON users.id = services.user_id\nLEFT JOIN identities ON identities.user_id = users.id\nWHERE services.slug = :service_slug\n  AND identities.slug = :identity_slug"};
 
@@ -248,14 +220,13 @@ export interface IGetServiceParams {
 
 /** 'GetService' return type */
 export interface IGetServiceResult {
-  created: Date | null;
+  created: Date;
   enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
   slug: string;
   user_id: string;
-  ziti_id: string;
 }
 
 /** 'GetService' query type */
@@ -285,14 +256,13 @@ export interface IGetServiceByIdAndEmailParams {
 
 /** 'GetServiceByIdAndEmail' return type */
 export interface IGetServiceByIdAndEmailResult {
-  created: Date | null;
+  created: Date;
   enabled: boolean;
   id: string;
   name: string;
   protocol: protocol;
   slug: string;
   user_id: string;
-  ziti_id: string;
 }
 
 /** 'GetServiceByIdAndEmail' query type */

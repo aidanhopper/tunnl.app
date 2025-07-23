@@ -27,7 +27,9 @@ const CreateIdentityForm = () => {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(createIdentity)} className='space-y-8'>
+            <form onSubmit={form.handleSubmit(async (formData: z.infer<typeof identitySchema>) => {
+                await createIdentity(formData);
+            })} className='space-y-8'>
                 <FormField
                     control={form.control}
                     name='name'

@@ -9,6 +9,7 @@ CREATE TABLE private_https_bindings (
     ziti_dial_id VARCHAR(32) NOT NULL,
     ziti_bind_id VARCHAR(32) NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    domain VARCHAR(70) NOT NULL,
     FOREIGN KEY (tunnel_binding_id) REFERENCES tunnel_bindings(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (domain, user_id)

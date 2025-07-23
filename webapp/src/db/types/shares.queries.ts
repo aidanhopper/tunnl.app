@@ -1,10 +1,6 @@
 /** Types generated for queries found in "src/db/sql/shares.sql" */
 import { PreparedQuery } from '@pgtyped/runtime';
 
-export type protocol = 'http' | 'tcp' | 'tcp/udp' | 'udp';
-
-export type stringArray = (string)[];
-
 /** 'InsertShareByEmail' parameters type */
 export interface IInsertShareByEmailParams {
   email?: string | null | void;
@@ -41,28 +37,13 @@ const insertShareByEmailIR: any = {"usedParamSet":{"tunnel_binding_id":true,"ema
 export const insertShareByEmail = new PreparedQuery<IInsertShareByEmailParams,IInsertShareByEmailResult>(insertShareByEmailIR);
 
 
-/** 'GetSharesByEmail' parameters type */
-export interface IGetSharesByEmailParams {
-  email?: string | null | void;
-}
+/** Query 'GetSharesByEmail' is invalid, so its result is assigned type 'never'.
+ *  */
+export type IGetSharesByEmailResult = never;
 
-/** 'GetSharesByEmail' return type */
-export interface IGetSharesByEmailResult {
-  id: string;
-  intercept_addresses: stringArray;
-  intercept_name: string;
-  intercept_port_ranges: string;
-  intercept_protocol: protocol;
-  owner_email: string;
-  service_name: string;
-  service_protocol: protocol;
-}
-
-/** 'GetSharesByEmail' query type */
-export interface IGetSharesByEmailQuery {
-  params: IGetSharesByEmailParams;
-  result: IGetSharesByEmailResult;
-}
+/** Query 'GetSharesByEmail' is invalid, so its parameters are assigned type 'never'.
+ *  */
+export type IGetSharesByEmailParams = never;
 
 const getSharesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":667,"b":672}]}],"statement":"SELECT\n    shares.id,\n    services.name AS service_name,\n    services.protocol AS service_protocol,\n    users.email AS owner_email,\n    ziti_intercepts.name AS intercept_name,\n    ziti_intercepts.port_ranges AS intercept_port_ranges,\n    ziti_intercepts.protocol AS intercept_protocol,\n    ziti_intercepts.addresses AS intercept_addresses\nFROM shares\nJOIN tunnel_bindings ON shares.tunnel_binding_id = tunnel_bindings.id\nJOIN services ON services.id = tunnel_bindings.service_id\nJOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id\nJOIN users ON services.user_id = users.id\nWHERE shares.user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)"};
 

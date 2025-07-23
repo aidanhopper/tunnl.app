@@ -1,6 +1,5 @@
 'use server'
 
-import { getIdentityBySlug, getIdentityByZitiId } from "@/db/types/identities.queries";
 import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
 import { updateZitiHost } from "@/db/types/ziti_hosts.queries";
 import { updateZitiIntercept } from "@/db/types/ziti_intercepts.queries";

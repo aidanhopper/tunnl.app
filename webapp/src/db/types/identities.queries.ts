@@ -10,7 +10,16 @@ export interface IInsertIdentityParams {
 }
 
 /** 'InsertIdentity' return type */
-export type IInsertIdentityResult = void;
+export interface IInsertIdentityResult {
+  created: Date;
+  id: string;
+  is_online: boolean;
+  last_seen: Date | null;
+  name: string;
+  slug: string;
+  user_id: string;
+  ziti_id: string;
+}
 
 /** 'InsertIdentity' query type */
 export interface IInsertIdentityQuery {
@@ -18,7 +27,7 @@ export interface IInsertIdentityQuery {
   result: IInsertIdentityResult;
 }
 
-const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug":true,"ziti_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":85,"b":92}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":99,"b":103}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":110,"b":114}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":128}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug,\n    ziti_id\n) VALUES (\n    :user_id,\n    :name,\n    :slug,\n    :ziti_id\n)"};
+const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug":true,"ziti_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":85,"b":92}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":99,"b":103}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":110,"b":114}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":128}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug,\n    ziti_id\n) VALUES (\n    :user_id,\n    :name,\n    :slug,\n    :ziti_id\n) RETURNING *"};
 
 /**
  * Query generated from SQL:
@@ -33,60 +42,22 @@ const insertIdentityIR: any = {"usedParamSet":{"user_id":true,"name":true,"slug"
  *     :name,
  *     :slug,
  *     :ziti_id
- * )
+ * ) RETURNING *
  * ```
  */
 export const insertIdentity = new PreparedQuery<IInsertIdentityParams,IInsertIdentityResult>(insertIdentityIR);
 
 
-/** 'InsertIdentityByEmail' parameters type */
-export interface IInsertIdentityByEmailParams {
-  email?: string | null | void;
-  name?: string | null | void;
-  slug?: string | null | void;
-  ziti_id?: string | null | void;
-}
-
-/** 'InsertIdentityByEmail' return type */
-export type IInsertIdentityByEmailResult = void;
-
-/** 'InsertIdentityByEmail' query type */
-export interface IInsertIdentityByEmailQuery {
-  params: IInsertIdentityByEmailParams;
-  result: IInsertIdentityByEmailResult;
-}
-
-const insertIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true,"slug":true,"ziti_id":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":121,"b":126}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":134,"b":138}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":145,"b":149}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":156,"b":163}]}],"statement":"INSERT INTO identities (\n    user_id,\n    name,\n    slug,\n    ziti_id\n) VALUES (\n    (SELECT id FROM users WHERE email = :email),\n    :name,\n    :slug,\n    :ziti_id\n)"};
-
-/**
- * Query generated from SQL:
- * ```
- * INSERT INTO identities (
- *     user_id,
- *     name,
- *     slug,
- *     ziti_id
- * ) VALUES (
- *     (SELECT id FROM users WHERE email = :email),
- *     :name,
- *     :slug,
- *     :ziti_id
- * )
- * ```
- */
-export const insertIdentityByEmail = new PreparedQuery<IInsertIdentityByEmailParams,IInsertIdentityByEmailResult>(insertIdentityByEmailIR);
-
-
-/** 'GetIdentityById' parameters type */
-export interface IGetIdentityByIdParams {
+/** 'SelectIdentitiesByUserId' parameters type */
+export interface ISelectIdentitiesByUserIdParams {
   id?: string | null | void;
 }
 
-/** 'GetIdentityById' return type */
-export interface IGetIdentityByIdResult {
-  created: Date | null;
+/** 'SelectIdentitiesByUserId' return type */
+export interface ISelectIdentitiesByUserIdResult {
+  created: Date;
   id: string;
-  is_online: boolean | null;
+  is_online: boolean;
   last_seen: Date | null;
   name: string;
   slug: string;
@@ -94,33 +65,35 @@ export interface IGetIdentityByIdResult {
   ziti_id: string;
 }
 
-/** 'GetIdentityById' query type */
-export interface IGetIdentityByIdQuery {
-  params: IGetIdentityByIdParams;
-  result: IGetIdentityByIdResult;
+/** 'SelectIdentitiesByUserId' query type */
+export interface ISelectIdentitiesByUserIdQuery {
+  params: ISelectIdentitiesByUserIdParams;
+  result: ISelectIdentitiesByUserIdResult;
 }
 
-const getIdentityByIdIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":36,"b":38}]}],"statement":"SELECT * FROM identities WHERE id = :id"};
+const selectIdentitiesByUserIdIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":43}]}],"statement":"SELECT *\nFROM identities\nWHERE user_id = :id"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * FROM identities WHERE id = :id
+ * SELECT *
+ * FROM identities
+ * WHERE user_id = :id
  * ```
  */
-export const getIdentityById = new PreparedQuery<IGetIdentityByIdParams,IGetIdentityByIdResult>(getIdentityByIdIR);
+export const selectIdentitiesByUserId = new PreparedQuery<ISelectIdentitiesByUserIdParams,ISelectIdentitiesByUserIdResult>(selectIdentitiesByUserIdIR);
 
 
-/** 'GetIdentitiesByEmail' parameters type */
-export interface IGetIdentitiesByEmailParams {
-  email?: string | null | void;
+/** 'SelectIdentityBySlug' parameters type */
+export interface ISelectIdentityBySlugParams {
+  slug?: string | null | void;
 }
 
-/** 'GetIdentitiesByEmail' return type */
-export interface IGetIdentitiesByEmailResult {
-  created: Date | null;
+/** 'SelectIdentityBySlug' return type */
+export interface ISelectIdentityBySlugResult {
+  created: Date;
   id: string;
-  is_online: boolean | null;
+  is_online: boolean;
   last_seen: Date | null;
   name: string;
   slug: string;
@@ -128,41 +101,35 @@ export interface IGetIdentitiesByEmailResult {
   ziti_id: string;
 }
 
-/** 'GetIdentitiesByEmail' query type */
-export interface IGetIdentitiesByEmailQuery {
-  params: IGetIdentitiesByEmailParams;
-  result: IGetIdentitiesByEmailResult;
+/** 'SelectIdentityBySlug' query type */
+export interface ISelectIdentityBySlugQuery {
+  params: ISelectIdentityBySlugParams;
+  result: ISelectIdentityBySlugResult;
 }
 
-const getIdentitiesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":97}]}],"statement":"SELECT * \nFROM identities \nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n)\nORDER BY created DESC"};
+const selectIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":38,"b":42}]}],"statement":"SELECT *\nFROM identities\nWHERE slug = :slug"};
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * 
- * FROM identities 
- * WHERE user_id = (
- *     SELECT id
- *     FROM users
- *     WHERE email = :email
- * )
- * ORDER BY created DESC
+ * SELECT *
+ * FROM identities
+ * WHERE slug = :slug
  * ```
  */
-export const getIdentitiesByEmail = new PreparedQuery<IGetIdentitiesByEmailParams,IGetIdentitiesByEmailResult>(getIdentitiesByEmailIR);
+export const selectIdentityBySlug = new PreparedQuery<ISelectIdentityBySlugParams,ISelectIdentityBySlugResult>(selectIdentityBySlugIR);
 
 
-/** 'GetIdentityByNameAndEmail' parameters type */
-export interface IGetIdentityByNameAndEmailParams {
-  email?: string | null | void;
-  name?: string | null | void;
+/** 'DeleteIdentityBySlug' parameters type */
+export interface IDeleteIdentityBySlugParams {
+  slug?: string | null | void;
 }
 
-/** 'GetIdentityByNameAndEmail' return type */
-export interface IGetIdentityByNameAndEmailResult {
-  created: Date | null;
+/** 'DeleteIdentityBySlug' return type */
+export interface IDeleteIdentityBySlugResult {
+  created: Date;
   id: string;
-  is_online: boolean | null;
+  is_online: boolean;
   last_seen: Date | null;
   name: string;
   slug: string;
@@ -170,166 +137,22 @@ export interface IGetIdentityByNameAndEmailResult {
   ziti_id: string;
 }
 
-/** 'GetIdentityByNameAndEmail' query type */
-export interface IGetIdentityByNameAndEmailQuery {
-  params: IGetIdentityByNameAndEmailParams;
-  result: IGetIdentityByNameAndEmailResult;
+/** 'DeleteIdentityBySlug' query type */
+export interface IDeleteIdentityBySlugQuery {
+  params: IDeleteIdentityBySlugParams;
+  result: IDeleteIdentityBySlugResult;
 }
 
-const getIdentityByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":92,"b":97}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":112,"b":116}]}],"statement":"SELECT * \nFROM identities \nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n) AND name = :name"};
-
-/**
- * Query generated from SQL:
- * ```
- * SELECT * 
- * FROM identities 
- * WHERE user_id = (
- *     SELECT id
- *     FROM users
- *     WHERE email = :email
- * ) AND name = :name
- * ```
- */
-export const getIdentityByNameAndEmail = new PreparedQuery<IGetIdentityByNameAndEmailParams,IGetIdentityByNameAndEmailResult>(getIdentityByNameAndEmailIR);
-
-
-/** 'DeleteIdentityByEmail' parameters type */
-export interface IDeleteIdentityByEmailParams {
-  email?: string | null | void;
-  name?: string | null | void;
-}
-
-/** 'DeleteIdentityByEmail' return type */
-export type IDeleteIdentityByEmailResult = void;
-
-/** 'DeleteIdentityByEmail' query type */
-export interface IDeleteIdentityByEmailQuery {
-  params: IDeleteIdentityByEmailParams;
-  result: IDeleteIdentityByEmailResult;
-}
-
-const deleteIdentityByEmailIR: any = {"usedParamSet":{"email":true,"name":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":88,"b":93}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":108,"b":112}]}],"statement":"DELETE FROM identities\nWHERE user_id = (\n    SELECT id\n    FROM users\n    WHERE email = :email\n) AND name = :name"};
+const deleteIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":36,"b":40}]}],"statement":"DELETE FROM identities\nWHERE slug = :slug\nRETURNING *"};
 
 /**
  * Query generated from SQL:
  * ```
  * DELETE FROM identities
- * WHERE user_id = (
- *     SELECT id
- *     FROM users
- *     WHERE email = :email
- * ) AND name = :name
- * ```
- */
-export const deleteIdentityByEmail = new PreparedQuery<IDeleteIdentityByEmailParams,IDeleteIdentityByEmailResult>(deleteIdentityByEmailIR);
-
-
-/** 'GetIdentityBySlug' parameters type */
-export interface IGetIdentityBySlugParams {
-  slug?: string | null | void;
-}
-
-/** 'GetIdentityBySlug' return type */
-export interface IGetIdentityBySlugResult {
-  created: Date | null;
-  id: string;
-  is_online: boolean | null;
-  last_seen: Date | null;
-  name: string;
-  slug: string;
-  user_id: string;
-  ziti_id: string;
-}
-
-/** 'GetIdentityBySlug' query type */
-export interface IGetIdentityBySlugQuery {
-  params: IGetIdentityBySlugParams;
-  result: IGetIdentityBySlugResult;
-}
-
-const getIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":40,"b":44}]}],"statement":"SELECT * \nFROM identities \nWHERE slug = :slug\nLIMIT 1"};
-
-/**
- * Query generated from SQL:
- * ```
- * SELECT * 
- * FROM identities 
  * WHERE slug = :slug
- * LIMIT 1
+ * RETURNING *
  * ```
  */
-export const getIdentityBySlug = new PreparedQuery<IGetIdentityBySlugParams,IGetIdentityBySlugResult>(getIdentityBySlugIR);
-
-
-/** 'GetUserIdentities' parameters type */
-export interface IGetUserIdentitiesParams {
-  user_id?: string | null | void;
-}
-
-/** 'GetUserIdentities' return type */
-export interface IGetUserIdentitiesResult {
-  created: Date | null;
-  id: string;
-  is_online: boolean | null;
-  last_seen: Date | null;
-  name: string;
-  slug: string;
-  user_id: string;
-  ziti_id: string;
-}
-
-/** 'GetUserIdentities' query type */
-export interface IGetUserIdentitiesQuery {
-  params: IGetUserIdentitiesParams;
-  result: IGetUserIdentitiesResult;
-}
-
-const getUserIdentitiesIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":48}]}],"statement":"SELECT *\nFROM identities\nWHERE user_id = :user_id"};
-
-/**
- * Query generated from SQL:
- * ```
- * SELECT *
- * FROM identities
- * WHERE user_id = :user_id
- * ```
- */
-export const getUserIdentities = new PreparedQuery<IGetUserIdentitiesParams,IGetUserIdentitiesResult>(getUserIdentitiesIR);
-
-
-/** 'GetIdentityByZitiId' parameters type */
-export interface IGetIdentityByZitiIdParams {
-  ziti_id?: string | null | void;
-}
-
-/** 'GetIdentityByZitiId' return type */
-export interface IGetIdentityByZitiIdResult {
-  created: Date | null;
-  id: string;
-  is_online: boolean | null;
-  last_seen: Date | null;
-  name: string;
-  slug: string;
-  user_id: string;
-  ziti_id: string;
-}
-
-/** 'GetIdentityByZitiId' query type */
-export interface IGetIdentityByZitiIdQuery {
-  params: IGetIdentityByZitiIdParams;
-  result: IGetIdentityByZitiIdResult;
-}
-
-const getIdentityByZitiIdIR: any = {"usedParamSet":{"ziti_id":true},"params":[{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":41,"b":48}]}],"statement":"SELECT *\nFROM identities\nWHERE ziti_id = :ziti_id"};
-
-/**
- * Query generated from SQL:
- * ```
- * SELECT *
- * FROM identities
- * WHERE ziti_id = :ziti_id
- * ```
- */
-export const getIdentityByZitiId = new PreparedQuery<IGetIdentityByZitiIdParams,IGetIdentityByZitiIdResult>(getIdentityByZitiIdIR);
+export const deleteIdentityBySlug = new PreparedQuery<IDeleteIdentityBySlugParams,IDeleteIdentityBySlugResult>(deleteIdentityBySlugIR);
 
 

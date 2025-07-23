@@ -1,6 +1,5 @@
 'use server'
 
-import { getUserByEmail } from "@/db/types/users.queries";
 import { insertPrivateHttpsBinding } from '@/db/types/private_https_bindings.queries'
 import client from "@/lib/db";
 import privateHttpsFormSchema from "@/lib/form-schemas/create-private-https-binding-form-schema";
@@ -30,7 +29,6 @@ const createPrivateHttpsBinding = async ({
         if (!session?.user?.email) throw new Error("No user");
         const email = session.user.email;
 
-        const userList = await getUserByEmail.run({ email: email }, client)
         if (userList.length === 0) throw new Error("No user");
         const user = userList[0];
 

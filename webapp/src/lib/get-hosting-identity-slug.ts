@@ -1,4 +1,3 @@
-import { getIdentityByZitiId } from "@/db/types/identities.queries";
 import { getPolicy } from "./ziti/policies";
 import client from "./db";
 

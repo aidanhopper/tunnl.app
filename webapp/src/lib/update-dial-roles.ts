@@ -1,4 +1,3 @@
-import { getUserIdentities } from "@/db/types/identities.queries";
 import { patchIdentity } from "./ziti/identities";
 import client from "./db";
 import { getShareServiceSlugs } from "@/db/types/shares.queries";
