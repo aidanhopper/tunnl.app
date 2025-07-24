@@ -2,7 +2,7 @@
 
 import { ChartContainer } from "@/components/ui/chart";
 import { type ChartConfig } from "@/components/ui/chart"
-import { IGetServiceDialsByServiceIdResult } from "@/db/types/service_dials.queries";
+import { ServiceDialData } from "@/lib/models/service";
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
 
 const fillDialData = (
@@ -73,7 +73,7 @@ const chartConfig = {
     },
 } satisfies ChartConfig
 
-const DialChart = ({ serviceDials }: { serviceDials: IGetServiceDialsByServiceIdResult[] }) => {
+const DialChart = ({ serviceDials }: { serviceDials: ServiceDialData[] }) => {
     const chartData = fillDialData(serviceDials);
     return (
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">

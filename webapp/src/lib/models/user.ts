@@ -2,6 +2,7 @@ import { ISelectUserByEmailResult, selectUserByEmail } from "@/db/types/users.qu
 import { getServerSession } from "next-auth";
 import { Pool } from "pg";
 import { IdentityManager } from "./identity";
+import { ServiceManager } from "./service";
 
 export class UserManager {
     private pool: Pool;
@@ -30,6 +31,7 @@ class User {
     private roles: string[];
     private lastLogin: Date;
     private identityManager: IdentityManager;
+    private serviceManager: ServiceManager;
 
     constructor({ data, pool }: { data: ISelectUserByEmailResult, pool: Pool }) {
         this.id = data.id;
@@ -37,6 +39,7 @@ class User {
         this.roles = data.roles.split(" ");
         this.lastLogin = data.last_login;
         this.identityManager = new IdentityManager({ userId: this.id, pool: pool })
+        this.serviceManager = new ServiceManager({ userId: this.id, pool: pool });
     }
 
     getId() {
@@ -54,8 +57,13 @@ class User {
     getLastLogin() {
         return this.lastLogin;
     }
+
     getIdentityManager() {
         return this.identityManager;
+    }
+
+    getServiceManager() {
+        return this.serviceManager;
     }
 
     isApproved() {

@@ -17,6 +17,9 @@ import privateHttpsFormSchema from "@/lib/form-schemas/create-private-https-bind
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
+import { IdentityClientData } from "@/lib/models/identity";
+import { ServiceClientData } from "@/lib/models/service";
+import { TunnelBindingClientData } from "@/lib/models/tunnel-binding";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -35,9 +38,9 @@ const CreateBindingForm = ({
     tunnelBinding,
     service,
 }: {
-    identities: IGetIdentitiesByEmailResult[],
-    tunnelBinding: IGetTunnelBindingsByServiceSlugResult | null,
-    service: IGetServiceBySlugResult,
+    identities: IdentityClientData[],
+    tunnelBinding: TunnelBindingClientData | null,
+    service: ServiceClientData,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
     const [bindingType, setBindingType] = useState<BindingType>(null);
@@ -504,11 +507,11 @@ const CreateBindingForm = ({
                 {tunnelBinding && <Form {...privateHttpsForm}>
                     <form
                         onSubmit={privateHttpsForm.handleSubmit(async (formData: z.infer<typeof privateHttpsFormSchema>) => {
-                            await createPrivateHttpsBinding({
-                                privateHttpsFormData: formData,
-                                tunnelBindingId: tunnelBinding.id,
-                                mainDomain: ".cs.tunnl.app",
-                            });
+                            // await createPrivateHttpsBinding({
+                            //     privateHttpsFormData: formData,
+                            //     tunnelBindingId: tunnelBinding.id,
+                            //     mainDomain: ".cs.tunnl.app",
+                            // });
                         })}
                         className='space-y-8'>
                         <FormField

@@ -6,6 +6,7 @@ CREATE TABLE tunnel_bindings (
     ziti_intercept_id VARCHAR(32) NOT NULL,
     ziti_dial_id VARCHAR(32) NOT NULL,
     ziti_bind_id VARCHAR(32) NOT NULL,
+    ziti_service_id VARCHAR(32) NOT NULL,
     entry_point BOOLEAN NOT NULL,
     slug VARCHAR(64) UNIQUE NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),

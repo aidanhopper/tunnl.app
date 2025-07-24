@@ -13,7 +13,7 @@ const AreYouSure = ({
     yesText = 'Delete',
     yesButtonVariant = 'destructive',
 }: {
-    onClickYes: () => Promise<void>,
+    onClickYes: () => Promise<any> | any,
     refreshOnYes?: boolean,
     children?: ReactNode,
     yesText?: ReactNode,

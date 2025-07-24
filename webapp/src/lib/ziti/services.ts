@@ -1,5 +1,5 @@
 import { del, get, post, patch } from './methods';
-import { PatchServiceData, PostServiceData, PostServiceResponse, Service, ServiceListResponse } from './types';
+import { GetServiceResponse, PatchServiceData, PostServiceData, PostServiceResponse, ServiceListResponse } from './types';
 
 export const postService = async (data: PostServiceData) => {
     return await post<PostServiceResponse>({
@@ -27,7 +27,7 @@ export const getServiceByName = async (name: string) => {
 }
 
 export const getService = async (ziti_id: string) => {
-    return await get<Service>({ route: `/identities/${encodeURIComponent(ziti_id)}` });
+    return await get<GetServiceResponse>({ route: `/identities/${encodeURIComponent(ziti_id)}` });
 }
 
 export const deleteService = async (ziti_id: string) => {

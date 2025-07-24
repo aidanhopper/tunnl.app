@@ -5,39 +5,24 @@ import RevokeDropdownMenuItem from "@/components/dashboard/services/revoke-dropd
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getServiceBySlug } from "@/db/types/services.queries";
-import { getServiceShareLinks } from "@/db/types/share_links.queries";
-import { getSharesByServiceSlug } from "@/db/types/shares.queries";
-import { getTunnelBindingsByServiceSlug, IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
 import deleteShareLink from "@/lib/actions/shares/delete-share-link";
-import deleteShare from "@/lib/actions/shares/delete-share";
 import revokeAllShareLinks from "@/lib/actions/shares/revoke-all-share-links";
-import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
-import client from "@/lib/db";
 import { ArrowDown, EllipsisVertical } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, unauthorized } from "next/navigation";
 import DialChart from "@/components/dashboard/services/dial-chart";
-import { getServiceDialsByServiceId } from "@/db/types/service_dials.queries";
 import Link from "next/link";
 import disableService from "@/lib/actions/services/disable-service";
 import enableService from "@/lib/actions/services/enable-service";
+import { UserManager } from "@/lib/models/user";
+import pool from "@/lib/db";
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
-
-    const serviceList = await getServiceBySlug.run({ slug: slug }, client);
-    if (serviceList.length === 0) notFound();
-    const service = serviceList[0];
-
-    const shares = await getSharesByServiceSlug.run({ slug: slug }, client);
-    const shareLinks = (await getServiceShareLinks.run({ slug: slug }, client))
-        .filter(e => e.expires > new Date());
-
-    let tunnelBinding: IGetTunnelBindingsByServiceSlugResult | null = null;
-    const tunnelBindingList = await getTunnelBindingsByServiceSlug.run({ slug: slug }, client);
-    if (tunnelBindingList.length !== 0) tunnelBinding = tunnelBindingList[0];
-
-    const serviceDials = await getServiceDialsByServiceId.run({ service_id: service.id }, client);
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const service = await user.getServiceManager().getServiceBySlug(slug) || notFound();
+    const tunnelBinding = (await service.getTunnelBindingManager().getTunnelBindings())[0] ?? null;
+    const shares = []
+    const shareLinks = []
 
     return (
         <>
@@ -50,7 +35,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <DialChart serviceDials={serviceDials} />
+                        <DialChart serviceDials={await service.getServiceDials()} />
                     </CardContent>
                 </Card>
                 <div className='grid lg:grid-cols-2 gap-4'>
@@ -65,9 +50,9 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                     refreshOnYes={true}
                                     onClickYes={async () => {
                                         'use server'
-                                        await revokeAllShares(service.id);
+                                        // await revokeAllShares(service.id);
                                     }}>
-                                    Are you sure you want to revoke all {service.name} shares?
+                                    Are you sure you want to revoke all {service.getName()} shares?
                                 </AreYouSure>
                                 <RevokeButton>
                                     Revoke all
@@ -87,7 +72,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                                 refreshOnYes={true}
                                                 onClickYes={async () => {
                                                     'use server'
-                                                    await deleteShare(e.id);
+                                                    await share.delete()
                                                 }} />
                                             <DropdownMenu modal={false}>
                                                 <DropdownMenuTrigger asChild>
@@ -121,7 +106,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                         'use server'
                                         revokeAllShareLinks(service.id);
                                     }}>
-                                    Are you sure you want to revoke all {service.name} share links?
+                                    Are you sure you want to revoke all {service.getName()} share links?
                                 </AreYouSure>
                                 <RevokeButton>
                                     Revoke all
@@ -171,7 +156,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                     </Card>
                 </div>
                 <div>
-                    {!service.enabled ? <>
+                    {!service.isEnabled() ? <>
                         <AreYouSureProvider>
                             <AreYouSure
                                 yesButtonVariant='default'
@@ -179,12 +164,12 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                 yesText=<>Yes I&apos;m sure</>
                                 onClickYes={async () => {
                                     'use server'
-                                    await enableService(service.id);
+                                    // await enableService(service.id);
                                 }}>
-                                Are you sure you want to enable {service.name}? This will
+                                Are you sure you want to enable {service.getName()}? This will
                                 allow all your identities and shares to access this service again.
                             </AreYouSure>
-                            <RevokeButton variant='default'>Enable {service.name}</RevokeButton>
+                            <RevokeButton variant='default'>Enable {service.getName()}</RevokeButton>
                         </AreYouSureProvider>
                     </> : <AreYouSureProvider>
                         <AreYouSure
@@ -192,13 +177,13 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             yesText=<>Yes I&apos;m sure</>
                             onClickYes={async () => {
                                 'use server'
-                                await disableService(service.id);
+                                // await disableService(service.id);
                             }}>
-                            Are you sure you want to disable {service.name}? This will disable
+                            Are you sure you want to disable {service.getName()}? This will disable
                             the service from being dialed by your identities and shares.
                             It can be turned back on later.
                         </AreYouSure>
-                        <RevokeButton variant='secondary'>Disable {service.name}</RevokeButton>
+                        <RevokeButton variant='secondary'>Disable {service.getName()}</RevokeButton>
                     </AreYouSureProvider>}
                 </div>
             </div> : <div className='flex flex-col gap-4'>

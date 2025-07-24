@@ -1,4 +1,4 @@
-/* @name getServiceDialsByServiceId */
+/* @name selectServiceDialsByServiceId */
 SELECT *
 FROM service_dials
 WHERE service_id = :service_id

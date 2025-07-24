@@ -9,15 +9,15 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { IGetServicesByEmailResult } from "@/db/types/services.queries"
 import { EllipsisVertical } from "lucide-react"
 import DeleteServiceDropdownButton from "./delete-service-dropdown-button"
 import Link from "next/link"
 import { AreYouSureProvider } from "@/components/are-you-sure-provider"
 import AreYouSure from "@/components/are-you-sure"
 import deleteService from "@/lib/actions/services/delete-service"
+import { ServiceClientData } from "@/lib/models/service"
 
-const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) => {
+const ServicesTable = ({ services }: { services: ServiceClientData[] }) => {
     return (
         <Table>
             <TableCaption>A list of your services.</TableCaption>
@@ -43,7 +43,7 @@ const ServicesTable = ({ services }: { services: IGetServicesByEmailResult[] }) 
                                     refreshOnYes={true}
                                     onClickYes={async () => {
                                         'use server'
-                                        await deleteService(service.name);
+                                        await deleteService(service.slug); 
                                     }}>
                                     Are you sure you want to delete this service?
                                 </AreYouSure>

@@ -11,23 +11,15 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import CreateServiceForm from "@/components/dashboard/services/create-service-form";
-import { getServicesByEmail } from "@/db/types/services.queries";
-import client from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { unauthorized } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import userIsApproved from "@/lib/user-is-approved";
 import ApprovalCard from "@/components/dashboard/approval-card";
+import { UserManager } from "@/lib/models/user";
+import pool from "@/lib/db";
+import { unauthorized } from "next/navigation";
 
 const Services = async () => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    if (!email) unauthorized();
-
-    const approved = await userIsApproved(email);
-
-    const services = await getServicesByEmail.run({ email: email }, client);
-
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const services = await user.getServiceManager().getServices();
     return (
         <DashboardLayout>
             <div className='flex gap-8 flex-col'>
@@ -41,7 +33,7 @@ const Services = async () => {
                             <Button
                                 className='cursor-pointer'
                                 variant='secondary'
-                                disabled={!approved}
+                                disabled={!user.isApproved()}
                                 asChild>
                                 <DialogTrigger>
                                     Create
@@ -61,9 +53,9 @@ const Services = async () => {
                         </Dialog>
                     </div>
                 </div>
-                {!approved &&
+                {!user.isApproved() &&
                     <ApprovalCard
-                        email={email} />}
+                        email={user.getEmail()} />}
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -74,7 +66,7 @@ const Services = async () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ServicesTable services={services} />
+                        <ServicesTable services={services.map(e => e.getClientData())} />
                     </CardContent>
                 </Card>
             </div>

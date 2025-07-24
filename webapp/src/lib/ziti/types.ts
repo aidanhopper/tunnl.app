@@ -3,7 +3,12 @@ export interface IdentityListResponse {
     meta: Meta;
 }
 
-export interface IdentityResponse {
+export interface GetIdentityResponse {
+    data: IdentityResponse;
+    meta: Meta;
+}
+
+interface IdentityResponse {
     _links: Links;
     comment?: string;
     href: string;
@@ -242,6 +247,12 @@ export interface ServiceListResponse {
     meta: Meta;
 }
 
+export interface GetServiceResponse {
+    data: Service;
+    _links: Record<string, Link>;
+    meta: Meta;
+}
+
 export interface Service {
     id: string;
     name: string;
@@ -343,7 +354,7 @@ export interface GetPolicyResponse {
     };
 }
 
-interface ServicePolicyDetail {
+export interface ServicePolicyDetail {
     createdAt: string;
     id: string;
     tags: Record<string, string | boolean | null> | null;
@@ -391,3 +402,119 @@ export interface PostPolicyResponse {
         _links: Links;
     };
 };
+
+export interface GetConfigResponse<T> {
+    data: GetConfigData<T>;
+    _links: Record<string, Link>;
+}
+
+export interface GetConfigData<T> {
+    id: string;
+    name: string;
+    createdAt: string; // ISO 8601 date-time
+    updatedAt: string; // ISO 8601 date-time
+    configType: EntityRef;
+    configTypeId: string;
+    data: T; // schema depends on configType
+    tags: Record<string, string | boolean | null> | null;
+    meta: {
+        apiEnrollmentVersion?: string;
+        apiVersion?: string;
+        filterableFields?: string[];
+        pagination?: {
+            limit: number;
+            offset: number;
+            totalCount: number;
+        };
+    };
+}
+
+type Duration = string; // e.g., "5s", "1m"
+type PortNumber = number; // 0–65535
+type ProtocolName = "tcp" | "udp";
+type Method = "GET" | "POST" | "PUT" | "PATCH";
+type Precedence = "default" | "required" | "failed";
+
+interface PortRange {
+    low: PortNumber;
+    high: PortNumber;
+}
+
+interface Action {
+    trigger: "fail" | "pass" | "change";
+    action: string; // matches pattern, e.g., "mark healthy", "send event"
+    duration?: Duration;
+    consecutiveEvents?: number;
+}
+
+type ActionList = Action[];
+
+interface HttpCheck {
+    interval: Duration;
+    timeout: Duration;
+    url: string;
+    actions?: ActionList;
+    method?: Method;
+    body?: string;
+    expectStatus?: number;
+    expectInBody?: string;
+}
+
+type HttpCheckList = HttpCheck[];
+
+interface PortCheck {
+    interval: Duration;
+    timeout: Duration;
+    address: string;
+    actions?: ActionList;
+}
+
+type PortCheckList = PortCheck[];
+
+type InhabitedSet<T> = [T, ...T[]];
+
+interface ProxyConfiguration {
+    address: string; // host:port
+    type: "http";
+}
+
+interface ListenOptions {
+    bindUsingEdgeIdentity?: boolean;
+    connectTimeout?: Duration;
+    connectTimeoutSeconds?: number; // deprecated
+    cost?: number;
+    identity?: string;
+    maxConnections?: number;
+    precedence?: Precedence;
+}
+
+export interface HostV1ConfigData {
+    address?: string;
+    forwardAddress?: true;
+    allowedAddresses?: InhabitedSet<string>;
+    allowedSourceAddresses?: InhabitedSet<string>;
+    port?: PortNumber;
+    forwardPort?: true;
+    allowedPortRanges?: InhabitedSet<PortRange>;
+    protocol?: ProtocolName;
+    forwardProtocol?: true;
+    allowedProtocols?: InhabitedSet<ProtocolName>;
+    httpChecks?: HttpCheckList;
+    portChecks?: PortCheckList;
+    listenOptions?: ListenOptions;
+    proxy?: ProxyConfiguration;
+}
+
+export interface InterceptV1ConfigData {
+  protocols: ("tcp" | "udp")[]; // required
+  addresses: string[];          // required
+  portRanges: {
+    low: number;
+    high: number;
+  }[];                          // required
+  sourceIp?: string;
+  dialOptions?: {
+    connectTimeoutSeconds?: number;
+    identity?: string;
+  };
+}

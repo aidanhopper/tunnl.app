@@ -1,5 +1,5 @@
 import { get, post, del, patch } from './methods';
-import { IdentityListResponse, IdentityResponse, PatchIdentityData, PostIdentityData, PostIdentityResponse } from './types';
+import { GetIdentityResponse, IdentityListResponse, PatchIdentityData, PostIdentityData, PostIdentityResponse } from './types';
 
 export const getIdentityByName = async (name: string) => {
     const r = await get<IdentityListResponse>({
@@ -20,7 +20,7 @@ export const postIdentity = async (data: PostIdentityData) => {
 }
 
 export const getIdentity = async (ziti_id: string) => {
-    return await get<IdentityResponse>({
+    return await get<GetIdentityResponse>({
         route: `/identities/${encodeURIComponent(ziti_id)}`,
     });
 }

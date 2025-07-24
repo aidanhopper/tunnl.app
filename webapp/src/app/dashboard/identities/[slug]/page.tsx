@@ -9,15 +9,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { UserManager } from '@/lib/models/user';
 import pool from '@/lib/db';
+import { notFound, unauthorized } from 'next/navigation';
 
 const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
-
-    const user = await new UserManager(pool).auth()
-    if (!user) throw new Error("Unauthorized");
-
-    const identity = await user.getIdentityManager().getIdentityBySlug(slug);
-    if (!identity) throw new Error("Not found");
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const identity = await user.getIdentityManager().getIdentityBySlug(slug) || notFound();
 
     const enrollment = await identity.getEnrollment();
     const expires = enrollment?.ott?.expiresAt;

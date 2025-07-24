@@ -1,6 +1,6 @@
 import { Play } from 'next/font/google';
 import { get, post, del, patch } from './methods';
-import { ConfigTypeListResponse, PatchConfigData, PostConfigData, PostConfigResponse } from './types';
+import { ConfigTypeListResponse, GetConfigResponse, PatchConfigData, PostConfigData, PostConfigResponse } from './types';
 
 let configTypes: ConfigTypeListResponse | null = null;
 
@@ -56,3 +56,10 @@ export const patchConfig = async ({
         data: data
     });
 }
+
+export const getConfig = async <T = Record<string, any>>(ziti_id: string) => {
+    return await get<GetConfigResponse<T>>({
+        route: `/configs/${ziti_id}`
+    })
+}
+

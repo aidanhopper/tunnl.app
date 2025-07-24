@@ -185,3 +185,8 @@ JOIN ziti_intercepts ON ziti_intercepts.id = tunnel_bindings.intercept_id
 JOIN ziti_policies AS dial_policy ON dial_policy.id = tunnel_bindings.dial_policy_id
 JOIN ziti_policies AS bind_policy ON bind_policy.id = tunnel_bindings.bind_policy_id
 WHERE tunnel_bindings.slug = :slug;
+
+/* @name selectTunnelBindingsByServiceId */
+SELECT *
+FROM tunnel_bindings
+WHERE service_id = :service_id;

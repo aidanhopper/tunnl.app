@@ -1,51 +1,12 @@
 'use server'
 
-import { deleteServiceByNameAndEmail, getServiceByNameAndEmail } from "@/db/types/services.queries";
-import client from "@/lib/db";
-import { getServerSession } from "next-auth";
-import * as ziti from '@/lib/ziti/services';
-import { getTunnelBindingsByServiceSlug } from "@/db/types/tunnel_bindings.queries";
-import { deleteTunnelBinding } from "./delete-tunnel-binding";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 
-const deleteService = async (name: string) => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    if (!email) return;
-
-    const serviceList = await getServiceByNameAndEmail.run(
-        {
-            name: name,
-            email: email
-        },
-        client
-    );
-
-    if (serviceList.length === 0) return;
-
-    const service = serviceList[0];
-
-    try {
-        const tunnelBindings = await getTunnelBindingsByServiceSlug.run(
-            {
-                slug: service.slug
-            },
-            client
-        );
-
-        await Promise.all(tunnelBindings.map(e => deleteTunnelBinding(e.id)));
-
-        await deleteServiceByNameAndEmail.run(
-            {
-                email: email,
-                name: name
-            },
-            client
-        );
-
-        await ziti.deleteService(service.ziti_id);
-    } catch (err) {
-        console.error(err);
-    }
+const deleteService = async (slug: string) => {
+    const user = await new UserManager(pool).auth();
+    if (!user) return false;
+    return await user.getServiceManager().deleteServiceBySlug(slug);
 }
 
 export default deleteService;

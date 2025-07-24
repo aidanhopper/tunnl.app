@@ -43,15 +43,32 @@ const getServicesByEmailIR: any = {"usedParamSet":{"email":true},"params":[{"nam
 export const getServicesByEmail = new PreparedQuery<IGetServicesByEmailParams,IGetServicesByEmailResult>(getServicesByEmailIR);
 
 
-/** Query 'InsertServiceByEmail' is invalid, so its result is assigned type 'never'.
- *  */
-export type IInsertServiceByEmailResult = never;
+/** 'InsertService' parameters type */
+export interface IInsertServiceParams {
+  name?: string | null | void;
+  protocol?: protocol | null | void;
+  slug?: string | null | void;
+  user_id?: string | null | void;
+}
 
-/** Query 'InsertServiceByEmail' is invalid, so its parameters are assigned type 'never'.
- *  */
-export type IInsertServiceByEmailParams = never;
+/** 'InsertService' return type */
+export interface IInsertServiceResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+}
 
-const insertServiceByEmailIR: any = {"usedParamSet":{"email":true,"slug":true,"name":true,"ziti_id":true,"protocol":true},"params":[{"name":"email","required":false,"transform":{"type":"scalar"},"locs":[{"a":135,"b":140}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":148,"b":152}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":159,"b":163}]},{"name":"ziti_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":170,"b":177}]},{"name":"protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":184,"b":192}]}],"statement":"INSERT INTO services (\n    user_id,\n    slug, \n    name,\n    ziti_id,\n    protocol \n) VALUES (\n    (SELECT id FROM users WHERE email = :email),\n    :slug,\n    :name,\n    :ziti_id,\n    :protocol\n)"};
+/** 'InsertService' query type */
+export interface IInsertServiceQuery {
+  params: IInsertServiceParams;
+  result: IInsertServiceResult;
+}
+
+const insertServiceIR: any = {"usedParamSet":{"user_id":true,"slug":true,"name":true,"protocol":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":86,"b":93}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":100,"b":104}]},{"name":"name","required":false,"transform":{"type":"scalar"},"locs":[{"a":111,"b":115}]},{"name":"protocol","required":false,"transform":{"type":"scalar"},"locs":[{"a":122,"b":130}]}],"statement":"INSERT INTO services (\n    user_id,\n    slug, \n    name,\n    protocol \n) VALUES (\n    :user_id,\n    :slug,\n    :name,\n    :protocol\n) RETURNING *"};
 
 /**
  * Query generated from SQL:
@@ -60,18 +77,16 @@ const insertServiceByEmailIR: any = {"usedParamSet":{"email":true,"slug":true,"n
  *     user_id,
  *     slug, 
  *     name,
- *     ziti_id,
  *     protocol 
  * ) VALUES (
- *     (SELECT id FROM users WHERE email = :email),
+ *     :user_id,
  *     :slug,
  *     :name,
- *     :ziti_id,
  *     :protocol
- * )
+ * ) RETURNING *
  * ```
  */
-export const insertServiceByEmail = new PreparedQuery<IInsertServiceByEmailParams,IInsertServiceByEmailResult>(insertServiceByEmailIR);
+export const insertService = new PreparedQuery<IInsertServiceParams,IInsertServiceResult>(insertServiceIR);
 
 
 /** 'DeleteServiceByNameAndEmail' parameters type */
@@ -179,38 +194,6 @@ const getServiceByNameAndEmailIR: any = {"usedParamSet":{"email":true,"name":tru
  * ```
  */
 export const getServiceByNameAndEmail = new PreparedQuery<IGetServiceByNameAndEmailParams,IGetServiceByNameAndEmailResult>(getServiceByNameAndEmailIR);
-
-
-/** Query 'GetUserServiceAndIdentityBySlugs' is invalid, so its result is assigned type 'never'.
- *  */
-export type IGetUserServiceAndIdentityBySlugsResult = never;
-
-/** Query 'GetUserServiceAndIdentityBySlugs' is invalid, so its parameters are assigned type 'never'.
- *  */
-export type IGetUserServiceAndIdentityBySlugsParams = never;
-
-const getUserServiceAndIdentityBySlugsIR: any = {"usedParamSet":{"service_slug":true,"identity_slug":true},"params":[{"name":"service_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":412,"b":424}]},{"name":"identity_slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":450,"b":463}]}],"statement":"SELECT\n    users.id AS user_id,\n    users.email AS email,\n    services.id AS service_id,\n    services.ziti_id AS service_ziti_id,\n    services.slug AS service_slug,\n    identities.id AS identity_id,\n    identities.ziti_id AS identity_ziti_id,\n    identities.slug AS identity_slug\nFROM services\nJOIN users ON users.id = services.user_id\nLEFT JOIN identities ON identities.user_id = users.id\nWHERE services.slug = :service_slug\n  AND identities.slug = :identity_slug"};
-
-/**
- * Query generated from SQL:
- * ```
- * SELECT
- *     users.id AS user_id,
- *     users.email AS email,
- *     services.id AS service_id,
- *     services.ziti_id AS service_ziti_id,
- *     services.slug AS service_slug,
- *     identities.id AS identity_id,
- *     identities.ziti_id AS identity_ziti_id,
- *     identities.slug AS identity_slug
- * FROM services
- * JOIN users ON users.id = services.user_id
- * LEFT JOIN identities ON identities.user_id = users.id
- * WHERE services.slug = :service_slug
- *   AND identities.slug = :identity_slug
- * ```
- */
-export const getUserServiceAndIdentityBySlugs = new PreparedQuery<IGetUserServiceAndIdentityBySlugsParams,IGetUserServiceAndIdentityBySlugsResult>(getUserServiceAndIdentityBySlugsIR);
 
 
 /** 'GetService' parameters type */
@@ -340,5 +323,111 @@ const disableServiceDbIR: any = {"usedParamSet":{"service_id":true},"params":[{"
  * ```
  */
 export const disableServiceDb = new PreparedQuery<IDisableServiceDbParams,IDisableServiceDbResult>(disableServiceDbIR);
+
+
+/** 'SelectServicesByUserId' parameters type */
+export interface ISelectServicesByUserIdParams {
+  id?: string | null | void;
+}
+
+/** 'SelectServicesByUserId' return type */
+export interface ISelectServicesByUserIdResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+}
+
+/** 'SelectServicesByUserId' query type */
+export interface ISelectServicesByUserIdQuery {
+  params: ISelectServicesByUserIdParams;
+  result: ISelectServicesByUserIdResult;
+}
+
+const selectServicesByUserIdIR: any = {"usedParamSet":{"id":true},"params":[{"name":"id","required":false,"transform":{"type":"scalar"},"locs":[{"a":39,"b":41}]}],"statement":"SELECT *\nFROM services\nWHERE user_id = :id\nORDER BY created DESC"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM services
+ * WHERE user_id = :id
+ * ORDER BY created DESC
+ * ```
+ */
+export const selectServicesByUserId = new PreparedQuery<ISelectServicesByUserIdParams,ISelectServicesByUserIdResult>(selectServicesByUserIdIR);
+
+
+/** 'SelectServiceBySlug' parameters type */
+export interface ISelectServiceBySlugParams {
+  slug?: string | null | void;
+}
+
+/** 'SelectServiceBySlug' return type */
+export interface ISelectServiceBySlugResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+}
+
+/** 'SelectServiceBySlug' query type */
+export interface ISelectServiceBySlugQuery {
+  params: ISelectServiceBySlugParams;
+  result: ISelectServiceBySlugResult;
+}
+
+const selectServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":36,"b":40}]}],"statement":"SELECT *\nFROM services\nWHERE slug = :slug"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM services
+ * WHERE slug = :slug
+ * ```
+ */
+export const selectServiceBySlug = new PreparedQuery<ISelectServiceBySlugParams,ISelectServiceBySlugResult>(selectServiceBySlugIR);
+
+
+/** 'DeleteServiceBySlug' parameters type */
+export interface IDeleteServiceBySlugParams {
+  slug?: string | null | void;
+}
+
+/** 'DeleteServiceBySlug' return type */
+export interface IDeleteServiceBySlugResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
+}
+
+/** 'DeleteServiceBySlug' query type */
+export interface IDeleteServiceBySlugQuery {
+  params: IDeleteServiceBySlugParams;
+  result: IDeleteServiceBySlugResult;
+}
+
+const deleteServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":34,"b":38}]}],"statement":"DELETE FROM services\nWHERE slug = :slug\nRETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * DELETE FROM services
+ * WHERE slug = :slug
+ * RETURNING *
+ * ```
+ */
+export const deleteServiceBySlug = new PreparedQuery<IDeleteServiceBySlugParams,IDeleteServiceBySlugResult>(deleteServiceBySlugIR);
 
 

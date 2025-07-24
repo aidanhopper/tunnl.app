@@ -180,6 +180,7 @@ export interface IDeleteTunnelBindingResult {
   ziti_dial_id: string;
   ziti_host_id: string;
   ziti_intercept_id: string;
+  ziti_service_id: string;
 }
 
 /** 'DeleteTunnelBinding' query type */
@@ -315,5 +316,43 @@ const getTunnelBindingBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"
  * ```
  */
 export const getTunnelBindingBySlug = new PreparedQuery<IGetTunnelBindingBySlugParams,IGetTunnelBindingBySlugResult>(getTunnelBindingBySlugIR);
+
+
+/** 'SelectTunnelBindingsByServiceId' parameters type */
+export interface ISelectTunnelBindingsByServiceIdParams {
+  service_id?: string | null | void;
+}
+
+/** 'SelectTunnelBindingsByServiceId' return type */
+export interface ISelectTunnelBindingsByServiceIdResult {
+  created: Date;
+  entry_point: boolean;
+  id: string;
+  service_id: string;
+  slug: string;
+  ziti_bind_id: string;
+  ziti_dial_id: string;
+  ziti_host_id: string;
+  ziti_intercept_id: string;
+  ziti_service_id: string;
+}
+
+/** 'SelectTunnelBindingsByServiceId' query type */
+export interface ISelectTunnelBindingsByServiceIdQuery {
+  params: ISelectTunnelBindingsByServiceIdParams;
+  result: ISelectTunnelBindingsByServiceIdResult;
+}
+
+const selectTunnelBindingsByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":49,"b":59}]}],"statement":"SELECT *\nFROM tunnel_bindings\nWHERE service_id = :service_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM tunnel_bindings
+ * WHERE service_id = :service_id
+ * ```
+ */
+export const selectTunnelBindingsByServiceId = new PreparedQuery<ISelectTunnelBindingsByServiceIdParams,ISelectTunnelBindingsByServiceIdResult>(selectTunnelBindingsByServiceIdIR);
 
 

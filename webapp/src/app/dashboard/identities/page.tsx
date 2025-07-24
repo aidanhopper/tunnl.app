@@ -33,10 +33,10 @@ import AreYouSure from "@/components/are-you-sure";
 import ApprovalCard from "@/components/dashboard/approval-card";
 import { UserManager } from "@/lib/models/user";
 import pool from "@/lib/db";
+import { unauthorized } from "next/navigation";
 
 const Identities = async () => {
-    const user = await new UserManager(pool).auth()
-    if (!user) throw new Error("Unauthorized");
+    const user = await new UserManager(pool).auth() || unauthorized()
 
     if (!process.env.NEXT_PUBLIC_PUBLISHER_URL) return <>Error</>;
 

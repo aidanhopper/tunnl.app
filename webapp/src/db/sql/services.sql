@@ -8,20 +8,18 @@ WHERE user_id = (
 )
 ORDER BY created DESC;
 
-/* @name insertServiceByEmail */
+/* @name insertService */
 INSERT INTO services (
     user_id,
     slug, 
     name,
-    ziti_id,
     protocol 
 ) VALUES (
-    (SELECT id FROM users WHERE email = :email),
+    :user_id,
     :slug,
     :name,
-    :ziti_id,
     :protocol
-);
+) RETURNING *;
 
 /* @name deleteServiceByNameAndEmail */
 DELETE FROM services
@@ -46,22 +44,6 @@ WHERE user_id = (
     WHERE email = :email
 ) AND name = :name;
 
-/* @name getUserServiceAndIdentityBySlugs */
-SELECT
-    users.id AS user_id,
-    users.email AS email,
-    services.id AS service_id,
-    services.ziti_id AS service_ziti_id,
-    services.slug AS service_slug,
-    identities.id AS identity_id,
-    identities.ziti_id AS identity_ziti_id,
-    identities.slug AS identity_slug
-FROM services
-JOIN users ON users.id = services.user_id
-LEFT JOIN identities ON identities.user_id = users.id
-WHERE services.slug = :service_slug
-  AND identities.slug = :identity_slug;
-
 /* @name getService */
 SELECT *
 FROM services
@@ -85,3 +67,19 @@ WHERE id = :service_id;
 UPDATE services
 SET enabled = FALSE
 WHERE id = :service_id;
+
+/* @name selectServicesByUserId */
+SELECT *
+FROM services
+WHERE user_id = :id
+ORDER BY created DESC;
+
+/* @name selectServiceBySlug */
+SELECT *
+FROM services
+WHERE slug = :slug;
+
+/* @name deleteServiceBySlug */
+DELETE FROM services
+WHERE slug = :slug
+RETURNING *;

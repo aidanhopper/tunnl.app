@@ -2,7 +2,7 @@ import { deleteIdentityBySlug, insertIdentity, ISelectIdentitiesByUserIdResult, 
 import { Pool } from "pg";
 import * as zitiIdentities from '@/lib/ziti/identities';
 import slugify from "../slugify";
-import { IdentityResponse } from "../ziti/types";
+import { GetIdentityResponse, IdentityResponse } from "../ziti/types";
 
 export class IdentityManager {
     private userId: string;
@@ -69,7 +69,8 @@ export class IdentityManager {
             const zitiResponse = await zitiIdentities.postIdentity({
                 isAdmin: false,
                 name: slug,
-                type: 'Default'
+                type: 'Default',
+                enrollment: { ott: true },
             });
             if (!zitiResponse) throw new Error("Post identity to ziti failed");
             const resultList = await insertIdentity.run({
@@ -101,7 +102,7 @@ class Identity {
     private created: Date;
     private isOnline: boolean;
     private lastSeen: Date | null;
-    private zitiData: IdentityResponse | null = null;
+    private zitiData: GetIdentityResponse | null = null;
 
     constructor(data: ISelectIdentitiesByUserIdResult | ISelectIdentityBySlugResult) {
         this.id = data.id;
@@ -121,12 +122,12 @@ class Identity {
 
     public async getRoleAttributes() {
         await this.getZitiData();
-        return this.zitiData?.roleAttributes;
+        return this.zitiData?.data.enrollment.ott;
     }
 
     public async getEnrollment() {
         await this.getZitiData();
-        return this.zitiData?.enrollment;
+        return this.zitiData?.data.enrollment;
     }
 
     getId() {
