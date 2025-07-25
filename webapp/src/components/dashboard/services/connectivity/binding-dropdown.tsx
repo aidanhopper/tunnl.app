@@ -9,27 +9,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Copy, Delete, Edit, EllipsisVertical, Share } from "lucide-react";
-import { deleteTunnelBinding } from "@/lib/actions/services/delete-tunnel-binding";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import createTunnelBindingShareLink from "@/lib/actions/shares/create-share-link";
 import { useState } from "react";
 import AreYouSure from "@/components/are-you-sure";
 import { useAreYouSure } from "@/components/are-you-sure-provider";
 import Link from "next/link";
 import QRCode from "react-qr-code";
+import { TunnelBindingClientData } from '@/lib/models/tunnel-binding';
+import { ServiceClientData } from '@/lib/models/service';
+import { deleteTunnelBinding } from '@/lib/actions/services/delete-tunnel-binding';
 
 const BindingDropdown = ({
-    binding_slug,
-    slug,
-    service_id,
-    tunnel_binding_id,
-    serviceName
+    tunnelBinding,
+    service,
 }: {
-    binding_slug: string,
-    slug: string,
-    service_id: string,
-    tunnel_binding_id: string,
-    serviceName: string
+    tunnelBinding: TunnelBindingClientData,
+    service: ServiceClientData,
 }) => {
     const [shareLinkData, setShareLinkData] = useState<{ slug: string, expires: Date } | null>(null)
     const [copied, setCopied] = useState(false);
@@ -44,11 +39,11 @@ const BindingDropdown = ({
         setCopied(false);
         setShareLinkData(null);
         console.log('generating share link')
-        setShareLinkData(await createTunnelBindingShareLink({
-            service_id: service_id,
-            expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-            isOneTimeUse: true
-        }));
+        // setShareLinkData(await createTunnelBindingShareLink({
+        //     service_id: service_id,
+        //     expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        //     isOneTimeUse: true
+        // }));
     }
 
     const toUrl = (slug: string) => window.location.protocol + '//' + window.location.host + '/' + slug
@@ -59,7 +54,7 @@ const BindingDropdown = ({
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `Invite to access the ${serviceName} service's tunnel binding.`,
+                    title: `Invite to access the ${service.name} service's tunnel binding.`,
                     text: `Click the link to join today!`,
                     url: toUrl(shareLinkData?.slug ?? '')
                 })
@@ -72,8 +67,11 @@ const BindingDropdown = ({
     return (
         <Dialog>
             <AreYouSure
-                refreshOnYes={true}
-                onClickYes={() => deleteTunnelBinding(tunnel_binding_id)}>
+                onClickYes={() => deleteTunnelBinding({
+                    tunnelBindingSlug: tunnelBinding.slug,
+                    serviceSlug: service.slug,
+                })}
+                refreshOnYes={true}>
                 Are you sure you want to delete this binding?
             </AreYouSure>
             <DropdownMenu modal={false}>
@@ -89,7 +87,7 @@ const BindingDropdown = ({
                         className='cursor-pointer'
                         onClick={() => { }}
                         asChild>
-                        <Link href={`/dashboard/services/${slug}/connectivity/${binding_slug}`}>
+                        <Link href={`/dashboard/services/${service.slug}/connectivity/${tunnelBinding.slug}`}>
                             <Edit /> Edit
                         </Link>
                     </DropdownMenuItem>
@@ -110,9 +108,9 @@ const BindingDropdown = ({
             </DropdownMenu>
             {shareLinkData?.slug && <DialogContent className='w-[400px]'>
                 <DialogHeader>
-                    <DialogTitle className='text-center'>Share {serviceName}</DialogTitle>
+                    <DialogTitle className='text-center'>Share {service.name}</DialogTitle>
                     <DialogDescription className='text-center'>
-                        Share this link, scan the QR code, or click the share button to give access to {serviceName}
+                        Share this link, scan the QR code, or click the share button to give access to {service.name}
                     </DialogDescription>
                 </DialogHeader>
                 <div className='flex bg-accent rounded-sm pl-2 items-center'>

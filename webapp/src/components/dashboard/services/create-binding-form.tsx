@@ -8,10 +8,6 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
-import { IGetServiceBySlugResult } from "@/db/types/services.queries";
-import { IGetTunnelBindingsByServiceSlugResult } from "@/db/types/tunnel_bindings.queries";
-import createPrivateHttpsBinding from "@/lib/actions/services/create-private-https-binding";
 import createTunnelBinding from "@/lib/actions/services/create-tunnel-binding";
 import privateHttpsFormSchema from "@/lib/form-schemas/create-private-https-binding-form-schema";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
@@ -19,7 +15,6 @@ import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-
 import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
 import { IdentityClientData } from "@/lib/models/identity";
 import { ServiceClientData } from "@/lib/models/service";
-import { TunnelBindingClientData } from "@/lib/models/tunnel-binding";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -35,11 +30,9 @@ const bindingTypeSchema = z.object({
 
 const CreateBindingForm = ({
     identities,
-    tunnelBinding,
     service,
 }: {
     identities: IdentityClientData[],
-    tunnelBinding: TunnelBindingClientData | null,
     service: ServiceClientData,
 }) => {
     const [pageIndex, setPageIndex] = useState(0);
@@ -127,8 +120,8 @@ const CreateBindingForm = ({
                                             <SelectValue placeholder='Binding' />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {!tunnelBinding && <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>}
-                                            {tunnelBinding && <SelectItem className='cursor-pointer' value="private-https">Private HTTPS</SelectItem>}
+                                            <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>
+                                            <SelectItem className='cursor-pointer' value="private-https">Private HTTPS</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FormControl>
@@ -504,7 +497,7 @@ const CreateBindingForm = ({
 
         const privateHttpsPages = [
             <>
-                {tunnelBinding && <Form {...privateHttpsForm}>
+                <Form {...privateHttpsForm}>
                     <form
                         onSubmit={privateHttpsForm.handleSubmit(async (formData: z.infer<typeof privateHttpsFormSchema>) => {
                             // await createPrivateHttpsBinding({
@@ -557,7 +550,7 @@ const CreateBindingForm = ({
                             </span>
                         </div>
                     </form>
-                </Form>}
+                </Form>
             </>
         ]
 

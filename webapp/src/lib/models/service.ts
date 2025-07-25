@@ -91,7 +91,7 @@ export class ServiceManager {
     }
 }
 
-class Service {
+export class Service {
     private pool: Pool;
     private id: string;
     private userId: string;
@@ -117,7 +117,7 @@ class Service {
         this.protocol = data.protocol as 'tcp/udp' | 'http';
         this.enabled = data.enabled;
         this.pool = pool;
-        this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, serviceId: data.id })
+        this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, service: this })
     }
 
     getId() {

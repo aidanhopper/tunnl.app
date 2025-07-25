@@ -1,21 +1,9 @@
 'use server'
 
-import { insertTunnelBinding } from "@/db/types/tunnel_bindings.queries";
-import { insertZitiHost } from "@/db/types/ziti_hosts.queries";
-import { insertZitiIntercept } from "@/db/types/ziti_intercepts.queries";
-import { insertZitiPolicy } from "@/db/types/ziti_policies.queries";
-import client from "@/lib/db";
+import pool from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
-import tunnelShareFormSchema from "@/lib/form-schemas/tunnel-share-form-schema";
-import slugify from "@/lib/slugify";
-import updateDialRoles from "@/lib/update-dial-roles";
-import { getConfigIds, postConfig } from "@/lib/ziti/configs";
-import dialRole from "@/lib/ziti/dial-role";
-import { postPolicy } from "@/lib/ziti/policies";
-import { patchService } from "@/lib/ziti/services";
-import { assert } from "console";
-import { getServerSession } from "next-auth";
+import { UserManager } from "@/lib/models/user";
 
 const parsePortRange = (input: string) => {
     if (input.trim() === '') throw new Error('Port range cannot be empty');
@@ -53,16 +41,44 @@ const createTunnelBinding = async ({
     shareConfig: unknown
 }) => {
     try {
-        const session = await getServerSession();
-        if (!session?.user?.email) return;
-        const email = session.user.email;
+        const user = await new UserManager(pool).auth();
+        if (!user) throw new Error('Unauthorized');
+        const service = await user.getServiceManager().getServiceBySlug(serviceSlug);
+        if (!service) throw new Error('Service not found');
 
         const host = tunnelHostFormSchema.parse(hostConfig);
         const intercept = tunnelInterceptFormSchema.parse(interceptConfig);
-        const share = tunnelShareFormSchema.parse(shareConfig);
+        // const share = tunnelShareFormSchema.parse()
 
-        // add identity to this 
-        return true;
+        const protocol = host.protocol as 'tcp' | 'udp' | 'tcp/udp';
+
+        const identity = await user.getIdentityManager().getIdentityBySlug(host.identity);
+        if (!identity) throw new Error('Identity does not exist');
+
+        return await service.getTunnelBindingManager().createTunnelBinding({
+            host: {
+                protocol: protocol,
+                address: host.address,
+                zitiIdentityId: identity.getZitiId(),
+                portConfig: host.portConfig.forwardPorts ? {
+                    forwardPorts: true,
+                    portRange: parsePortRange(host.portConfig.portRange)
+                } : {
+                    forwardPorts: false,
+                    port: host.portConfig.port
+                }
+            },
+            intercept: {
+                address: intercept.address,
+                portConfig: host.portConfig.forwardPorts ? {
+                    forwardPorts: true,
+                    portRange: parsePortRange(host.portConfig.portRange)
+                } : {
+                    forwardPorts: false,
+                    port: host.portConfig.port
+                }
+            }
+        });
     } catch (err) {
         console.error(err);
         return false;

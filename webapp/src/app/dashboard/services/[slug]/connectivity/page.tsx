@@ -23,7 +23,6 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                     </div>
                     <div className='justify-end grid items-center'>
                         <CreateBindingForm
-                            tunnelBinding={tunnelBinding?.getClientData()}
                             service={service.getClientData()}
                             identities={identities.map(e => e.getClientData())} />
                     </div>
@@ -37,6 +36,7 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                             <TableRow>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Visibility</TableHead>
+                                <TableHead>Entrypoint</TableHead>
                                 <TableHead>Config</TableHead>
                                 <TableHead />
                             </TableRow>
@@ -45,23 +45,27 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                             {tunnelBinding && <TableRow>
                                 <TableCell>Tunnel</TableCell>
                                 <TableCell>Private</TableCell>
+                                <TableCell>
+                                    {tunnelBinding.isEntryPoint() ? 'True' : 'False'}
+                                </TableCell>
                                 <TableCell className='grid grid-cols-1'>
                                     <div className='flex flex-col'>
                                         <span>
-                                            { }
+                                            {await tunnelBinding.getProtocol()}
                                         </span>
-                                        <span>{ }</span>
-                                        <span>{ }</span>
+                                        <span>
+                                            {(await tunnelBinding.getAddresses())?.join(' ')}
+                                        </span>
+                                        <span>
+                                            {await tunnelBinding.getInterceptPortRange()}
+                                        </span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className='flex justify-end'>
-                                        {/* <BindingDropdown */}
-                                        {/*     serviceName={service.name} */}
-                                        {/*     binding_slug={tunnelBinding.slug} */}
-                                        {/*     slug={slug} */}
-                                        {/*     tunnel_binding_id={tunnelBinding.id} */}
-                                        {/*     service_id={service.id} /> */}
+                                        <BindingDropdown
+                                            service={service.getClientData()}
+                                            tunnelBinding={await tunnelBinding.getClientData()} />
                                     </div>
                                 </TableCell>
                             </TableRow>}

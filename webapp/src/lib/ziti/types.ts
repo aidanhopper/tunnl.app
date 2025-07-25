@@ -242,18 +242,18 @@ export interface PatchServiceData {
 }
 
 export interface ServiceListResponse {
-    data: Service[];
+    data: GetServiceData[];
     _links: Record<string, Link>;
     meta: Meta;
 }
 
 export interface GetServiceResponse {
-    data: Service;
+    data: GetServiceData;
     _links: Record<string, Link>;
     meta: Meta;
 }
 
-export interface Service {
+export interface GetServiceData {
     id: string;
     name: string;
     encryptionRequired: boolean;
