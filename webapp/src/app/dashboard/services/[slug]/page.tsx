@@ -35,7 +35,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <DialChart serviceDials={await service.getServiceDials()} />
+                        <DialChart serviceDials={[]} />
                     </CardContent>
                 </Card>
                 <div className='grid lg:grid-cols-2 gap-4'>

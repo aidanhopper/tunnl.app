@@ -1,4 +1,4 @@
-import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
+import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
 import { Pool } from "pg";
 import { GetConfigData, HostV1ConfigData, InterceptV1ConfigData, GetServiceData, ServicePolicyDetail } from "../ziti/types";
 import { deleteConfig, getConfig, getConfigIds, postConfig } from "../ziti/configs";
@@ -6,9 +6,7 @@ import { deleteService, getService, postService } from "../ziti/services";
 import { deletePolicy, getPolicy, postPolicy } from "../ziti/policies";
 import { Service } from './service';
 import slugify from "../slugify";
-import { protocol } from "socket.io-client";
 
-// Port config discriminated union
 interface PortConfigForwardFalse {
     forwardPorts: false;
     port: string;
@@ -24,7 +22,6 @@ interface PortConfigForwardTrue {
 
 type PortConfig = PortConfigForwardFalse | PortConfigForwardTrue;
 
-// Tunnel Host Form
 export interface TunnelBindingHost {
     protocol: 'tcp' | 'udp' | 'tcp/udp';
     address: string;
@@ -32,7 +29,6 @@ export interface TunnelBindingHost {
     portConfig: PortConfig;
 }
 
-// Tunnel Intercept Form
 export interface TunnelBindingIntercept {
     address: string;
     portConfig: PortConfig;
@@ -99,6 +95,22 @@ export class TunnelBindingManager {
             return resultList.map(e => new TunnelBinding(e));
         } catch {
             return [];
+        } finally {
+            client.release();
+        }
+    }
+
+    async getTunnelBindingBySlug(slug: string) {
+        const client = await this.pool.connect();
+        try {
+            const resultList = await selectTunnelBindingBySlug
+                .run({ slug }, client);
+            if (resultList.length === 0
+                || resultList[0].service_id !== this.service.getId())
+                throw new Error('Tunnel binding not found');
+            return new TunnelBinding(resultList[0]);
+        } catch {
+            return null;
         } finally {
             client.release();
         }
@@ -235,7 +247,10 @@ export class TunnelBindingManager {
             if (resultList.length === 0 || resultList[0].service_id !== this.service.getId())
                 throw new Error('Failed to delete tunnel binding');
 
-            const tunnelBinding = new TunnelBinding(resultList[0]);
+            const tunnelBinding = new TunnelBinding({
+                pool: this.pool,
+                data: resultList[0]
+            });
 
             await deleteService(tunnelBinding.getZitiServiceId());
             await deleteConfig(tunnelBinding.getZitiInterceptId());
@@ -256,6 +271,7 @@ export class TunnelBindingManager {
 }
 
 class TunnelBinding {
+    private pool: Pool;
     private id: string;
     private serviceId: string;
     private zitiHostId: string;
@@ -272,7 +288,13 @@ class TunnelBinding {
     private zitiDial: ServicePolicyDetail | null = null;
     private zitiService: GetServiceData | null = null;
 
-    constructor(data: ISelectTunnelBindingsByServiceIdResult) {
+    constructor({
+        pool,
+        data
+    }: {
+        pool: Pool,
+        data: ISelectTunnelBindingsByServiceIdResult
+    }) {
         this.serviceId = data.service_id;
         this.id = data.id;
         this.zitiHostId = data.ziti_host_id;
@@ -283,6 +305,7 @@ class TunnelBinding {
         this.entryPoint = data.entry_point;
         this.slug = data.slug;
         this.created = data.created;
+        this.pool = pool;
     }
 
     private async getZitiConfig<T>(id: string) {
@@ -348,6 +371,27 @@ class TunnelBinding {
         if (!portRange) return null;
         return this.portRangeToString(portRange);
     }
+
+    async getZitiServiceDials() {
+        const client = await this.pool.connect();
+        try {
+            // const dials = await selectServiceDialsByServiceId.run(
+            //     { service_id: this.id },
+            //     client
+            // );
+            // return dials.map(e => {
+            //     return {
+            //         dials: e.dials,
+            //         timestamp: e.timestamp
+            //     } as ServiceDialData
+            // });
+        } catch {
+            return []
+        } finally {
+            client.release();
+        }
+    }
+
 
     getId() {
         return this.id;

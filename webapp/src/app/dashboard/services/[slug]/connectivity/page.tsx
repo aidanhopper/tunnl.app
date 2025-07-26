@@ -1,6 +1,7 @@
 import { AreYouSureProvider } from "@/components/are-you-sure-provider";
 import BindingDropdown from "@/components/dashboard/services/connectivity/binding-dropdown";
 import CreateBindingForm from "@/components/dashboard/services/create-binding-form";
+import ShareServiceDialog from "@/components/dashboard/services/share-service-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import pool from "@/lib/db";
@@ -21,10 +22,11 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                         <CardTitle>Manage bindings</CardTitle>
                         <CardDescription>Connectivity settings for {service.getName()}</CardDescription>
                     </div>
-                    <div className='justify-end grid items-center'>
+                    <div className='justify-end flex gap-4 items-center'>
                         <CreateBindingForm
                             service={service.getClientData()}
                             identities={identities.map(e => e.getClientData())} />
+                        <ShareServiceDialog service={service.getClientData()} />
                     </div>
                 </div>
             </CardHeader>

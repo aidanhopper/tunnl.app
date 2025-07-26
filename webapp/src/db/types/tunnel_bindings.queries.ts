@@ -139,3 +139,41 @@ const deleteTunnelBindingBySlugIR: any = {"usedParamSet":{"slug":true},"params":
 export const deleteTunnelBindingBySlug = new PreparedQuery<IDeleteTunnelBindingBySlugParams,IDeleteTunnelBindingBySlugResult>(deleteTunnelBindingBySlugIR);
 
 
+/** 'SelectTunnelBindingBySlug' parameters type */
+export interface ISelectTunnelBindingBySlugParams {
+  slug?: string | null | void;
+}
+
+/** 'SelectTunnelBindingBySlug' return type */
+export interface ISelectTunnelBindingBySlugResult {
+  created: Date;
+  entry_point: boolean;
+  id: string;
+  service_id: string;
+  slug: string;
+  ziti_bind_id: string;
+  ziti_dial_id: string;
+  ziti_host_id: string;
+  ziti_intercept_id: string;
+  ziti_service_id: string;
+}
+
+/** 'SelectTunnelBindingBySlug' query type */
+export interface ISelectTunnelBindingBySlugQuery {
+  params: ISelectTunnelBindingBySlugParams;
+  result: ISelectTunnelBindingBySlugResult;
+}
+
+const selectTunnelBindingBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":43,"b":47}]}],"statement":"SELECT *\nFROM tunnel_bindings\nWHERE slug = :slug"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT *
+ * FROM tunnel_bindings
+ * WHERE slug = :slug
+ * ```
+ */
+export const selectTunnelBindingBySlug = new PreparedQuery<ISelectTunnelBindingBySlugParams,ISelectTunnelBindingBySlugResult>(selectTunnelBindingBySlugIR);
+
+

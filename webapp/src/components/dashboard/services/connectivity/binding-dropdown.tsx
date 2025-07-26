@@ -26,46 +26,11 @@ const BindingDropdown = ({
     tunnelBinding: TunnelBindingClientData,
     service: ServiceClientData,
 }) => {
-    const [shareLinkData, setShareLinkData] = useState<{ slug: string, expires: Date } | null>(null)
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = async (text: string) => {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1000);
-    }
-
-    const generateShareLink = async () => {
-        setCopied(false);
-        setShareLinkData(null);
-        console.log('generating share link')
-        // setShareLinkData(await createTunnelBindingShareLink({
-        //     service_id: service_id,
-        //     expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        //     isOneTimeUse: true
-        // }));
-    }
-
-    const toUrl = (slug: string) => window.location.protocol + '//' + window.location.host + '/' + slug
 
     const { setOpen } = useAreYouSure();
 
-    const handleShareButton = async () => {
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: `Invite to access the ${service.name} service's tunnel binding.`,
-                    text: `Click the link to join today!`,
-                    url: toUrl(shareLinkData?.slug ?? '')
-                })
-            } catch { }
-        } else {
-            console.error('Sharing is not supported on this browser');
-        }
-    }
-
     return (
-        <Dialog>
+        <>
             <AreYouSure
                 onClickYes={() => deleteTunnelBinding({
                     tunnelBindingSlug: tunnelBinding.slug,
@@ -91,13 +56,6 @@ const BindingDropdown = ({
                             <Edit /> Edit
                         </Link>
                     </DropdownMenuItem>
-                    <DialogTrigger
-                        onClick={generateShareLink}
-                        className='w-full'>
-                        <DropdownMenuItem className='cursor-pointer w-full'>
-                            <Share /> Share
-                        </DropdownMenuItem>
-                    </DialogTrigger>
                     <DropdownMenuItem
                         variant='destructive'
                         className='cursor-pointer'
@@ -106,45 +64,7 @@ const BindingDropdown = ({
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            {shareLinkData?.slug && <DialogContent className='w-[400px]'>
-                <DialogHeader>
-                    <DialogTitle className='text-center'>Share {service.name}</DialogTitle>
-                    <DialogDescription className='text-center'>
-                        Share this link, scan the QR code, or click the share button to give access to {service.name}
-                    </DialogDescription>
-                </DialogHeader>
-                <div className='flex bg-accent rounded-sm pl-2 items-center'>
-                    <span className='flex-1'>
-                        {toUrl(shareLinkData.slug)}
-                    </span>
-                    <TooltipProvider>
-                        <Tooltip open={copied}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    onClick={() => handleCopy(toUrl(shareLinkData.slug))}
-                                    size='icon'
-                                    className='rounded-l-none cursor-pointer'>
-                                    <Copy />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                Copied the URL
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
-                <div className='flex items-center justify-center'>
-                    <div className='bg-white p-2 rounded'>
-                        <QRCode
-                            size={330}
-                            value={toUrl(shareLinkData.slug)} />
-                    </div>
-                </div>
-                <Button className='cursor-pointer' onClick={handleShareButton}>
-                    Share
-                </Button>
-            </DialogContent>}
-        </Dialog>
+        </>
     );
 }
 

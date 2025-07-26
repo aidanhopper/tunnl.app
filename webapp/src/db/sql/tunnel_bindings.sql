@@ -29,3 +29,8 @@ WHERE service_id = :service_id;
 DELETE FROM tunnel_bindings
 WHERE slug = :slug
 RETURNING *;
+
+/* @name selectTunnelBindingBySlug */
+SELECT *
+FROM tunnel_bindings
+WHERE slug = :slug;

@@ -1,15 +1,15 @@
-import EditBindingForm from "@/components/dashboard/services/edit-binding-form";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getServerSession } from "next-auth";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
+import { notFound, unauthorized } from "next/navigation";
 
 const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding_slug: string }> }) => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    if (!email) unauthorized();
-
+    const serviceSlug = (await params).slug;
     const bindingSlug = (await params).binding_slug;
-
-    return (
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const service = await user.getServiceManager().getServiceBySlug(serviceSlug) || notFound();
+    const tunnelBinding = await service.getTunnelBindingManager().getTunnelBindingBySlug(bindingSlug);
+    return tunnelBinding ? (
         <div className='grid gap-8'>
             <Card>
                 <CardHeader>
@@ -21,12 +21,12 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
                     </CardDescription>
                 </CardHeader>
             </Card>
-            <EditBindingForm
-                identities={identities}
-                hostingIdentitySlug={hostingIdentitySlug}
-                binding={binding} />
+            {/* <EditBindingForm */}
+            {/*     identities={identities} */}
+            {/*     hostingIdentitySlug={hostingIdentitySlug} */}
+            {/*     binding={binding} /> */}
         </div>
-    )
+    ) : <></>;
 }
 
 export default BindingPage;

@@ -3,6 +3,7 @@ import { Pool } from "pg";
 import slugify from "../slugify";
 import { selectServiceDialsByServiceId } from "@/db/types/service_dials.queries";
 import { TunnelBindingManager } from "./tunnel-binding";
+import { ShareLinkProducerManager } from "./share-link";
 
 export class ServiceManager {
     private userId: string;
@@ -101,6 +102,7 @@ export class Service {
     private protocol: 'tcp/udp' | 'http';
     private enabled: boolean;
     private tunnelBindingManager: TunnelBindingManager;
+    private shareLinkProducerManager: ShareLinkProducerManager;
 
     constructor({
         data,
@@ -117,7 +119,8 @@ export class Service {
         this.protocol = data.protocol as 'tcp/udp' | 'http';
         this.enabled = data.enabled;
         this.pool = pool;
-        this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, service: this })
+        this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, service: this });
+        this.shareLinkProducerManager = new ShareLinkProducerManager({ pool: pool, serviceId: this.id });
     }
 
     getId() {
@@ -158,28 +161,12 @@ export class Service {
         } as ServiceClientData;
     }
 
-    async getServiceDials() {
-        const client = await this.pool.connect();
-        try {
-            const dials = await selectServiceDialsByServiceId.run(
-                { service_id: this.id },
-                client
-            );
-            return dials.map(e => {
-                return {
-                    dials: e.dials,
-                    timestamp: e.timestamp
-                } as ServiceDialData
-            });
-        } catch {
-            return []
-        } finally {
-            client.release();
-        }
-    }
-
     getTunnelBindingManager() {
         return this.tunnelBindingManager;
+    }
+
+    getShareLinkProducerManager() {
+        return this.shareLinkProducerManager;
     }
 }
 
