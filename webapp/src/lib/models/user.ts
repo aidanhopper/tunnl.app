@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { Pool } from "pg";
 import { IdentityManager } from "./identity";
 import { ServiceManager } from "./service";
+import { ShareLinkConsumerManager } from "./share-link";
+import { ShareAccessManager } from "./share";
 
 export class UserManager {
     private pool: Pool;
@@ -25,13 +27,15 @@ export class UserManager {
     }
 }
 
-class User {
+export class User {
     private id: string;
     private email: string;
     private roles: string[];
     private lastLogin: Date;
     private identityManager: IdentityManager;
     private serviceManager: ServiceManager;
+    private shareLinkConsumerManager: ShareLinkConsumerManager;
+    private ShareAccessManager: ShareAccessManager;
 
     constructor({ data, pool }: { data: ISelectUserByEmailResult, pool: Pool }) {
         this.id = data.id;
@@ -40,6 +44,8 @@ class User {
         this.lastLogin = data.last_login;
         this.identityManager = new IdentityManager({ userId: this.id, pool: pool })
         this.serviceManager = new ServiceManager({ userId: this.id, pool: pool });
+        this.shareLinkConsumerManager = new ShareLinkConsumerManager({ userId: this.id, pool: pool });
+        this.ShareAccessManager = new ShareAccessManager({ userId: this.id, pool: pool });
     }
 
     getId() {
@@ -64,6 +70,14 @@ class User {
 
     getServiceManager() {
         return this.serviceManager;
+    }
+
+    getShareLinkConsumerManager() {
+        return this.shareLinkConsumerManager;
+    }
+
+    getShareAccessManager() {
+        return this.ShareAccessManager;
     }
 
     isApproved() {

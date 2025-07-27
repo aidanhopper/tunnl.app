@@ -1,3 +1,4 @@
+import EditBindingForm from "@/components/dashboard/services/edit-binding-form";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import pool from "@/lib/db";
 import { UserManager } from "@/lib/models/user";
@@ -7,8 +8,10 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
     const serviceSlug = (await params).slug;
     const bindingSlug = (await params).binding_slug;
     const user = await new UserManager(pool).auth() || unauthorized();
+    const identities = await user.getIdentityManager().getIdentities();
     const service = await user.getServiceManager().getServiceBySlug(serviceSlug) || notFound();
-    const tunnelBinding = await service.getTunnelBindingManager().getTunnelBindingBySlug(bindingSlug);
+    const tunnelBinding = await service.getTunnelBindingManager().getTunnelBindingBySlug(bindingSlug) || notFound();
+    const hostingIdentity = await tunnelBinding.getHostingIdentity();
     return tunnelBinding ? (
         <div className='grid gap-8'>
             <Card>
@@ -21,10 +24,10 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
                     </CardDescription>
                 </CardHeader>
             </Card>
-            {/* <EditBindingForm */}
-            {/*     identities={identities} */}
-            {/*     hostingIdentitySlug={hostingIdentitySlug} */}
-            {/*     binding={binding} /> */}
+            <EditBindingForm
+                identities={identities.map(e => e.getClientData())}
+                hostingIdentity={hostingIdentity?.getClientData() ?? null}
+                binding={await tunnelBinding.getClientData()} />
         </div>
     ) : <></>;
 }

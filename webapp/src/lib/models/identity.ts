@@ -93,7 +93,7 @@ export class IdentityManager {
     }
 }
 
-class Identity {
+export class Identity {
     private id: string;
     private userId: string;
     private zitiId: string;

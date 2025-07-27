@@ -15,15 +15,17 @@ import disableService from "@/lib/actions/services/disable-service";
 import enableService from "@/lib/actions/services/enable-service";
 import { UserManager } from "@/lib/models/user";
 import pool from "@/lib/db";
+import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
+import deleteShare from "@/lib/actions/shares/delete-share";
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
     const user = await new UserManager(pool).auth() || unauthorized();
     const service = await user.getServiceManager().getServiceBySlug(slug) || notFound();
+    const serviceClientData = await service.getClientData();
     const tunnelBinding = (await service.getTunnelBindingManager().getTunnelBindings())[0] ?? null;
-    const shares = []
-    const shareLinks = []
-
+    const shares = await service.getShareGrantManager().getShares();
+    const shareLinks = await service.getShareLinkProducerManager().getShareLinks();
     return (
         <>
             {tunnelBinding ? <div className='flex flex-col gap-4'>
@@ -50,7 +52,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                     refreshOnYes={true}
                                     onClickYes={async () => {
                                         'use server'
-                                        // await revokeAllShares(service.id);
+                                        await revokeAllShares(serviceClientData.slug);
                                     }}>
                                     Are you sure you want to revoke all {service.getName()} shares?
                                 </AreYouSure>
@@ -63,16 +65,20 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {shares.map((e, i) => {
-                                return (
+                            {shares.map(e => e.getClientData()).map(async (e, i) => {
+                                const share = await e;
+                                return share ? (
                                     <div key={i} className='flex items-center gap-2 space-y-2'>
-                                        <span className='text-sm flex-1'>{e.email}</span>
+                                        <span className='text-sm flex-1'>{share?.granteeEmail}</span>
                                         <AreYouSureProvider>
                                             <AreYouSure
                                                 refreshOnYes={true}
                                                 onClickYes={async () => {
                                                     'use server'
-                                                    await share.delete()
+                                                    await deleteShare({
+                                                        shareSlug: share.slug,
+                                                        serviceSlug: serviceClientData.slug
+                                                    });
                                                 }} />
                                             <DropdownMenu modal={false}>
                                                 <DropdownMenuTrigger asChild>
@@ -88,7 +94,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                             </DropdownMenu>
                                         </AreYouSureProvider>
                                     </div>
-                                );
+                                ) : <></>;
                             })}
                             {shares.length === 0 && <>You have no active shares</>}
                         </CardContent>
@@ -104,7 +110,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                     refreshOnYes={true}
                                     onClickYes={async () => {
                                         'use server'
-                                        revokeAllShareLinks(service.id);
+                                        revokeAllShareLinks(serviceClientData.slug);
                                     }}>
                                     Are you sure you want to revoke all {service.getName()} share links?
                                 </AreYouSure>
@@ -117,15 +123,16 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {shareLinks.map((e, i) => {
-                                const diffMs = e.expires.getTime() - (new Date()).getTime();
+                            {shareLinks.map(e => e.getClientData()).map(async (e, i) => {
+                                const shareLink = await e;
+                                const diffMs = shareLink.expires.getTime() - (new Date()).getTime();
                                 const totalMinutes = Math.max(0, Math.floor(diffMs / (1000 * 60))); // prevent negative time
                                 const hours = Math.floor(totalMinutes / 60);
                                 const formatted = `${String(hours).padStart(2, '0')}h`;
                                 return (
                                     <div key={i} className='flex items-center gap-2 space-y-2'>
                                         <span className='flex-1 grid lg:grid-cols-2'>
-                                            <span className='text-sm'>{e.slug}</span>
+                                            <span className='text-sm'>{shareLink.slug}</span>
                                             <span className='text-sm'>Expires in {formatted}</span>
                                         </span>
                                         <AreYouSureProvider>
@@ -133,7 +140,10 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                                 refreshOnYes={true}
                                                 onClickYes={async () => {
                                                     'use server'
-                                                    await deleteShareLink(e.id);
+                                                    await deleteShareLink({
+                                                        shareLinkSlug: shareLink.slug,
+                                                        serviceSlug: serviceClientData.slug
+                                                    });
                                                 }} />
                                             <DropdownMenu modal={false}>
                                                 <DropdownMenuTrigger asChild>

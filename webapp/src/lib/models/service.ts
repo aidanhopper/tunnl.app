@@ -1,9 +1,10 @@
-import { deleteServiceBySlug, insertService, ISelectServiceBySlugResult, ISelectServicesByUserIdResult, selectServiceBySlug, selectServicesByUserId } from "@/db/types/services.queries";
+import { deleteServiceBySlug, insertService, ISelectServiceByIdResult, ISelectServiceBySlugResult, ISelectServicesByUserIdResult, selectServiceById, selectServiceBySlug, selectServicesByUserId } from "@/db/types/services.queries";
 import { Pool } from "pg";
 import slugify from "../slugify";
 import { selectServiceDialsByServiceId } from "@/db/types/service_dials.queries";
 import { TunnelBindingManager } from "./tunnel-binding";
 import { ShareLinkProducerManager } from "./share-link";
+import { ShareGrantManager } from "./share";
 
 export class ServiceManager {
     private userId: string;
@@ -29,13 +30,25 @@ export class ServiceManager {
         }
     }
 
+    async getServiceById(id: string) {
+        const client = await this.pool.connect();
+        try {
+            const resultList = await selectServiceById.run({ id }, client);
+            const res = resultList[0] || null;
+            if (!res || res.user_id !== this.userId)
+                throw new Error('Service does not exist');
+            return new Service({ data: res, pool: this.pool });
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
     async getServiceBySlug(slug: string) {
         const client = await this.pool.connect();
         try {
-            const resultList = await selectServiceBySlug.run(
-                { slug: slug },
-                client
-            );
+            const resultList = await selectServiceBySlug.run({ slug }, client);
             const res = resultList[0] || null;
             if (!res || res.user_id !== this.userId)
                 throw new Error('Service does not exist');
@@ -103,12 +116,13 @@ export class Service {
     private enabled: boolean;
     private tunnelBindingManager: TunnelBindingManager;
     private shareLinkProducerManager: ShareLinkProducerManager;
+    private shareGrantManager: ShareGrantManager;
 
     constructor({
         data,
         pool
     }: {
-        data: ISelectServicesByUserIdResult | ISelectServiceBySlugResult,
+        data: ISelectServicesByUserIdResult | ISelectServiceBySlugResult | ISelectServiceByIdResult,
         pool: Pool
     }) {
         this.id = data.id;
@@ -121,6 +135,7 @@ export class Service {
         this.pool = pool;
         this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, service: this });
         this.shareLinkProducerManager = new ShareLinkProducerManager({ pool: pool, serviceId: this.id });
+        this.shareGrantManager = new ShareGrantManager({ pool: pool, serviceId: this.id, ownerUserId: this.userId });
     }
 
     getId() {
@@ -144,20 +159,33 @@ export class Service {
     }
 
     getProtocol() {
-        return this.protocol;
+        return this.protocol.toUpperCase();
     }
 
     isEnabled() {
         return this.enabled;
     }
 
-    getClientData() {
+    async getEntryPointData() {
+        const tunnelBindings = await this.getTunnelBindingManager().getTunnelBindings();
+        const entryPoint = tunnelBindings.find(e => e.isEntryPoint());
+        if (!entryPoint) return null;
+        const addresses = await entryPoint.getAddresses();
+        const portRange = await entryPoint.getInterceptPortRange();
+        return {
+            intercept: addresses ? addresses[0] : null,
+            portRange: portRange
+        } as EntryPoint;
+    }
+
+    async getClientData() {
         return {
             created: this.created,
             slug: this.slug,
             name: this.name,
-            protocol: this.protocol,
+            protocol: this.getProtocol(),
             enabled: this.enabled,
+            entryPoint: await this.getEntryPointData()
         } as ServiceClientData;
     }
 
@@ -168,6 +196,15 @@ export class Service {
     getShareLinkProducerManager() {
         return this.shareLinkProducerManager;
     }
+
+    getShareGrantManager() {
+        return this.shareGrantManager;
+    }
+}
+
+interface EntryPoint {
+    intercept: string | null
+    portRange: string | null
 }
 
 export interface ServiceClientData {
@@ -176,6 +213,7 @@ export interface ServiceClientData {
     name: string;
     protocol: 'tcp/udp' | 'http';
     enabled: boolean;
+    entryPoint: EntryPoint;
 }
 
 export interface ServiceDialData {

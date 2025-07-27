@@ -2,17 +2,16 @@ import ApprovalCard from "@/components/dashboard/approval-card";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import SharesTable from "@/components/dashboard/shares/shares-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import client from "@/lib/db";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 import { Users } from "lucide-react";
-import { getServerSession } from "next-auth";
 import { unauthorized } from "next/navigation";
 
 const Shares = async () => {
-    const session = await getServerSession();
-    const email = session?.user?.email;
-    if (!email) unauthorized();
-    const approved = false;
-
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const shares = await user.getShareAccessManager().getShares();
+    const sharesClientData = (await Promise.all(shares.map(e => e.getClientData())))
+        .filter(e => e !== null);
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>
@@ -22,9 +21,9 @@ const Shares = async () => {
                         <h1>Shares</h1>
                     </div>
                 </div>
-                {!approved &&
+                {!user.isApproved() &&
                     <ApprovalCard
-                        email={email}/>}
+                        email={user.getEmail()} />}
                 <Card>
                     <CardHeader>
                         <CardTitle>
@@ -35,7 +34,7 @@ const Shares = async () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <SharesTable shares={shares} />
+                        <SharesTable shares={sharesClientData} />
                     </CardContent>
                 </Card>
             </div>

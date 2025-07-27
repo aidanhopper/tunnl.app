@@ -13,7 +13,9 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
     const user = await new UserManager(pool).auth() || unauthorized();
     const identities = await user.getIdentityManager().getIdentities();
     const service = await user.getServiceManager().getServiceBySlug(slug) || notFound();
+    const serviceClientData = await service.getClientData();
     const tunnelBinding = (await service.getTunnelBindingManager().getTunnelBindings())[0] ?? null;
+    const tunnelBindingClientData = await tunnelBinding.getClientData();
     return (
         <Card>
             <CardHeader>
@@ -24,9 +26,9 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                     </div>
                     <div className='justify-end flex gap-4 items-center'>
                         <CreateBindingForm
-                            service={service.getClientData()}
+                            service={serviceClientData}
                             identities={identities.map(e => e.getClientData())} />
-                        <ShareServiceDialog service={service.getClientData()} />
+                        <ShareServiceDialog service={serviceClientData} />
                     </div>
                 </div>
             </CardHeader>
@@ -66,8 +68,8 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                                 <TableCell>
                                     <div className='flex justify-end'>
                                         <BindingDropdown
-                                            service={service.getClientData()}
-                                            tunnelBinding={await tunnelBinding.getClientData()} />
+                                            service={serviceClientData}
+                                            tunnelBinding={tunnelBindingClientData} />
                                     </div>
                                 </TableCell>
                             </TableRow>}

@@ -1,20 +1,11 @@
 'use client'
 
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger
-} from '@/components/ui/tooltip';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Copy, Delete, Edit, EllipsisVertical, Share } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState } from "react";
+import { Delete, Edit, EllipsisVertical } from "lucide-react";
 import AreYouSure from "@/components/are-you-sure";
 import { useAreYouSure } from "@/components/are-you-sure-provider";
 import Link from "next/link";
-import QRCode from "react-qr-code";
 import { TunnelBindingClientData } from '@/lib/models/tunnel-binding';
 import { ServiceClientData } from '@/lib/models/service';
 import { deleteTunnelBinding } from '@/lib/actions/services/delete-tunnel-binding';

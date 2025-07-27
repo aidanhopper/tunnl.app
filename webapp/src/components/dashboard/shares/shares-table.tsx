@@ -13,12 +13,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { IGetSharesByEmailResult } from "@/db/types/shares.queries";
 import { EllipsisVertical } from "lucide-react";
 import DeleteShareButton from "./delete-share-button";
 import deleteShare from "@/lib/actions/shares/delete-share";
+import { ShareClientData } from "@/lib/models/share";
 
-const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
+const SharesTable = ({ shares }: { shares: ShareClientData[] }) => {
     return (
         <Table>
             <TableCaption>A list of your shares.</TableCaption>
@@ -27,7 +27,7 @@ const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
                     <TableHead>Service</TableHead>
                     <TableHead>Owner</TableHead>
                     <TableHead>Protocol</TableHead>
-                    <TableHead>Address</TableHead>
+                    <TableHead>Config</TableHead>
                     <TableHead />
                 </TableRow>
             </TableHeader>
@@ -35,16 +35,23 @@ const SharesTable = ({ shares }: { shares: IGetSharesByEmailResult[] }) => {
                 {shares.map((share, i) => {
                     return (
                         <TableRow key={i}>
-                            <TableCell>{share.service_name}</TableCell>
-                            <TableCell>{share.owner_email}</TableCell>
-                            <TableCell>{share.service_protocol === 'http' ? 'http' : share.intercept_protocol}</TableCell>
-                            <TableCell>{share.intercept_addresses[0]}</TableCell>
+                            <TableCell>{share.service.name}</TableCell>
+                            <TableCell>{share.granterEmail}</TableCell>
+                            <TableCell>{share.service.protocol}</TableCell>
+                            <TableCell>
+                                <div>
+                                    {share.service.entryPoint.intercept}
+                                </div>
+                                <div>
+                                    {share.service.entryPoint.portRange}
+                                </div>
+                            </TableCell>
                             <TableCell className='w-16'>
                                 <AreYouSureProvider>
                                     <AreYouSure
                                         yesText=<>Delete the share</>
                                         refreshOnYes={true}
-                                        onClickYes={async () => await deleteShare(share.id)}>
+                                        onClickYes={async () => await deleteShare({ shareSlug: share.slug })}>
                                         Are you sure you want to delete this share?
                                         You will lose access to the service once deleted.
                                     </AreYouSure>

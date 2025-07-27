@@ -1,31 +1,22 @@
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import ServiceNavButton from "@/components/dashboard/services/service-nav-button";
-import { getServiceBySlug } from "@/db/types/services.queries";
-import client from "@/lib/db";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 import { HelpingHand } from "lucide-react";
-import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { forbidden, notFound, unauthorized } from "next/navigation";
+import { notFound, unauthorized } from "next/navigation";
 import { ReactNode } from "react";
 
 const DashboardServiceLayout = async ({ children, params }: { children: ReactNode, params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
-
-    const session = await getServerSession();
-    if (!session?.user?.email) unauthorized();
-    const email = session.user.email;
-
-    const serviceList = await getServiceBySlug.run({ slug: slug }, client);
-    if (serviceList.length === 0) notFound();
-    const service = serviceList[0]
-
-
+    const user = await new UserManager(pool).auth() || unauthorized();
+    const service = await user.getServiceManager().getServiceBySlug(slug) || notFound();
     return (
         <DashboardLayout>
             <div className='flex'>
                 <div className='flex flex-1 items-center gap-8'>
                     <HelpingHand size={48} />
-                    <h1>{service.name}</h1>
+                    <h1>{service.getName()}</h1>
                 </div>
             </div>
             <div className='mt-10 flex flex-col lg:flex-row gap-10'>

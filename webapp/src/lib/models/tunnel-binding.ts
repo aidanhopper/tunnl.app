@@ -6,6 +6,8 @@ import { deleteService, getService, postService } from "../ziti/services";
 import { deletePolicy, getPolicy, postPolicy } from "../ziti/policies";
 import { Service } from './service';
 import slugify from "../slugify";
+import { selectIdentityBySlug } from "@/db/types/identities.queries";
+import { Identity } from "./identity";
 
 interface PortConfigForwardFalse {
     forwardPorts: false;
@@ -92,7 +94,7 @@ export class TunnelBindingManager {
                 { service_id: this.service.getId() },
                 client
             );
-            return resultList.map(e => new TunnelBinding(e));
+            return resultList.map(e => new TunnelBinding({ data: e, pool: this.pool }));
         } catch {
             return [];
         } finally {
@@ -108,7 +110,7 @@ export class TunnelBindingManager {
             if (resultList.length === 0
                 || resultList[0].service_id !== this.service.getId())
                 throw new Error('Tunnel binding not found');
-            return new TunnelBinding(resultList[0]);
+            return new TunnelBinding({ data: resultList[0], pool: this.pool });
         } catch {
             return null;
         } finally {
@@ -357,6 +359,21 @@ class TunnelBinding {
         return protocol?.join(' / ').toUpperCase();
     }
 
+    async getHostingIdentity() {
+        await this.getZitiBind();
+        const slug = this.zitiBind?.identityRolesDisplay[0].name.substring(1) ?? null;
+        if (!slug) return null;
+        const client = await this.pool.connect();
+        try {
+            const ret = await selectIdentityBySlug.run({ slug }, client);
+            return new Identity(ret[0]) ?? null;
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
     private portRangeToString(portRange: { high: number, low: number }[]) {
         return portRange.map(e => {
             if (e.high === e.low)
@@ -371,27 +388,6 @@ class TunnelBinding {
         if (!portRange) return null;
         return this.portRangeToString(portRange);
     }
-
-    async getZitiServiceDials() {
-        const client = await this.pool.connect();
-        try {
-            // const dials = await selectServiceDialsByServiceId.run(
-            //     { service_id: this.id },
-            //     client
-            // );
-            // return dials.map(e => {
-            //     return {
-            //         dials: e.dials,
-            //         timestamp: e.timestamp
-            //     } as ServiceDialData
-            // });
-        } catch {
-            return []
-        } finally {
-            client.release();
-        }
-    }
-
 
     getId() {
         return this.id;

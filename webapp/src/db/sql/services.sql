@@ -1,13 +1,3 @@
-/* @name getServicesByEmail */
-SELECT *
-FROM services
-WHERE user_id = (
-    SELECT id
-    FROM users
-    WHERE email = :email
-)
-ORDER BY created DESC;
-
 /* @name insertService */
 INSERT INTO services (
     user_id,
@@ -20,43 +10,6 @@ INSERT INTO services (
     :name,
     :protocol
 ) RETURNING *;
-
-/* @name deleteServiceByNameAndEmail */
-DELETE FROM services
-WHERE user_id = (
-    SELECT id
-    FROM users 
-    WHERE email = :email
-) AND name = :name;
-
-/* @name getServiceBySlug */
-SELECT 
-    *
-FROM services
-WHERE slug = :slug;
-
-/* @name getServiceByNameAndEmail */
-SELECT *
-FROM services
-WHERE user_id = (
-    SELECT id
-    FROM users
-    WHERE email = :email
-) AND name = :name;
-
-/* @name getService */
-SELECT *
-FROM services
-WHERE id = :id;
-
-/* @name getServiceByIdAndEmail */
-SELECT *
-FROM services
-WHERE user_id = (
-    SELECT id 
-    FROM users
-    WHERE email = :email
-) AND id = :id;
 
 /* @name enableServiceDb */
 UPDATE services
@@ -83,3 +36,8 @@ WHERE slug = :slug;
 DELETE FROM services
 WHERE slug = :slug
 RETURNING *;
+
+/* @name selectServiceById */
+SELECT *
+FROM services
+WHERE id = :id;

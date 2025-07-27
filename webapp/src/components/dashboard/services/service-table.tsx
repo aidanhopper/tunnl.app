@@ -35,7 +35,7 @@ const ServicesTable = ({ services }: { services: ServiceClientData[] }) => {
                     <TableRow key={i}>
                         <TableCell>{service.name}</TableCell>
                         <TableCell>{service.created?.toLocaleString()}</TableCell>
-                        <TableCell>{service.protocol.toUpperCase()}</TableCell>
+                        <TableCell>{service.protocol?.toUpperCase()}</TableCell>
                         <TableCell>{service.enabled ? 'True' : 'False'}</TableCell>
                         <TableCell className='w-16'>
                             <AreYouSureProvider>

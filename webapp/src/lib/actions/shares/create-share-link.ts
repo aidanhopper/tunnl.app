@@ -16,7 +16,7 @@ const createShareLink = async ({
     if (!user) return null;
     const service = await user.getServiceManager().getServiceBySlug(serviceSlug);
     if (!service) return null;
-    const shareLink = await service.getShareLinkProducerManager().createShareLink({ expires, isOneTimeUse });
+    const shareLink = await service.getShareLinkProducerManager().produce({ expires, isOneTimeUse });
     if (!shareLink) return null;
     return shareLink.getClientData();
 }

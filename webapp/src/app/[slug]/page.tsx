@@ -1,13 +1,10 @@
 import Content from "@/components/content";
 import JoinShareButton from "@/components/join-share-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getService } from "@/db/types/services.queries";
-import { getShareLinkBySlug, IGetShareLinkBySlugResult, getShareLinkOwnerEmail } from "@/db/types/share_links.queries";
-import { getTunnelBinding } from "@/db/types/tunnel_bindings.queries";
-import createShare from "@/lib/actions/shares/create-share";
-import client from "@/lib/db";
+import pool from "@/lib/db";
+import { getShareLink, ShareLink } from "@/lib/models/share-link";
+import { UserManager } from "@/lib/models/user";
 import { Metadata } from "next";
-import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -24,59 +21,36 @@ export const generateMetadata = async ({
 
     const slug = (await params).slug;
 
-    const shareLinkList = await getShareLinkBySlug.run({ slug: slug }, client);
-    if (shareLinkList.length === 0) return defaultMetadata;
-    const shareLink = shareLinkList[0];
 
-    const ownerEmailList = await getShareLinkOwnerEmail.run({ slug: shareLink.slug }, client);
-    if (ownerEmailList.length === 0) return defaultMetadata;
-    const ownerEmail = ownerEmailList[0].email;
-
-    if (shareLinkList.length !== 0) {
-        const tunnelBindingList = await getTunnelBinding.run({ id: shareLink.tunnel_binding_id }, client);
-        if (tunnelBindingList.length === 0) return defaultMetadata;
-        const tunnelBinding = tunnelBindingList[0];
-
-        const serviceList = await getService.run({ id: tunnelBinding.service_id }, client);
-        if (serviceList.length === 0) return defaultMetadata;
-        const service = serviceList[0];
-
-        return {
-            title: `Tunnl.app — Invite to a ${service.name} service share`,
-            description: `Click the link to join a ${service.name} service share from ${ownerEmail}.`,
-        }
-    }
+    // return {
+    //     title: `Tunnl.app — Invite to a ${service.name} service share`,
+    //     description: `Click the link to join a ${service.name} service share from ${ownerEmail}.`,
+    // }
 
     return defaultMetadata;
 }
 
-const ShareLinkPage = async ({ shareLink, autojoin = false }: { shareLink: IGetShareLinkBySlugResult, autojoin?: boolean }) => {
-    if (shareLink.expires < new Date()) notFound();
-
-    const session = await getServerSession();
-    const email = session?.user?.email;
-
-    const ownerEmailList = await getShareLinkOwnerEmail.run({ slug: shareLink.slug }, client);
-    if (ownerEmailList.length === 0) return <></>;
-    const ownerEmail = ownerEmailList[0].email;
-
-    const tunnelBindingList = await getTunnelBinding.run({ id: shareLink.tunnel_binding_id }, client);
-    if (tunnelBindingList.length === 0) return <></>;
-    const tunnelBinding = tunnelBindingList[0];
-
-    const serviceList = await getService.run({ id: tunnelBinding.service_id }, client);
-    if (serviceList.length === 0) return <></>;
-    const service = serviceList[0];
+const ShareLinkPage = async ({
+    shareLink,
+    autojoin = false
+}: {
+    shareLink: ShareLink,
+    autojoin?: boolean
+}) => {
+    const shareLinkClientData = await shareLink.getClientData();
 
     const handleJoin = async () => {
         'use server'
-        if (ownerEmail === email) redirect('/dashboard');
-        if (!email) redirect(`/login?autologin&redirect=${encodeURIComponent('/' + shareLink.slug + '?autojoin')}`)
-        await createShare(shareLink.slug);
+        const user = await new UserManager(pool).auth();
+        if (!user) redirect(`/login?autologin&redirect=${encodeURIComponent('/' + shareLinkClientData.slug + '?autojoin')}`);
+        if (user.getEmail() === shareLinkClientData.producerEmail) redirect('/dashboard');
+        await user.getShareLinkConsumerManager().consume(shareLinkClientData.slug);
         redirect('/dashboard/shares');
     }
 
     if (autojoin) await handleJoin();
+
+    const service = await shareLink.getService() || notFound();
 
     return (
         <Content className='min-h-screen flex items-center justify-center py-8 px-1'>
@@ -90,7 +64,7 @@ const ShareLinkPage = async ({ shareLink, autojoin = false }: { shareLink: IGetS
                 <Card>
                     <CardHeader>
                         <CardTitle className='text-center'>
-                            Invite from {ownerEmail} to the {service.name} service
+                            Invite from {shareLink.getProducerEmail()} to the {service.getName()} service
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -132,12 +106,12 @@ const DynamicPage = async ({
 
     if (slug.toString().length !== 12) return notFound();
 
-    const shareLinkList = await getShareLinkBySlug.run({ slug: slug }, client);
+    const shareLink = await getShareLink({ slug, pool });
 
-    if (shareLinkList.length !== 0)
+    if (shareLink)
         return <ShareLinkPage
             autojoin={search?.autojoin !== undefined}
-            shareLink={shareLinkList[0]} />
+            shareLink={shareLink} />
 
     return notFound();
 }

@@ -3,7 +3,6 @@
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { IGetTunnelBindingBySlugResult } from "@/db/types/tunnel_bindings.queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,11 +12,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
-import { IGetIdentitiesByEmailResult } from "@/db/types/identities.queries";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import editTunnelBinding from "@/lib/actions/services/edit-tunnel-binding";
 import { useState } from "react";
+import { TunnelBindingClientData } from "@/lib/models/tunnel-binding";
+import { IdentityClientData } from "@/lib/models/identity";
 
 const combinedSchema = z.object({
     host: tunnelHostFormSchema,
@@ -26,12 +26,12 @@ const combinedSchema = z.object({
 
 const EditBindingForm = ({
     binding,
-    hostingIdentitySlug,
+    hostingIdentity,
     identities
 }: {
-    binding: IGetTunnelBindingBySlugResult,
-    hostingIdentitySlug: string | null,
-    identities: IGetIdentitiesByEmailResult[]
+    binding: TunnelBindingClientData,
+    hostingIdentity: IdentityClientData | null,
+    identities: IdentityClientData[]
 }) => {
     const router = useRouter();
     const [isSaveSuccessful, setIsSaveSuccessful] = useState<boolean | null>(null);
@@ -42,7 +42,7 @@ const EditBindingForm = ({
             host: {
                 protocol: binding.host_protocol ?? '',
                 address: binding.host_address,
-                identity: hostingIdentitySlug as string | undefined,
+                identity: hostingIdentity?.slug as string | undefined,
                 portConfig: binding.host_forward_ports ? {
                     forwardPorts: true,
                     portRange: binding.host_allowed_port_ranges ?? ''

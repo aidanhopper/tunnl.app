@@ -66,7 +66,7 @@ const Services = async () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ServicesTable services={services.map(e => e.getClientData())} />
+                        <ServicesTable services={await Promise.all(services.map(e => e.getClientData()))} />
                     </CardContent>
                 </Card>
             </div>
