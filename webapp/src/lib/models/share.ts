@@ -109,11 +109,10 @@ export class ShareGrantManager {
     async deleteShares() {
         const client = await this.pool.connect();
         try {
-            console.log(this.ownerUserId)
-            console.log(await deleteSharesByServiceIdButNotOwner.run({
+            await deleteSharesByServiceIdButNotOwner.run({
                 service_id: this.serviceId,
                 owner_user_id: this.ownerUserId
-            }, client));
+            }, client);
             return true;
         } catch {
             return false;

@@ -18,18 +18,21 @@ import editTunnelBinding from "@/lib/actions/services/edit-tunnel-binding";
 import { useState } from "react";
 import { TunnelBindingClientData } from "@/lib/models/tunnel-binding";
 import { IdentityClientData } from "@/lib/models/identity";
+import { ServiceClientData } from "@/lib/models/service";
 
 const combinedSchema = z.object({
     host: tunnelHostFormSchema,
     intercept: tunnelInterceptFormSchema
 })
 
-const EditBindingForm = ({
-    binding,
+const EditTunnelBindingForm = ({
+    service,
+    tunnelBinding,
     hostingIdentity,
     identities
 }: {
-    binding: TunnelBindingClientData,
+    service: ServiceClientData,
+    tunnelBinding: TunnelBindingClientData,
     hostingIdentity: IdentityClientData | null,
     identities: IdentityClientData[]
 }) => {
@@ -40,37 +43,44 @@ const EditBindingForm = ({
         resolver: zodResolver(combinedSchema),
         defaultValues: {
             host: {
-                protocol: binding.host_protocol ?? '',
-                address: binding.host_address,
-                identity: hostingIdentity?.slug as string | undefined,
-                portConfig: binding.host_forward_ports ? {
+                protocol: tunnelBinding.zitiData?.host.protocol ?? '',
+                address: tunnelBinding.zitiData?.host.address ?? '',
+                identity: hostingIdentity?.slug ?? '',
+                portConfig: tunnelBinding.zitiData?.host.portConfig?.forwardPorts === true ? {
                     forwardPorts: true,
-                    portRange: binding.host_allowed_port_ranges ?? ''
+                    portRange: tunnelBinding.zitiData.host.portConfig.allowedPortRanges ?? ''
+                } : tunnelBinding.zitiData?.host.portConfig?.forwardPorts === false ? {
+                    forwardPorts: false,
+                    port: tunnelBinding.zitiData?.host.portConfig.port ?? '',
                 } : {
                     forwardPorts: false,
-                    port: binding.host_port ?? '',
+                    port: ''
                 }
             },
             intercept: {
-                address: binding.intercept_addresses[0],
-                portConfig: binding.host_forward_ports ? {
+                address: tunnelBinding.zitiData?.intercept.address,
+                portConfig: tunnelBinding.zitiData?.intercept.portConfig?.forwardPorts === true ? {
                     forwardPorts: true,
+                } : tunnelBinding.zitiData?.intercept.portConfig?.forwardPorts === false ? {
+                    forwardPorts: false,
+                    port: tunnelBinding.zitiData?.intercept.portConfig.portRange ?? ''
                 } : {
                     forwardPorts: false,
-                    port: binding.intercept_port_ranges ?? ''
+                    port: ''
                 },
             }
         }
-
     });
 
     combinedForm.watch('host.portConfig.forwardPorts');
 
     const handleSubmit = async (formData: z.infer<typeof combinedSchema>) => {
+        console.log(formData);
         const res = await editTunnelBinding({
             hostConfig: formData.host,
             interceptConfig: formData.intercept,
-            tunnelBindingId: binding.id
+            serviceSlug: service.slug,
+            tunnelBindingSlug: tunnelBinding.slug
         });
         setIsSaveSuccessful(res === undefined ? null : res);
     }
@@ -320,5 +330,5 @@ const EditBindingForm = ({
     );
 }
 
-export default EditBindingForm;
+export default EditTunnelBindingForm;
 

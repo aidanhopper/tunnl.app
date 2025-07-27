@@ -48,12 +48,14 @@ const createTunnelBinding = async ({
 
         const host = tunnelHostFormSchema.parse(hostConfig);
         const intercept = tunnelInterceptFormSchema.parse(interceptConfig);
-        // const share = tunnelShareFormSchema.parse()
 
         const protocol = host.protocol as 'tcp' | 'udp' | 'tcp/udp';
 
         const identity = await user.getIdentityManager().getIdentityBySlug(host.identity);
         if (!identity) throw new Error('Identity does not exist');
+
+        if (intercept.portConfig.forwardPorts !== host.portConfig.forwardPorts)
+            throw new Error('Error');
 
         return await service.getTunnelBindingManager().createTunnelBinding({
             host: {
@@ -70,12 +72,12 @@ const createTunnelBinding = async ({
             },
             intercept: {
                 address: intercept.address,
-                portConfig: host.portConfig.forwardPorts ? {
+                portConfig: intercept.portConfig.forwardPorts ? {
                     forwardPorts: true,
-                    portRange: parsePortRange(host.portConfig.portRange)
+                    portRange: parsePortRange(host.portConfig.forwardPorts ? host.portConfig.portRange : '')
                 } : {
                     forwardPorts: false,
-                    port: host.portConfig.port
+                    port: intercept.portConfig.port
                 }
             }
         });

@@ -15,7 +15,8 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
     const service = await user.getServiceManager().getServiceBySlug(slug) || notFound();
     const serviceClientData = await service.getClientData();
     const tunnelBinding = (await service.getTunnelBindingManager().getTunnelBindings())[0] ?? null;
-    const tunnelBindingClientData = await tunnelBinding.getClientData();
+    const tunnelBindingClientData = await tunnelBinding?.getClientData();
+    console.log(await tunnelBinding.getDialRole());
     return (
         <Card>
             <CardHeader>

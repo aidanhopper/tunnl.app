@@ -1,13 +1,13 @@
 import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
 import { Pool } from "pg";
 import { GetConfigData, HostV1ConfigData, InterceptV1ConfigData, GetServiceData, ServicePolicyDetail } from "../ziti/types";
-import { deleteConfig, getConfig, getConfigIds, postConfig } from "../ziti/configs";
+import { deleteConfig, getConfig, getConfigIds, patchConfig, postConfig } from "../ziti/configs";
 import { deleteService, getService, postService } from "../ziti/services";
-import { deletePolicy, getPolicy, postPolicy } from "../ziti/policies";
+import { deletePolicy, getPolicy, patchPolicy, postPolicy } from "../ziti/policies";
 import { Service } from './service';
 import slugify from "../slugify";
 import { selectIdentityBySlug } from "@/db/types/identities.queries";
-import { Identity } from "./identity";
+import { Identity, IdentityClientData } from "./identity";
 
 interface PortConfigForwardFalse {
     forwardPorts: false;
@@ -238,6 +238,72 @@ export class TunnelBindingManager {
         }
     }
 
+    async updateTunnelBinding({
+        slug,
+        host,
+        intercept
+    }: {
+        slug: string
+        host: TunnelBindingHost,
+        intercept: TunnelBindingIntercept
+    }) {
+        const tunnelBinding = await this.getTunnelBindingBySlug(slug);
+        if (!tunnelBinding) return false;
+
+        await patchConfig({
+            ziti_id: tunnelBinding.getZitiHostId(),
+            data: {
+                data: {
+                    ...(host.protocol === 'tcp/udp' ? {
+                        forwardProtocol: true,
+                        allowedProtocols: [
+                            'tcp',
+                            'udp'
+                        ]
+                    } : {
+                        protocol: host.protocol,
+                    }),
+                    address: host.address,
+                    ...(host.portConfig.forwardPorts ? {
+                        forwardPort: true,
+                        allowedPortRanges: host.portConfig.portRange,
+                    } : {
+                        port: Number(host.portConfig.port)
+                    }),
+                }
+            }
+        });
+
+        await patchConfig({
+            ziti_id: tunnelBinding.getZitiInterceptId(),
+            data: {
+                data: {
+                    portRanges: intercept.portConfig.forwardPorts ?
+                        intercept.portConfig.portRange : [{
+                            high: Number(intercept.portConfig.port),
+                            low: Number(intercept.portConfig.port)
+                        }],
+                    addresses: [
+                        intercept.address
+                    ],
+                    protocols: host.protocol === 'tcp' ? [
+                        'tcp'
+                    ] : host.protocol === 'udp' ? [
+                        'udp'
+                    ] : [
+                        'tcp',
+                        'udp'
+                    ]
+                }
+            }
+        });
+
+        await patchPolicy({
+            ziti_id: tunnelBinding.getZitiBindId(),
+            data: { identityRoles: [`@${host.zitiIdentityId}`] }
+        });
+    }
+
     async deleteTunnelBindingBySlug(slug: string) {
         const client = await this.pool.connect();
         try {
@@ -389,6 +455,14 @@ class TunnelBinding {
         return this.portRangeToString(portRange);
     }
 
+    async getDialRole() {
+        await this.getZitiDial();
+        return this.zitiDial
+            ?.identityRolesDisplay[0]
+            .role
+            .substring(1) ?? null
+    }
+
     getId() {
         return this.id;
     }
@@ -429,13 +503,76 @@ class TunnelBinding {
         return this.serviceId;
     }
 
-    async getClientData() {
+    async getZitiData(): Promise<ZitiData> {
+        await this.getZitiHost();
+        await this.getZitiIntercept();
+
+        const hostProtocol = this.zitiHost?.data.protocol ?? null;
+        const hostAddress = this.zitiHost?.data.address ?? null;
+        const hostForwardPorts = this.zitiHost?.data.forwardPort ?? false;
+        const hostAllowedPortRanges = this.zitiHost?.data.allowedPortRanges ?
+            this.portRangeToString(this.zitiHost?.data.allowedPortRanges) : null;
+        const hostPort = this.zitiHost?.data.port ?? null;
+
+        const interceptAddress = this.zitiIntercept?.data.addresses[0] ?? null;
+        const interceptPortRange = await this.getInterceptPortRange() ?? null;
+
+        return {
+            host: {
+                protocol: hostProtocol as string,
+                address: hostAddress,
+                portConfig: hostForwardPorts === true ? {
+                    forwardPorts: true,
+                    allowedPortRanges: hostAllowedPortRanges
+                } : {
+                    forwardPorts: false,
+                    port: hostPort?.toString() ?? null
+                },
+            },
+            intercept: {
+                address: interceptAddress,
+                portConfig: hostForwardPorts === true ? {
+                    forwardPorts: true
+                } : {
+                    forwardPorts: false,
+                    portRange: interceptPortRange
+                },
+            }
+        } as ZitiData;
+    }
+
+    async getClientData(): Promise<TunnelBindingClientData> {
         return {
             entryPoint: this.entryPoint,
             slug: this.slug,
             created: this.created,
-            protocol: await this.getProtocol()
+            protocol: await this.getProtocol(),
+            hostingIdentity: (await this.getHostingIdentity())?.getClientData() ?? null,
+            zitiData: await this.getZitiData()
         } as TunnelBindingClientData
+    }
+}
+
+interface ZitiData {
+    host: {
+        protocol: string,
+        address: string,
+        portConfig: {
+            forwardPorts: true,
+            allowedPortRanges: string
+        } | {
+            forwardPorts: false,
+            port: string
+        } | null,
+    },
+    intercept: {
+        address: string,
+        portConfig: {
+            forwardPorts: true,
+        } | {
+            forwardPorts: false,
+            portRange: string
+        } | null,
     }
 }
 
@@ -443,6 +580,8 @@ export interface TunnelBindingClientData {
     entryPoint: boolean;
     slug: string;
     created: Date;
-    protocol: 'TCP' | 'UDP' | 'TCP / UDP'
+    protocol: 'TCP' | 'UDP' | 'TCP / UDP';
+    hostingIdentity: IdentityClientData | null;
+    zitiData: ZitiData;
 }
 

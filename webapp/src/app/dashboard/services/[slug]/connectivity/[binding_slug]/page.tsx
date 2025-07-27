@@ -10,8 +10,10 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
     const user = await new UserManager(pool).auth() || unauthorized();
     const identities = await user.getIdentityManager().getIdentities();
     const service = await user.getServiceManager().getServiceBySlug(serviceSlug) || notFound();
+    const serviceClientData = await service.getClientData();
     const tunnelBinding = await service.getTunnelBindingManager().getTunnelBindingBySlug(bindingSlug) || notFound();
     const hostingIdentity = await tunnelBinding.getHostingIdentity();
+    const tunnelBindingClientData = await tunnelBinding.getClientData();
     return tunnelBinding ? (
         <div className='grid gap-8'>
             <Card>
@@ -25,9 +27,10 @@ const BindingPage = async ({ params }: { params: Promise<{ slug: string, binding
                 </CardHeader>
             </Card>
             <EditBindingForm
+                service={serviceClientData}
                 identities={identities.map(e => e.getClientData())}
                 hostingIdentity={hostingIdentity?.getClientData() ?? null}
-                binding={await tunnelBinding.getClientData()} />
+                tunnelBinding={tunnelBindingClientData} />
         </div>
     ) : <></>;
 }

@@ -118,13 +118,21 @@ const Identities = async () => {
                                                             <div className='w-10'>
                                                                 Online
                                                             </div>
-                                                            <div className='rounded-full bg-green-400 w-2 h-2' />
+                                                            <div
+                                                                className='rounded-full bg-green-500 w-2 h-2'
+                                                                style={{
+                                                                    background: '#90EE90'
+                                                                }} />
                                                         </div> :
                                                         <div className='flex gap-4 items-center'>
                                                             <div className='w-10'>
                                                                 Offline
                                                             </div>
-                                                            <div className='rounded-full bg-red-400 w-2 h-2' />
+                                                            <div
+                                                                className='rounded-full bg-green-500 w-2 h-2'
+                                                                style={{
+                                                                    background: '#FF8080'
+                                                                }} />
                                                         </div>}
                                                 </TableCell>
                                                 <TableCell className='w-16'>

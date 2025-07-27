@@ -10,9 +10,6 @@ const pool = global.pgClient || new pg.Pool({
 });
 
 if (!global.pgClient) {
-    pool.connect()
-        .then(() => console.log("Connected to PostgreSQL DB"))
-        .catch(() => console.error("Error"));
     global.pgClient = pool;
 }
 

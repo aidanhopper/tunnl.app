@@ -2,7 +2,7 @@ import { deleteIdentityBySlug, insertIdentity, ISelectIdentitiesByUserIdResult, 
 import { Pool } from "pg";
 import * as zitiIdentities from '@/lib/ziti/identities';
 import slugify from "../slugify";
-import { GetIdentityResponse, IdentityResponse } from "../ziti/types";
+import { GetIdentityResponse } from "../ziti/types";
 
 export class IdentityManager {
     private userId: string;

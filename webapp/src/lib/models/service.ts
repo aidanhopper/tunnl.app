@@ -166,7 +166,7 @@ export class Service {
         return this.enabled;
     }
 
-    async getEntryPointData() {
+    async getEntryPointData(): Promise<EntryPoint | null> {
         const tunnelBindings = await this.getTunnelBindingManager().getTunnelBindings();
         const entryPoint = tunnelBindings.find(e => e.isEntryPoint());
         if (!entryPoint) return null;
