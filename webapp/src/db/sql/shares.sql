@@ -30,6 +30,17 @@ JOIN services ON services.id = shares.service_id
 JOIN users AS granter ON services.user_id = granter.id
 WHERE shares.user_id = :user_id;
 
+/* @name selectShareBySlug */
+SELECT 
+    shares.*,
+    grantee.email AS grantee_email,
+    granter.email AS granter_email
+FROM shares
+JOIN users AS grantee ON shares.user_id = grantee.id
+JOIN services ON services.id = shares.service_id
+JOIN users AS granter ON services.user_id = granter.id
+WHERE shares.slug = :slug;
+
 /* @name selectSharesByServiceId */
 SELECT 
     shares.*,
@@ -50,3 +61,4 @@ RETURNING *;
 DELETE FROM shares
 WHERE slug = :slug
 RETURNING *;
+

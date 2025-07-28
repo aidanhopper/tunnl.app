@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import pool from "@/lib/db";
 import { UserManager } from "@/lib/models/user";
 import { Home } from "lucide-react";
+import { redirect } from "next/navigation";
 
 const Dashboard = async () => {
-    const user = await new UserManager(pool).auth()
-    if (!user) throw new Error("Unauthorized");
+    const user = await new UserManager(pool).auth() || redirect(`/login?redirect=${encodeURIComponent('/dashboard')}`);
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>

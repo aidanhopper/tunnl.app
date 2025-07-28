@@ -80,6 +80,11 @@ export class User {
         return this.ShareAccessManager;
     }
 
+    isAdmin() {
+        const emails = process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '';
+        return emails.split(',').find(e => e === this.getEmail()) !== undefined;
+    }
+
     isApproved() {
         return this.roles.find(e => e === 'approved') !== undefined;
     }

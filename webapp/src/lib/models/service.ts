@@ -2,7 +2,7 @@ import { deleteServiceBySlug, insertService, ISelectServiceByIdResult, ISelectSe
 import { Pool } from "pg";
 import slugify from "../slugify";
 import { selectServiceDialsByServiceId } from "@/db/types/service_dials.queries";
-import { TunnelBindingManager } from "./tunnel-binding";
+import { TunnelBinding, TunnelBindingManager } from "./tunnel-binding";
 import { ShareLinkProducerManager } from "./share-link";
 import { ShareGrantManager } from "./share";
 
@@ -86,14 +86,17 @@ export class ServiceManager {
     }
 
     async deleteServiceBySlug(slug: string) {
+        const service = await this.getServiceBySlug(slug);
+        if (!service) return false;
+        await service.getTunnelBindingManager().deleteTunnelBindings();
         const client = await this.pool.connect();
         try {
             await client.query('BEGIN');
-            const resultList = await deleteServiceBySlug.run({
-                slug: slug
-            }, client);
+            const resultList = await deleteServiceBySlug
+                .run({ slug: slug }, client);
             const res = resultList[0] || null;
-            if (!res || res.user_id !== this.userId) throw new Error('Failed to delete service');
+            if (!res || res.user_id !== this.userId)
+                throw new Error('Failed to delete service');
             await client.query('COMMIT');
             return true;
         } catch {
@@ -106,7 +109,6 @@ export class ServiceManager {
 }
 
 export class Service {
-    private pool: Pool;
     private id: string;
     private userId: string;
     private created: Date;
@@ -132,7 +134,6 @@ export class Service {
         this.name = data.name;
         this.protocol = data.protocol as 'tcp/udp' | 'http';
         this.enabled = data.enabled;
-        this.pool = pool;
         this.tunnelBindingManager = new TunnelBindingManager({ pool: pool, service: this });
         this.shareLinkProducerManager = new ShareLinkProducerManager({ pool: pool, serviceId: this.id });
         this.shareGrantManager = new ShareGrantManager({ pool: pool, serviceId: this.id, ownerUserId: this.userId });
@@ -166,7 +167,13 @@ export class Service {
         return this.enabled;
     }
 
-    async getEntryPointData(): Promise<EntryPoint | null> {
+    async getEntryPoint(): Promise<TunnelBinding | null> {
+        const tunnelBindings = await this.getTunnelBindingManager().getTunnelBindings();
+        const entryPoint = tunnelBindings.find(e => e.isEntryPoint());
+        return entryPoint ?? null
+    }
+
+    private async getEntryPointData(): Promise<EntryPoint | null> {
         const tunnelBindings = await this.getTunnelBindingManager().getTunnelBindings();
         const entryPoint = tunnelBindings.find(e => e.isEntryPoint());
         if (!entryPoint) return null;

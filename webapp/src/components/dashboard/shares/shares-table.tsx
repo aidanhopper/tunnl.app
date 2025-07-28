@@ -40,32 +40,34 @@ const SharesTable = ({ shares }: { shares: ShareClientData[] }) => {
                             <TableCell>{share.service.protocol}</TableCell>
                             <TableCell>
                                 <div>
-                                    {share.service.entryPoint.intercept}
+                                    {share.service.entryPoint?.intercept}
                                 </div>
                                 <div>
-                                    {share.service.entryPoint.portRange}
+                                    {share.service.entryPoint?.portRange}
                                 </div>
                             </TableCell>
                             <TableCell className='w-16'>
-                                <AreYouSureProvider>
-                                    <AreYouSure
-                                        yesText=<>Delete the share</>
-                                        refreshOnYes={true}
-                                        onClickYes={async () => await deleteShare({ shareSlug: share.slug })}>
-                                        Are you sure you want to delete this share?
-                                        You will lose access to the service once deleted.
-                                    </AreYouSure>
-                                    <DropdownMenu modal={false}>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant='ghost' className='cursor-pointer'>
-                                                <EllipsisVertical />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DeleteShareButton />
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </AreYouSureProvider>
+                                {share.granteeEmail !== share.granterEmail && <>
+                                    <AreYouSureProvider>
+                                        <AreYouSure
+                                            yesText=<>Delete the share</>
+                                            refreshOnYes={true}
+                                            onClickYes={async () => await deleteShare({ shareSlug: share.slug })}>
+                                            Are you sure you want to delete this share?
+                                            You will lose access to the service once deleted.
+                                        </AreYouSure>
+                                        <DropdownMenu modal={false}>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant='ghost' className='cursor-pointer'>
+                                                    <EllipsisVertical />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DeleteShareButton />
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </AreYouSureProvider>
+                                </>}
                             </TableCell>
                         </TableRow>
                     );

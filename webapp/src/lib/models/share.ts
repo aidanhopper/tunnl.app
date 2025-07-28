@@ -1,12 +1,15 @@
-import { deleteShareBySlug, deleteSharesByServiceIdButNotOwner, IInsertShareResult, insertShare, ISelectSharesByUserIdResult, selectSharesByServiceId, selectSharesByUserId } from "@/db/types/shares.queries";
+import { deleteShareBySlug, deleteSharesByServiceIdButNotOwner, IInsertShareResult, insertShare, ISelectShareBySlugResult, ISelectSharesByUserIdResult, selectShareBySlug, selectSharesByServiceId, selectSharesByUserId } from "@/db/types/shares.queries";
 import { Pool } from "pg";
 import { Service, ServiceClientData } from "./service";
 import { selectServiceById } from "@/db/types/services.queries";
 import slugify from "../slugify";
+import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, selectIdentitySharesAccessByServiceId, selectIdentitySharesAccessByUserId } from "@/db/types/identity_shares_access.queries";
+import { patchIdentity } from "../ziti/identities";
 
 export class ShareAccessManager {
     private userId: string;
     private pool: Pool;
+    private roleCache: Map<string, string> = new Map<string, string>();
 
     constructor({
         userId,
@@ -69,12 +72,113 @@ export class ShareAccessManager {
             client.release();
         }
     }
+
+    private async getRole(shareSlug: string): Promise<string | null> {
+        if (this.roleCache.has(shareSlug)) return this.roleCache.get(shareSlug) ?? null;
+        const client = await this.pool.connect();
+        try {
+            const resultList = await selectShareBySlug
+                .run({ slug: shareSlug }, client);
+            if (resultList.length === 0 || resultList[0].user_id !== this.userId)
+                return null;
+            const share = new Share({ data: resultList[0], pool: this.pool });
+            const role = await share.getRole();
+            if (!role) return null;
+            this.roleCache.set(shareSlug, role);
+            return role;
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
+    async addIdentityToShare({
+        shareSlug,
+        identitySlug
+    }: {
+        shareSlug: string,
+        identitySlug: string
+    }) {
+        const client = await this.pool.connect();
+        try {
+            const res = await insertIdentitySharesAccessBySlugs.run({
+                share_slug: shareSlug,
+                identity_slug: identitySlug
+            }, client);
+            if (res.length === 0) throw new Error('Failed to insert share access');
+            return true;
+        } catch {
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    async removeIdentityFromShare({
+        shareSlug,
+        identitySlug
+    }: {
+        shareSlug: string,
+        identitySlug: string
+    }) {
+        const client = await this.pool.connect();
+        try {
+            const res = await deleteIdentitySharesAccessBySlugs.run({
+                share_slug: shareSlug,
+                identity_slug: identitySlug
+            }, client);
+            if (res.length === 0) throw new Error('Failed to delete share access');
+            return true;
+        } catch {
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    // get all users identities that have 
+    async updateZitiDialRoles() {
+        const client = await this.pool.connect();
+        try {
+            const res = await selectIdentitySharesAccessByUserId
+                .run({ user_id: this.userId }, client);
+
+            const identityMap = new Map<string, string[]>();
+
+            await Promise.all(res.map(async e => {
+                if (!identityMap.has(e.identity_ziti_id))
+                    identityMap.set(e.identity_ziti_id, []);
+                const role = await this.getRole(e.share_slug);
+                if (role) {
+                    identityMap.get(e.identity_ziti_id)?.push(role);
+                }
+            }));
+
+            await Promise.all(
+                Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
+                    await patchIdentity({
+                        ziti_id: zitiIdentityId,
+                        data: { roleAttributes: roles }
+                    })
+                })
+            );
+
+            return true;
+        } catch {
+            return false;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 export class ShareGrantManager {
     private serviceId: string;
     private ownerUserId: string;
     private pool: Pool;
+    private service: Service | null = null;
+    private roleCache: Map<string, string> = new Map<string, string>();
 
     constructor({
         serviceId,
@@ -138,6 +242,75 @@ export class ShareGrantManager {
             client.release();
         }
     }
+
+    private async getService() {
+        if (this.service) return this.service;
+        const client = await this.pool.connect();
+        try {
+            const resultList = await selectServiceById.run({ id: this.serviceId }, client);
+            if (resultList.length === 0) throw new Error('Service does not exist');
+            this.service = new Service({ data: resultList[0], pool: this.pool });
+            return this.service
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
+    private async getRole(shareSlug: string): Promise<string | null> {
+        if (this.roleCache.has(shareSlug)) return this.roleCache.get(shareSlug) ?? null;
+        const client = await this.pool.connect();
+        try {
+            const resultList = await selectShareBySlug
+                .run({ slug: shareSlug }, client);
+            if (resultList.length === 0 || resultList[0].service_id !== this.serviceId)
+                return null;
+            const share = new Share({ data: resultList[0], pool: this.pool });
+            const role = await share.getRole();
+            if (!role) return null;
+            this.roleCache.set(shareSlug, role);
+            return role;
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
+    async updateZitiDialRoles() {
+        const client = await this.pool.connect();
+        try {
+            const res = await selectIdentitySharesAccessByServiceId
+                .run({ service_id: this.serviceId }, client);
+
+            const identityMap = new Map<string, string[]>();
+
+            await Promise.all(res.map(async e => {
+                if (!identityMap.has(e.identity_ziti_id))
+                    identityMap.set(e.identity_ziti_id, []);
+                const role = await this.getRole(e.share_slug);
+                if (role) {
+                    identityMap.get(e.identity_ziti_id)?.push(role);
+                }
+            }));
+
+            await Promise.all(
+                Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
+                    await patchIdentity({
+                        ziti_id: zitiIdentityId,
+                        data: { roleAttributes: roles }
+                    })
+                })
+            );
+
+            return true;
+        } catch {
+            return false;
+        } finally {
+            client.release();
+        }
+    }
 }
 
 class ShareList extends Array<Share> {
@@ -172,12 +345,13 @@ class Share {
     private granteeEmail: string;
     private granterEmail: string;
     private service: Service | null = null;
+    private role: string | null = null;
 
     constructor({
         data,
         pool
     }: {
-        data: IInsertShareResult | ISelectSharesByUserIdResult,
+        data: IInsertShareResult | ISelectSharesByUserIdResult | ISelectShareBySlugResult,
         pool: Pool
     }) {
         this.id = data.id;
@@ -205,6 +379,15 @@ class Share {
         }
     }
 
+    async getRole(): Promise<string | null> {
+        if (this.role) return this.role;
+        const service = await this.getService();
+        if (!service) return null;
+        const role = await (await service.getEntryPoint())?.getDialRole() ?? null;
+        this.role = role;
+        return this.role;
+    }
+
     getGranteeEmail() {
         return this.granteeEmail;
     }
@@ -223,6 +406,10 @@ class Share {
 
     getServiceId() {
         return this.serviceId;
+    }
+
+    getSlug() {
+        return this.slug;
     }
 
     async getClientData() {

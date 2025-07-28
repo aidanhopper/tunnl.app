@@ -76,35 +76,28 @@ const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
     }
 }
 
-const insertServiceDial = async (e: ServiceEvent) => {
-    try {
-        await client.query(`
-        INSERT INTO service_dials (
-            timestamp,
-            dials,
-            service_id
-        ) VALUES (
-            $1,
-            $2,
-            (
-                SELECT id
-                FROM services
-                WHERE ziti_id = $3
-            )
-        )
-        ON CONFLICT (service_id, timestamp)
-        DO UPDATE SET dials = service_dials.dials + EXCLUDED.dials;
-        `, [e.timestamp, e.count, e.serviceId]);
-    } catch (err) {
-        console.error(err);
-    }
-}
-
 const logEvent = async (e: any) => {
     try {
         const out = JSON.stringify(e);
         fs.appendFile('publisher.log', out + '\n');
     } catch { }
+}
+
+const insertEvent = async (e: any) => {
+    if (!e.timestamp || !e.namespace) return;
+    if (e.eventType === 'committed') return;
+    const eventType = `ziti.${e.namespace}.${e.eventType ? e.eventType : e.event_type ? e.event_type : ''}`;
+    await client.query(`
+        INSERT INTO events (
+            event_type,
+            data,
+            created_at
+        ) VALUES (
+            $1,
+            $2,
+            $3
+        )
+    `, [eventType, e, new Date(e.timestamp)]);
 }
 
 // to be inserted into the events table the event needs
@@ -190,6 +183,7 @@ const main = async () => {
                 { type: "circuit", options: null },
             ],
             onMessage: async (msg) => {
+                await insertEvent(msg);
                 await logEvent(msg);
                 const payload = await transformEvent(msg);
 
@@ -205,8 +199,6 @@ const main = async () => {
                         publishEvent(topic2, payload);
                         updateIdentityStatus(payload.id, payload.eventType === 'sdk-online')
                         break;
-                    case 'service':
-                        insertServiceDial(payload);
                     default: break;
                 }
             }

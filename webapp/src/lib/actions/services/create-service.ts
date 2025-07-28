@@ -10,13 +10,30 @@ const createService = async (formData: unknown) => {
     try {
         const user = await new UserManager(pool).auth();
         if (!user) throw new Error('Unauthorized');
+
         const data = serviceSchema.parse(formData);
+
         const service = await user.getServiceManager().createService({
             name: data.name,
             protocol: data.protocol,
         });
         if (!service) throw new Error('Failed to create service');
+
         slug = service.getSlug();
+
+        const share = await user
+            .getShareAccessManager()
+            .createShare(service.getId());
+        if (!share) throw new Error('Failed to create share with yourself');
+
+        await Promise.all((await user.getIdentityManager().getIdentities())
+            .map(async identity => {
+                await user.getShareAccessManager().addIdentityToShare({
+                    shareSlug: share.getSlug(),
+                    identitySlug: identity.getSlug()
+                });
+            })
+        );
     } catch (err) {
         console.error(err);
         return false;

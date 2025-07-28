@@ -304,14 +304,20 @@ export class TunnelBindingManager {
         });
     }
 
+    async deleteTunnelBindings() {
+        const tunnelBindings = await this.getTunnelBindings();
+        Promise.all(tunnelBindings.map(async e => {
+            await this.deleteTunnelBindingBySlug(e.getSlug());
+        }));
+    }
+
     async deleteTunnelBindingBySlug(slug: string) {
         const client = await this.pool.connect();
         try {
             client.query('BEGIN');
 
-            const resultList = await deleteTunnelBindingBySlug.run({
-                slug: slug
-            }, client);
+            const resultList = await deleteTunnelBindingBySlug
+                .run({ slug: slug }, client);
             if (resultList.length === 0 || resultList[0].service_id !== this.service.getId())
                 throw new Error('Failed to delete tunnel binding');
 
@@ -338,7 +344,7 @@ export class TunnelBindingManager {
     }
 }
 
-class TunnelBinding {
+export class TunnelBinding {
     private pool: Pool;
     private id: string;
     private serviceId: string;

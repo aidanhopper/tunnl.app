@@ -12,6 +12,7 @@ const Shares = async () => {
     const shares = await user.getShareAccessManager().getShares();
     const sharesClientData = (await Promise.all(shares.map(e => e.getClientData())))
         .filter(e => e !== null);
+
     return (
         <DashboardLayout>
             <div className='flex flex-col gap-8'>

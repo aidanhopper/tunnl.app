@@ -57,7 +57,7 @@ const createTunnelBinding = async ({
         if (intercept.portConfig.forwardPorts !== host.portConfig.forwardPorts)
             throw new Error('Error');
 
-        return await service.getTunnelBindingManager().createTunnelBinding({
+        const res = await service.getTunnelBindingManager().createTunnelBinding({
             host: {
                 protocol: protocol,
                 address: host.address,
@@ -81,6 +81,10 @@ const createTunnelBinding = async ({
                 }
             }
         });
+
+        await service.getShareGrantManager().updateZitiDialRoles();
+
+        return res;
     } catch (err) {
         console.error(err);
         return false;

@@ -33,49 +33,51 @@ import {
     BadgeCheck,
     ChevronsUpDown,
     LogOut,
+    ShieldUser,
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useLocalSession, clearLocalSession, useCachedImage } from '@/lib/hooks';
 
-const items = [
-    {
-        title: 'Home',
-        url: '/dashboard',
-        icon: Home,
-        subItems: []
-    },
-    {
-        title: 'Shares',
-        url: '/dashboard/shares',
-        icon: Users,
-        subItems: []
-    },
-    {
-        title: 'Services',
-        url: '/dashboard/services',
-        icon: HelpingHand,
-        subItems: []
-    },
-    {
-        title: 'Identities',
-        url: '/dashboard/identities',
-        icon: MonitorSmartphone,
-        subItems: []
-    },
-    // {
-    //     title: 'Domains',
-    //     url: '/dashboard/domains',
-    //     icon: null,
-    //     subItems: []
-    // }
-];
-
-const DashboardSidebar = ({ ...props }) => {
+const DashboardSidebar = ({ isAdmin, ...props }: { isAdmin: boolean }) => {
     const router = useRouter();
     const { data } = useLocalSession();
     const { isMobile } = useSidebar();
     const pathname = usePathname();
     const cachedAvatar = useCachedImage(data?.user?.image);
+
+    const items = [
+        {
+            title: 'Home',
+            url: '/dashboard',
+            icon: Home,
+            subItems: []
+        },
+        {
+            title: 'Shares',
+            url: '/dashboard/shares',
+            icon: Users,
+            subItems: []
+        },
+        {
+            title: 'Services',
+            url: '/dashboard/services',
+            icon: HelpingHand,
+            subItems: []
+        },
+        {
+            title: 'Identities',
+            url: '/dashboard/identities',
+            icon: MonitorSmartphone,
+            subItems: []
+        },
+    ];
+
+    if (isAdmin) items.push({
+        title: 'Admin',
+        url: '/dashboard/admin',
+        icon: ShieldUser,
+        subItems: []
+    });
 
     const UserPanel = () => data?.user ? (
         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">

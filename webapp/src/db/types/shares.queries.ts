@@ -93,6 +93,46 @@ const selectSharesByUserIdIR: any = {"usedParamSet":{"user_id":true},"params":[{
 export const selectSharesByUserId = new PreparedQuery<ISelectSharesByUserIdParams,ISelectSharesByUserIdResult>(selectSharesByUserIdIR);
 
 
+/** 'SelectShareBySlug' parameters type */
+export interface ISelectShareBySlugParams {
+  slug?: string | null | void;
+}
+
+/** 'SelectShareBySlug' return type */
+export interface ISelectShareBySlugResult {
+  grantee_email: string;
+  granter_email: string;
+  id: string;
+  service_id: string;
+  slug: string;
+  user_id: string;
+}
+
+/** 'SelectShareBySlug' query type */
+export interface ISelectShareBySlugQuery {
+  params: ISelectShareBySlugParams;
+  result: ISelectShareBySlugResult;
+}
+
+const selectShareBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":282,"b":286}]}],"statement":"SELECT \n    shares.*,\n    grantee.email AS grantee_email,\n    granter.email AS granter_email\nFROM shares\nJOIN users AS grantee ON shares.user_id = grantee.id\nJOIN services ON services.id = shares.service_id\nJOIN users AS granter ON services.user_id = granter.id\nWHERE shares.slug = :slug"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT 
+ *     shares.*,
+ *     grantee.email AS grantee_email,
+ *     granter.email AS granter_email
+ * FROM shares
+ * JOIN users AS grantee ON shares.user_id = grantee.id
+ * JOIN services ON services.id = shares.service_id
+ * JOIN users AS granter ON services.user_id = granter.id
+ * WHERE shares.slug = :slug
+ * ```
+ */
+export const selectShareBySlug = new PreparedQuery<ISelectShareBySlugParams,ISelectShareBySlugResult>(selectShareBySlugIR);
+
+
 /** 'SelectSharesByServiceId' parameters type */
 export interface ISelectSharesByServiceIdParams {
   service_id?: string | null | void;
