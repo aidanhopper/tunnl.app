@@ -78,6 +78,8 @@ const updateIdentityStatus = async (ziti_id: string, is_online: boolean) => {
 
 const logEvent = async (e: any) => {
     try {
+        if (e.eventType === 'committed') return;
+        if (e.metadata && e.metadata.source && e.metadata.source.type === 'heartbeat.flush') return;
         const out = JSON.stringify(e);
         fs.appendFile('publisher.log', out + '\n');
     } catch { }
@@ -86,6 +88,7 @@ const logEvent = async (e: any) => {
 const insertEvent = async (e: any) => {
     if (!e.timestamp || !e.namespace) return;
     if (e.eventType === 'committed') return;
+    if (e.metadata && e.metadata.source && e.metadata.source.type === 'heartbeat.flush') return;
     const eventType = `ziti.${e.namespace}.${e.eventType ? e.eventType : e.event_type ? e.event_type : ''}`;
     await client.query(`
         INSERT INTO events (

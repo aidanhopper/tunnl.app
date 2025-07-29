@@ -17,6 +17,7 @@ import { UserManager } from "@/lib/models/user";
 import pool from "@/lib/db";
 import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
 import deleteShare from "@/lib/actions/shares/delete-share";
+import eventCruncher from "@/lib/events/event-cruncher";
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -26,6 +27,16 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
     const tunnelBinding = (await service.getTunnelBindingManager().getTunnelBindings())[0] ?? null;
     const shares = await service.getShareGrantManager().getShares();
     const shareLinks = await service.getShareLinkProducerManager().getShareLinks();
+    const zitiServiceId = (await service.getEntryPoint())?.getZitiServiceId();
+    if (zitiServiceId) {
+        const data = await eventCruncher.getZitiCircuitCreatedEvents({
+            zitiServiceId,
+            interval: '24 hours'
+        });
+
+        console.log(data);
+        console.log(data.length);
+    }
     return (
         <>
             {tunnelBinding ? <div className='flex flex-col gap-4'>
