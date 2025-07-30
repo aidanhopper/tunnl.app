@@ -1,6 +1,5 @@
 import { Pool } from "pg";
 import { ISelectZitiCircuitsByZitiServiceIdResult, selectZitiCircuitCreatedEventsByZitiServiceId, selectZitiCircuitsByZitiServiceId, selectZitiServiceDialsByZitiServiceId } from "@/db/types/events.queries";
-import pool from "../db";
 
 type Event<T> = {
     id: string;
@@ -98,8 +97,3 @@ export class EventCruncher {
         }
     }
 }
-
-// Export a single instance
-export const eventCruncher = new EventCruncher(pool);
-
-export default eventCruncher;

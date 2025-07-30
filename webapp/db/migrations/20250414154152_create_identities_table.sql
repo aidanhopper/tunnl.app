@@ -7,7 +7,9 @@ CREATE TABLE identities (
     slug VARCHAR(128) UNIQUE NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     is_online BOOLEAN NOT NULL DEFAULT FALSE,
+    approved BOOLEAN NOT NULL DEFAULT FALSE,
     last_seen TIMESTAMPTZ,
+    deleted TIMESTAMPTZ,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (user_id, name)
 );

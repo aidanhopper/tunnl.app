@@ -5,6 +5,7 @@ import { IdentityManager } from "./identity";
 import { ServiceManager } from "./service";
 import { ShareLinkConsumerManager } from "./share-link";
 import { ShareAccessManager } from "./share";
+import { ISelectUserByZitiIdentityIdResult } from "@/db/types/identities.queries";
 
 export class UserManager {
     private pool: Pool;
@@ -37,7 +38,13 @@ export class User {
     private shareLinkConsumerManager: ShareLinkConsumerManager;
     private ShareAccessManager: ShareAccessManager;
 
-    constructor({ data, pool }: { data: ISelectUserByEmailResult, pool: Pool }) {
+    constructor({
+        data,
+        pool
+    }: {
+        data: ISelectUserByEmailResult | ISelectUserByZitiIdentityIdResult,
+        pool: Pool
+    }) {
         this.id = data.id;
         this.email = data.email;
         this.roles = data.roles.split(" ");

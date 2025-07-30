@@ -17,7 +17,30 @@ import { UserManager } from "@/lib/models/user";
 import pool from "@/lib/db";
 import revokeAllShares from "@/lib/actions/shares/revoke-all-shares";
 import deleteShare from "@/lib/actions/shares/delete-share";
-import eventCruncher from "@/lib/events/event-cruncher";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EnrichedZitiCircuitEvent, EventEnricher } from "@/lib/events/event-enricher";
+import eventParser from "@/lib/events/event-parser";
+
+const mostDials = (events: EnrichedZitiCircuitEvent[], n: number) => {
+    const map = new Map<string, { email: string, count: number }>();
+    events.forEach(e => {
+        if (!map.has(e.enrichedData.user.email)) {
+            map.set(e.enrichedData.user.email, {
+                email: e.enrichedData.user.email,
+                count: 0
+            });
+        }
+
+        map.set(e.enrichedData.user.email, {
+            email: e.enrichedData.user.email,
+            count: (map.get(e.enrichedData.user.email)?.count ?? 0) + 1
+        });
+    });
+
+    const list = Array.from(map.entries().map(e => e[1]));
+    list.sort();
+    return list.slice(0, n);
+}
 
 const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> }) => {
     const slug = (await params).slug;
@@ -28,34 +51,66 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
     const shares = await service.getShareGrantManager().getShares();
     const shareLinks = await service.getShareLinkProducerManager().getShareLinks();
     const zitiServiceId = (await service.getEntryPoint())?.getZitiServiceId();
-    if (zitiServiceId) {
-        const data = await eventCruncher.getZitiCircuitCreatedEvents({
+    const events = zitiServiceId ?
+        await eventParser.getZitiCircuitCreatedEvents({
             zitiServiceId,
-            interval: '24 hours'
-        });
-
-        console.log(data);
-        console.log(data.length);
-    }
+            interval: '6 hours'
+        }) : null;
+    const unownedShares = await shares.unowned();
+    const ownedShares = await shares.owned();
     return (
         <>
             {tunnelBinding ? <div className='flex flex-col gap-4'>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Usage for the last 24hrs</CardTitle>
+                        <CardTitle>Usage for the last 6hrs</CardTitle>
                         <CardDescription>
                             Displays the number of successful dials on the Y axis for that time period
                         </CardDescription>
                     </CardHeader>
+                    {events && <CardContent>
+                        <DialChart events={events} />
+                    </CardContent>}
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>
+                            Highest usage shares
+                        </CardTitle>
+                        <CardDescription>
+                            Displays the users with the highest amount of dials in the last 6 hours
+                        </CardDescription>
+                    </CardHeader>
                     <CardContent>
-                        <DialChart serviceDials={[]} />
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>
+                                        Email
+                                    </TableHead>
+                                    <TableHead>
+                                        Dials
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {events !== null && mostDials(events, 5).map(e => <TableRow key={e.email}>
+                                    <TableCell>
+                                        {e.email}
+                                    </TableCell>
+                                    <TableCell>
+                                        {e.count}
+                                    </TableCell>
+                                </TableRow>)}
+                            </TableBody>
+                        </Table>
                     </CardContent>
                 </Card>
                 <div className='grid lg:grid-cols-2 gap-4'>
                     <Card>
                         <CardHeader className='grid grid-cols-3 items-center'>
                             <CardTitle className='col-span-2'>
-                                Active shares ({shares.length})
+                                Active shares ({unownedShares.length})
                             </CardTitle>
                             <AreYouSureProvider>
                                 <AreYouSure
@@ -76,7 +131,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {shares.map(e => e.getClientData()).map(async (e, i) => {
+                            {unownedShares.map(e => e.getClientData()).map(async (e, i) => {
                                 const share = await e;
                                 return share ? (
                                     <div key={i} className='flex items-center gap-2 space-y-2'>
@@ -107,7 +162,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                     </div>
                                 ) : <></>;
                             })}
-                            {shares.length === 0 && <>You have no active shares</>}
+                            {unownedShares.length === 0 && <>You have no active shares</>}
                         </CardContent>
                     </Card>
                     <Card>

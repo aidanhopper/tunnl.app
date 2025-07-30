@@ -156,3 +156,36 @@ const deleteIdentityBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"na
 export const deleteIdentityBySlug = new PreparedQuery<IDeleteIdentityBySlugParams,IDeleteIdentityBySlugResult>(deleteIdentityBySlugIR);
 
 
+/** 'SelectUserByZitiIdentityId' parameters type */
+export interface ISelectUserByZitiIdentityIdParams {
+  ziti_identity_id?: string | null | void;
+}
+
+/** 'SelectUserByZitiIdentityId' return type */
+export interface ISelectUserByZitiIdentityIdResult {
+  email: string;
+  id: string;
+  last_login: Date;
+  roles: string;
+}
+
+/** 'SelectUserByZitiIdentityId' query type */
+export interface ISelectUserByZitiIdentityIdQuery {
+  params: ISelectUserByZitiIdentityIdParams;
+  result: ISelectUserByZitiIdentityIdResult;
+}
+
+const selectUserByZitiIdentityIdIR: any = {"usedParamSet":{"ziti_identity_id":true},"params":[{"name":"ziti_identity_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":102,"b":118}]}],"statement":"SELECT users.*\nFROM identities\nJOIN users ON identities.user_id = users.id\nWHERE identities.ziti_id = :ziti_identity_id"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * SELECT users.*
+ * FROM identities
+ * JOIN users ON identities.user_id = users.id
+ * WHERE identities.ziti_id = :ziti_identity_id
+ * ```
+ */
+export const selectUserByZitiIdentityId = new PreparedQuery<ISelectUserByZitiIdentityIdParams,ISelectUserByZitiIdentityIdResult>(selectUserByZitiIdentityIdIR);
+
+

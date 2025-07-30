@@ -25,3 +25,9 @@ WHERE slug = :slug;
 DELETE FROM identities
 WHERE slug = :slug
 RETURNING *;
+
+/* @name selectUserByZitiIdentityId */
+SELECT users.*
+FROM identities
+JOIN users ON identities.user_id = users.id
+WHERE identities.ziti_id = :ziti_identity_id;

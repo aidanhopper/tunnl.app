@@ -320,19 +320,23 @@ class ShareList extends Array<Share> {
     }
 
     async owned() {
-        return await Promise.all(this.filter(async e => {
+        const results = await Promise.all(this.map(async e => {
             const service = await e.getService();
-            if (!service) return false;
-            return service.getUserId() === e.getUserId();
-        }))
+            if (!service) return null;
+            return service.getUserId() === e.getUserId() ? e : null;
+        }));
+
+        return results.filter(e => e !== null);
     }
 
     async unowned() {
-        return await Promise.all(this.filter(async e => {
+        const results = await Promise.all(this.map(async e => {
             const service = await e.getService();
-            if (!service) return false;
-            return service.getUserId() !== e.getUserId();
-        }))
+            if (!service) return null;
+            return service.getUserId() !== e.getUserId() ? e : null;
+        }));
+
+        return results.filter(e => e !== null);
     }
 }
 

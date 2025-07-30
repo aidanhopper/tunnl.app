@@ -1,4 +1,4 @@
-import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
+import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingByZitiServiceIdResult, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
 import { Pool } from "pg";
 import { GetConfigData, HostV1ConfigData, InterceptV1ConfigData, GetServiceData, ServicePolicyDetail } from "../ziti/types";
 import { deleteConfig, getConfig, getConfigIds, patchConfig, postConfig } from "../ziti/configs";
@@ -367,7 +367,7 @@ export class TunnelBinding {
         data
     }: {
         pool: Pool,
-        data: ISelectTunnelBindingsByServiceIdResult
+        data: ISelectTunnelBindingsByServiceIdResult | ISelectTunnelBindingByZitiServiceIdResult
     }) {
         this.serviceId = data.service_id;
         this.id = data.id;
@@ -433,7 +433,9 @@ export class TunnelBinding {
 
     async getHostingIdentity() {
         await this.getZitiBind();
-        const slug = this.zitiBind?.identityRolesDisplay[0].name.substring(1) ?? null;
+        const namesList = this.zitiBind?.identityRolesDisplay
+        if (!namesList || namesList.length === 0) return null
+        const slug = namesList[0].name.substring(1) ?? null;
         if (!slug) return null;
         const client = await this.pool.connect();
         try {
