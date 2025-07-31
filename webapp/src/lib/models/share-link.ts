@@ -215,7 +215,7 @@ export class ShareLink {
             slug: this.slug,
             isOneTimeUse: this.isOneTimeUse,
             producerEmail: this.producerEmail,
-            service: (await this.getService())?.getClientData()
+            service: (await this.getService())?.getClientData() || null
         } as ShareLinkClientData;
     }
 }
@@ -225,5 +225,5 @@ export interface ShareLinkClientData {
     slug: string;
     isOneTimeUse: boolean;
     producerEmail: string;
-    service: ServiceClientData;
+    service: ServiceClientData | null;
 }
