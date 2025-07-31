@@ -1,8 +1,6 @@
 /** Types generated for queries found in "src/db/sql/share_links.sql" */
 import { PreparedQuery } from '@pgtyped/runtime';
 
-export type protocol = 'http' | 'tcp' | 'tcp/udp' | 'udp';
-
 export type DateOrString = Date | string;
 
 /** 'InsertShareLink' parameters type */
@@ -65,23 +63,12 @@ export interface IDeleteShareLinkBySlugParams {
 
 /** 'DeleteShareLinkBySlug' return type */
 export interface IDeleteShareLinkBySlugResult {
-  created: Date;
-  email: string;
-  enabled: boolean;
   expires: Date;
   id: string;
-  id: string;
-  id: string;
-  last_login: Date;
-  name: string;
   one_time_use: boolean;
-  protocol: protocol;
-  roles: string;
   service_id: string;
   service_owner_user_id: string;
   slug: string;
-  slug: string;
-  user_id: string;
 }
 
 /** 'DeleteShareLinkBySlug' query type */
@@ -90,7 +77,7 @@ export interface IDeleteShareLinkBySlugQuery {
   result: IDeleteShareLinkBySlugResult;
 }
 
-const deleteShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":87,"b":91}]}],"statement":"WITH deleted_share_links AS (\n    DELETE FROM share_links\n    WHERE share_links.slug = :slug\n    RETURNING *\n)\nSELECT\n    *,\n    users.id AS service_owner_user_id\nFROM deleted_share_links\nJOIN services ON services.id = deleted_share_links.service_id\nJOIN users ON users.id = services.user_id"};
+const deleteShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":87,"b":91}]}],"statement":"WITH deleted_share_links AS (\n    DELETE FROM share_links\n    WHERE share_links.slug = :slug\n    RETURNING *\n)\nSELECT\n    deleted_share_links.*,\n    users.id AS service_owner_user_id\nFROM deleted_share_links\nJOIN services ON services.id = deleted_share_links.service_id\nJOIN users ON users.id = services.user_id"};
 
 /**
  * Query generated from SQL:
@@ -101,7 +88,7 @@ const deleteShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"n
  *     RETURNING *
  * )
  * SELECT
- *     *,
+ *     deleted_share_links.*,
  *     users.id AS service_owner_user_id
  * FROM deleted_share_links
  * JOIN services ON services.id = deleted_share_links.service_id

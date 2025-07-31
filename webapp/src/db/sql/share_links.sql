@@ -26,7 +26,7 @@ WITH deleted_share_links AS (
     RETURNING *
 )
 SELECT
-    *,
+    deleted_share_links.*,
     users.id AS service_owner_user_id
 FROM deleted_share_links
 JOIN services ON services.id = deleted_share_links.service_id

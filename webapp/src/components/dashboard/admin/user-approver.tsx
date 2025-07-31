@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserClientData } from "@/lib/models/user";
 import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 const UserApprover = ({

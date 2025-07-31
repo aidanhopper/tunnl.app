@@ -31,3 +31,36 @@ const getLatestUpdateMessageIR: any = {"usedParamSet":{},"params":[],"statement"
 export const getLatestUpdateMessage = new PreparedQuery<IGetLatestUpdateMessageParams,IGetLatestUpdateMessageResult>(getLatestUpdateMessageIR);
 
 
+/** 'InsertUpdateMessage' parameters type */
+export interface IInsertUpdateMessageParams {
+  content?: string | null | void;
+}
+
+/** 'InsertUpdateMessage' return type */
+export interface IInsertUpdateMessageResult {
+  content: string;
+  id: string;
+  timestamp: Date;
+}
+
+/** 'InsertUpdateMessage' query type */
+export interface IInsertUpdateMessageQuery {
+  params: IInsertUpdateMessageParams;
+  result: IInsertUpdateMessageResult;
+}
+
+const insertUpdateMessageIR: any = {"usedParamSet":{"content":true},"params":[{"name":"content","required":false,"transform":{"type":"scalar"},"locs":[{"a":57,"b":64}]}],"statement":"INSERT INTO update_messages (\n    content\n) VALUES (\n    :content\n) RETURNING *"};
+
+/**
+ * Query generated from SQL:
+ * ```
+ * INSERT INTO update_messages (
+ *     content
+ * ) VALUES (
+ *     :content
+ * ) RETURNING *
+ * ```
+ */
+export const insertUpdateMessage = new PreparedQuery<IInsertUpdateMessageParams,IInsertUpdateMessageResult>(insertUpdateMessageIR);
+
+

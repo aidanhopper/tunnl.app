@@ -1,6 +1,9 @@
+import Broadcast from "@/components/dashboard/admin/broadcast";
 import UserApprover from "@/components/dashboard/admin/user-approver";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import broadcast from "@/lib/actions/admin/broadcast";
 import pool from "@/lib/db";
 import { UserManager } from "@/lib/models/user";
 import { ShieldUser } from "lucide-react";
@@ -17,7 +20,7 @@ const AdminPage = async () => {
                     <h1>Admin Settings</h1>
                 </div>
             </div>
-            <div className='mt-10 flex justify-center'>
+            <div className='mt-10 flex flex-col items-center gap-8'>
                 <Card className='max-w-xl w-full'>
                     <CardHeader>
                         <CardTitle>Approve a user</CardTitle>
@@ -60,6 +63,18 @@ const AdminPage = async () => {
                                 return res;
                             }}
                         />
+                    </CardContent>
+                </Card>
+                <Card className='max-w-xl w-full'>
+                    <CardHeader>
+                        <CardTitle>Broadcast</CardTitle>
+                        <CardDescription>Broadcast new message for every user to see</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Broadcast onClick={async (msg: string) => {
+                            'use server'
+                            await broadcast(msg);
+                        }} />
                     </CardContent>
                 </Card>
             </div>

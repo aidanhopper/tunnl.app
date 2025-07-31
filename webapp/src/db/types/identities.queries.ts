@@ -11,7 +11,9 @@ export interface IInsertIdentityParams {
 
 /** 'InsertIdentity' return type */
 export interface IInsertIdentityResult {
+  approved: boolean;
   created: Date;
+  deleted: Date | null;
   id: string;
   is_online: boolean;
   last_seen: Date | null;
@@ -55,7 +57,9 @@ export interface ISelectIdentitiesByUserIdParams {
 
 /** 'SelectIdentitiesByUserId' return type */
 export interface ISelectIdentitiesByUserIdResult {
+  approved: boolean;
   created: Date;
+  deleted: Date | null;
   id: string;
   is_online: boolean;
   last_seen: Date | null;
@@ -91,7 +95,9 @@ export interface ISelectIdentityBySlugParams {
 
 /** 'SelectIdentityBySlug' return type */
 export interface ISelectIdentityBySlugResult {
+  approved: boolean;
   created: Date;
+  deleted: Date | null;
   id: string;
   is_online: boolean;
   last_seen: Date | null;
@@ -127,7 +133,9 @@ export interface IDeleteIdentityBySlugParams {
 
 /** 'DeleteIdentityBySlug' return type */
 export interface IDeleteIdentityBySlugResult {
+  approved: boolean;
   created: Date;
+  deleted: Date | null;
   id: string;
   is_online: boolean;
   last_seen: Date | null;
