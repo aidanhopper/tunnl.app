@@ -296,32 +296,12 @@ export class ShareGrantManager {
             const res = await selectIdentitySharesAccessByServiceId
                 .run({ service_id: this.serviceId }, client);
 
-            const identityMap = new Map<string, string[]>();
+            const userManager = new UserManager(this.pool);
 
             await Promise.all(res.map(async e => {
-                if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
-                    || !isApproved(e.granter_roles.split(' '))) {
-                    if (!identityMap.has(e.identity_ziti_id))
-                        identityMap.set(e.identity_ziti_id, []);
-                    return;
-                }
-                if (!identityMap.has(e.identity_ziti_id))
-                    identityMap.set(e.identity_ziti_id, []);
-                const role = await this.getRole(e.share_slug);
-                if (role) {
-                    const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
-                    identityMap.set(e.identity_ziti_id, roles);
-                }
+                const user = await userManager.getUserById(e.grantee_id);
+                await user?.getShareAccessManager().updateZitiDialRoles();
             }));
-
-            await Promise.all(
-                Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
-                    await patchIdentity({
-                        ziti_id: zitiIdentityId,
-                        data: { roleAttributes: roles }
-                    })
-                })
-            );
 
             return true;
         } catch {

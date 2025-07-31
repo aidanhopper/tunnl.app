@@ -69,6 +69,7 @@ SELECT
     shares.slug AS share_slug,
     identities.ziti_id AS identity_ziti_id,
     services.enabled,
+    grantee.id AS grantee_id,
     grantee.roles AS grantee_roles,
     granter.roles AS granter_roles
 FROM identity_shares_access isa

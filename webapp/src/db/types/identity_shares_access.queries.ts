@@ -211,6 +211,7 @@ export interface ISelectIdentitySharesAccessByServiceIdParams {
 /** 'SelectIdentitySharesAccessByServiceId' return type */
 export interface ISelectIdentitySharesAccessByServiceIdResult {
   enabled: boolean;
+  grantee_id: string;
   grantee_roles: string;
   granter_roles: string;
   id: string;
@@ -226,7 +227,7 @@ export interface ISelectIdentitySharesAccessByServiceIdQuery {
   result: ISelectIdentitySharesAccessByServiceIdResult;
 }
 
-const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":492,"b":502}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id,\n    services.enabled,\n    grantee.roles AS grantee_roles,\n    granter.roles AS granter_roles\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nJOIN services ON services.id = shares.service_id\nJOIN users AS grantee ON shares.user_id = grantee.id\nJOIN users AS granter ON services.user_id = granter.id\nWHERE shares.service_id = :service_id"};
+const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":522,"b":532}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id,\n    services.enabled,\n    grantee.id AS grantee_id,\n    grantee.roles AS grantee_roles,\n    granter.roles AS granter_roles\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nJOIN services ON services.id = shares.service_id\nJOIN users AS grantee ON shares.user_id = grantee.id\nJOIN users AS granter ON services.user_id = granter.id\nWHERE shares.service_id = :service_id"};
 
 /**
  * Query generated from SQL:
@@ -236,6 +237,7 @@ const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_i
  *     shares.slug AS share_slug,
  *     identities.ziti_id AS identity_ziti_id,
  *     services.enabled,
+ *     grantee.id AS grantee_id,
  *     grantee.roles AS grantee_roles,
  *     granter.roles AS granter_roles
  * FROM identity_shares_access isa
