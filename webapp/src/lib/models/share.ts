@@ -302,11 +302,13 @@ export class ShareGrantManager {
             res.forEach(e => userIdSet.add(e.grantee_id));
             const userIds = [...userIdSet];
 
+            console.log('userIds', userIds);
             await Promise.all(userIds.map(async id => {
                 const user = await userManager.getUserById(id);
                 if (!user) return;
                 await user.getShareAccessManager().updateZitiDialRoles();
             }));
+            console.log('DONE UPDATING ZITI ROLES');
 
             return true;
         } catch {

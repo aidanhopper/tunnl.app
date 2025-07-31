@@ -41,6 +41,7 @@ const AdminPage = async () => {
                                     if (!user) return res;
                                     await user.getShareAccessManager().updateZitiDialRoles()
                                     const services = await user.getServiceManager().getServices();
+                                    console.log(services)
                                     await Promise.all(services.map(async service => {
                                         await service.getShareGrantManager().updateZitiDialRoles();
                                     }));
