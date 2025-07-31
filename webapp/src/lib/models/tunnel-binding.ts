@@ -1,4 +1,4 @@
-import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingByZitiServiceIdResult, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
+import { deleteTunnelBindingBySlug, insertTunnelBinding, ISelectTunnelBindingsByServiceIdResult, selectTunnelBindingBySlug, selectTunnelBindingsByServiceId } from "@/db/types/tunnel_bindings.queries";
 import { Pool } from "pg";
 import { GetConfigData, HostV1ConfigData, InterceptV1ConfigData, GetServiceData, ServicePolicyDetail } from "../ziti/types";
 import { deleteConfig, getConfig, getConfigIds, patchConfig, postConfig } from "../ziti/configs";
@@ -367,7 +367,7 @@ export class TunnelBinding {
         data
     }: {
         pool: Pool,
-        data: ISelectTunnelBindingsByServiceIdResult | ISelectTunnelBindingByZitiServiceIdResult
+        data: ISelectTunnelBindingsByServiceIdResult
     }) {
         this.serviceId = data.service_id;
         this.id = data.id;
