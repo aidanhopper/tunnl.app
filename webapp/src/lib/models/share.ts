@@ -298,9 +298,14 @@ export class ShareGrantManager {
 
             const userManager = new UserManager(this.pool);
 
-            await Promise.all(res.map(async e => {
-                const user = await userManager.getUserById(e.grantee_id);
-                await user?.getShareAccessManager().updateZitiDialRoles();
+            const userIdSet = new Set<string>();
+            res.forEach(e => userIdSet.add(e.grantee_id));
+            const userIds = [...userIdSet];
+
+            await Promise.all(userIds.map(async id => {
+                const user = await userManager.getUserById(id);
+                if (!user) return;
+                await user.getShareAccessManager().updateZitiDialRoles();
             }));
 
             return true;
