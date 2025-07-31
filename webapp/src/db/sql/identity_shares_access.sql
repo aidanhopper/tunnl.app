@@ -51,18 +51,30 @@ WHERE share_id = (
 SELECT
     isa.*,
     shares.slug AS share_slug,
-    identities.ziti_id AS identity_ziti_id
+    identities.ziti_id AS identity_ziti_id,
+    services.enabled,
+    grantee.roles AS grantee_roles,
+    granter.roles AS granter_roles
 FROM identity_shares_access isa
 JOIN identities ON identities.id = isa.identity_id
 JOIN shares ON shares.id = isa.share_id
+JOIN services ON services.id = shares.service_id
+JOIN users AS grantee ON shares.user_id = grantee.id
+JOIN users AS granter ON services.user_id = granter.id
 WHERE identities.user_id = :user_id;
 
 /* @name selectIdentitySharesAccessByServiceId */
 SELECT
     isa.*,
     shares.slug AS share_slug,
-    identities.ziti_id AS identity_ziti_id
+    identities.ziti_id AS identity_ziti_id,
+    services.enabled,
+    grantee.roles AS grantee_roles,
+    granter.roles AS granter_roles
 FROM identity_shares_access isa
 JOIN identities ON identities.id = isa.identity_id
 JOIN shares ON shares.id = isa.share_id
+JOIN services ON services.id = shares.service_id
+JOIN users AS grantee ON shares.user_id = grantee.id
+JOIN users AS granter ON services.user_id = granter.id
 WHERE shares.service_id = :service_id;

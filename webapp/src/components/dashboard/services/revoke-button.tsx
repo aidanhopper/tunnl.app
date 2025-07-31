@@ -6,18 +6,21 @@ import { ReactNode } from "react";
 
 const RevokeButton = ({
     children,
-    variant = 'secondary'
+    variant = 'secondary',
+    className = ''
 }: {
     children?: ReactNode,
     variant?: 'destructive' | 'default' | 'secondary' | 'outline' | 'ghost'
+    className?: string
 }) => {
     const { setOpen } = useAreYouSure();
     return (
         <Button
             onClick={() => setOpen(true)}
-            className='text-xs cursor-pointer'
+            className={`text-xs cursor-pointer ${className}`}
             size='sm'
-            variant={variant}>
+            variant={variant}
+        >
             {children}
         </Button>
     );

@@ -49,58 +49,76 @@ const insertServiceIR: any = {"usedParamSet":{"user_id":true,"slug":true,"name":
 export const insertService = new PreparedQuery<IInsertServiceParams,IInsertServiceResult>(insertServiceIR);
 
 
-/** 'EnableServiceDb' parameters type */
-export interface IEnableServiceDbParams {
-  service_id?: string | null | void;
+/** 'EnableServiceBySlug' parameters type */
+export interface IEnableServiceBySlugParams {
+  slug?: string | null | void;
 }
 
-/** 'EnableServiceDb' return type */
-export type IEnableServiceDbResult = void;
-
-/** 'EnableServiceDb' query type */
-export interface IEnableServiceDbQuery {
-  params: IEnableServiceDbParams;
-  result: IEnableServiceDbResult;
+/** 'EnableServiceBySlug' return type */
+export interface IEnableServiceBySlugResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
 }
 
-const enableServiceDbIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":46,"b":56}]}],"statement":"UPDATE services\nSET enabled = TRUE\nWHERE id = :service_id"};
+/** 'EnableServiceBySlug' query type */
+export interface IEnableServiceBySlugQuery {
+  params: IEnableServiceBySlugParams;
+  result: IEnableServiceBySlugResult;
+}
+
+const enableServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":48,"b":52}]}],"statement":"UPDATE services\nSET enabled = TRUE\nWHERE slug = :slug\nRETURNING *"};
 
 /**
  * Query generated from SQL:
  * ```
  * UPDATE services
  * SET enabled = TRUE
- * WHERE id = :service_id
+ * WHERE slug = :slug
+ * RETURNING *
  * ```
  */
-export const enableServiceDb = new PreparedQuery<IEnableServiceDbParams,IEnableServiceDbResult>(enableServiceDbIR);
+export const enableServiceBySlug = new PreparedQuery<IEnableServiceBySlugParams,IEnableServiceBySlugResult>(enableServiceBySlugIR);
 
 
-/** 'DisableServiceDb' parameters type */
-export interface IDisableServiceDbParams {
-  service_id?: string | null | void;
+/** 'DisableServiceBySlug' parameters type */
+export interface IDisableServiceBySlugParams {
+  slug?: string | null | void;
 }
 
-/** 'DisableServiceDb' return type */
-export type IDisableServiceDbResult = void;
-
-/** 'DisableServiceDb' query type */
-export interface IDisableServiceDbQuery {
-  params: IDisableServiceDbParams;
-  result: IDisableServiceDbResult;
+/** 'DisableServiceBySlug' return type */
+export interface IDisableServiceBySlugResult {
+  created: Date;
+  enabled: boolean;
+  id: string;
+  name: string;
+  protocol: protocol;
+  slug: string;
+  user_id: string;
 }
 
-const disableServiceDbIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":47,"b":57}]}],"statement":"UPDATE services\nSET enabled = FALSE\nWHERE id = :service_id"};
+/** 'DisableServiceBySlug' query type */
+export interface IDisableServiceBySlugQuery {
+  params: IDisableServiceBySlugParams;
+  result: IDisableServiceBySlugResult;
+}
+
+const disableServiceBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":49,"b":53}]}],"statement":"UPDATE services\nSET enabled = FALSE\nWHERE slug = :slug\nRETURNING *"};
 
 /**
  * Query generated from SQL:
  * ```
  * UPDATE services
  * SET enabled = FALSE
- * WHERE id = :service_id
+ * WHERE slug = :slug
+ * RETURNING *
  * ```
  */
-export const disableServiceDb = new PreparedQuery<IDisableServiceDbParams,IDisableServiceDbResult>(disableServiceDbIR);
+export const disableServiceBySlug = new PreparedQuery<IDisableServiceBySlugParams,IDisableServiceBySlugResult>(disableServiceBySlugIR);
 
 
 /** 'SelectServicesByUserId' parameters type */

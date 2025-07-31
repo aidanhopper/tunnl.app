@@ -11,15 +11,17 @@ INSERT INTO services (
     :protocol
 ) RETURNING *;
 
-/* @name enableServiceDb */
+/* @name enableServiceBySlug */
 UPDATE services
 SET enabled = TRUE
-WHERE id = :service_id;
+WHERE slug = :slug
+RETURNING *;
 
-/* @name disableServiceDb */
+/* @name disableServiceBySlug */
 UPDATE services
 SET enabled = FALSE
-WHERE id = :service_id;
+WHERE slug = :slug
+RETURNING *;
 
 /* @name selectServicesByUserId */
 SELECT *

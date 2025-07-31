@@ -9,7 +9,7 @@ type EnrichedEvent<Event, Enriched> = {
 }
 
 export type EnrichedZitiCircuitEvent = EnrichedEvent<ZitiCircuitEvent, {
-    user: UserClientData
+    user: UserClientData | null
 }>
 
 export class EventEnricher {
@@ -24,7 +24,15 @@ export class EventEnricher {
     async enrichZitiCircuitEvent(e: ZitiCircuitEvent): Promise<EnrichedZitiCircuitEvent | null> {
         if (this.cache.has(e.data.zitiIdentityId)) {
             const cachedData = this.cache.get(e.data.zitiIdentityId) as UserClientData | null;
-            if (!cachedData) return null;
+            if (!cachedData) {
+                return {
+                    event: e,
+                    enrichedData: {
+                        user: null
+                    }
+                };
+            }
+
             return {
                 event: e,
                 enrichedData: {

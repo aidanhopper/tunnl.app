@@ -21,8 +21,8 @@ const chartConfig = {
 
 const DialEventsChart: React.FC<DialChartProps> = ({
     events,
-    hoursBack = 6,
-    intervalMinutes = 10
+    hoursBack = 24,
+    intervalMinutes = 5 
 }) => {
     const [chartData, setChartData] = useState<{
         timestamp: string;

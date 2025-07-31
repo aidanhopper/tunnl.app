@@ -24,6 +24,8 @@ import eventParser from "@/lib/events/event-parser";
 const mostDials = (events: EnrichedZitiCircuitEvent[], n: number) => {
     const map = new Map<string, { email: string, count: number }>();
     events.forEach(e => {
+        if (!e.enrichedData.user) return;
+
         if (!map.has(e.enrichedData.user.email)) {
             map.set(e.enrichedData.user.email, {
                 email: e.enrichedData.user.email,
@@ -54,16 +56,15 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
     const events = zitiServiceId ?
         await eventParser.getZitiCircuitCreatedEvents({
             zitiServiceId,
-            interval: '6 hours'
+            interval: '24 hours'
         }) : null;
     const unownedShares = await shares.unowned();
-    const ownedShares = await shares.owned();
     return (
         <>
             {tunnelBinding ? <div className='flex flex-col gap-4'>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Usage for the last 6hrs</CardTitle>
+                        <CardTitle>Usage for the last 24 hours</CardTitle>
                         <CardDescription>
                             Displays the number of successful dials on the Y axis for that time period
                         </CardDescription>
@@ -78,7 +79,7 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             Highest usage shares
                         </CardTitle>
                         <CardDescription>
-                            Displays the users with the highest amount of dials in the last 6 hours
+                            Displays the users with the highest amount of dials in the last 24 hours
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -240,12 +241,15 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                 yesText=<>Yes I&apos;m sure</>
                                 onClickYes={async () => {
                                     'use server'
-                                    // await enableService(service.id);
+                                    await enableService(serviceClientData.slug);
                                 }}>
                                 Are you sure you want to enable {service.getName()}? This will
                                 allow all your identities and shares to access this service again.
                             </AreYouSure>
-                            <RevokeButton variant='default'>Enable {service.getName()}</RevokeButton>
+                            <RevokeButton
+                                className='w-full h-10 lg:w-fit'
+                                variant='default'
+                            >Enable {service.getName()}</RevokeButton>
                         </AreYouSureProvider>
                     </> : <AreYouSureProvider>
                         <AreYouSure
@@ -253,13 +257,16 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             yesText=<>Yes I&apos;m sure</>
                             onClickYes={async () => {
                                 'use server'
-                                // await disableService(service.id);
+                                await disableService(serviceClientData.slug);
                             }}>
                             Are you sure you want to disable {service.getName()}? This will disable
                             the service from being dialed by your identities and shares.
                             It can be turned back on later.
                         </AreYouSure>
-                        <RevokeButton variant='secondary'>Disable {service.getName()}</RevokeButton>
+                        <RevokeButton
+                            className='w-full h-10 lg:w-fit'
+                            variant='secondary'
+                        >Disable {service.getName()}</RevokeButton>
                     </AreYouSureProvider>}
                 </div>
             </div> : <div className='flex flex-col gap-4'>

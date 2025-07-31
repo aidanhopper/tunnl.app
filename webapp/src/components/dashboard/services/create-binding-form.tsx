@@ -121,7 +121,7 @@ const CreateBindingForm = ({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem className='cursor-pointer' value="tunnel">Tunnel</SelectItem>
-                                            <SelectItem className='cursor-pointer' value="private-https">Private HTTPS</SelectItem>
+                                            {/* <SelectItem className='cursor-pointer' value="private-https">Private HTTPS</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                 </FormControl>

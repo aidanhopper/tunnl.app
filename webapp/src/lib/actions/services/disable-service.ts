@@ -1,13 +1,16 @@
 'use server'
 
-import { disableServiceDb } from "@/db/types/services.queries";
-import client from "@/lib/db";
-import updateDialRolesForService from "@/lib/update-dial-roles-for-service";
+import pool from "@/lib/db";
+import { UserManager } from "@/lib/models/user";
 
-const disableService = async (service_id: string) => {
+const disableService = async (serviceSlug: string) => {
     try {
-        await disableServiceDb.run({ service_id: service_id }, client);
-        updateDialRolesForService(service_id);
+        const user = await new UserManager(pool).auth()
+        if (!user) throw new Error('Unauthorized');
+        await user.getServiceManager().disableServiceBySlug(serviceSlug);
+        const service = await user.getServiceManager().getServiceBySlug(serviceSlug);
+        if (!service) throw new Error('Service not found');
+        await service.getShareGrantManager().updateZitiDialRoles()
         return true;
     } catch (err) {
         console.error(err);

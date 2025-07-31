@@ -25,9 +25,9 @@ const DashboardServiceConnectvity = async ({ params }: { params: Promise<{ slug:
                         <CardDescription>Connectivity settings for {service.getName()}</CardDescription>
                     </div>
                     <div className='justify-end flex gap-4 items-center'>
-                        <CreateBindingForm
+                        {!tunnelBinding && <CreateBindingForm
                             service={serviceClientData}
-                            identities={identities.map(e => e.getClientData())} />
+                            identities={identities.map(e => e.getClientData())} />}
                         <ShareServiceDialog service={serviceClientData} />
                     </div>
                 </div>

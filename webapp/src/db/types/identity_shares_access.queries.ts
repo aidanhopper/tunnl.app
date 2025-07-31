@@ -163,6 +163,9 @@ export interface ISelectIdentitySharesAccessByUserIdParams {
 
 /** 'SelectIdentitySharesAccessByUserId' return type */
 export interface ISelectIdentitySharesAccessByUserIdResult {
+  enabled: boolean;
+  grantee_roles: string;
+  granter_roles: string;
   id: string;
   identity_id: string;
   identity_ziti_id: string;
@@ -176,7 +179,7 @@ export interface ISelectIdentitySharesAccessByUserIdQuery {
   result: ISelectIdentitySharesAccessByUserIdResult;
 }
 
-const selectIdentitySharesAccessByUserIdIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":242,"b":249}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nWHERE identities.user_id = :user_id"};
+const selectIdentitySharesAccessByUserIdIR: any = {"usedParamSet":{"user_id":true},"params":[{"name":"user_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":493,"b":500}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id,\n    services.enabled,\n    grantee.roles AS grantee_roles,\n    granter.roles AS granter_roles\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nJOIN services ON services.id = shares.service_id\nJOIN users AS grantee ON shares.user_id = grantee.id\nJOIN users AS granter ON services.user_id = granter.id\nWHERE identities.user_id = :user_id"};
 
 /**
  * Query generated from SQL:
@@ -184,10 +187,16 @@ const selectIdentitySharesAccessByUserIdIR: any = {"usedParamSet":{"user_id":tru
  * SELECT
  *     isa.*,
  *     shares.slug AS share_slug,
- *     identities.ziti_id AS identity_ziti_id
+ *     identities.ziti_id AS identity_ziti_id,
+ *     services.enabled,
+ *     grantee.roles AS grantee_roles,
+ *     granter.roles AS granter_roles
  * FROM identity_shares_access isa
  * JOIN identities ON identities.id = isa.identity_id
  * JOIN shares ON shares.id = isa.share_id
+ * JOIN services ON services.id = shares.service_id
+ * JOIN users AS grantee ON shares.user_id = grantee.id
+ * JOIN users AS granter ON services.user_id = granter.id
  * WHERE identities.user_id = :user_id
  * ```
  */
@@ -201,6 +210,9 @@ export interface ISelectIdentitySharesAccessByServiceIdParams {
 
 /** 'SelectIdentitySharesAccessByServiceId' return type */
 export interface ISelectIdentitySharesAccessByServiceIdResult {
+  enabled: boolean;
+  grantee_roles: string;
+  granter_roles: string;
   id: string;
   identity_id: string;
   identity_ziti_id: string;
@@ -214,7 +226,7 @@ export interface ISelectIdentitySharesAccessByServiceIdQuery {
   result: ISelectIdentitySharesAccessByServiceIdResult;
 }
 
-const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":241,"b":251}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nWHERE shares.service_id = :service_id"};
+const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":492,"b":502}]}],"statement":"SELECT\n    isa.*,\n    shares.slug AS share_slug,\n    identities.ziti_id AS identity_ziti_id,\n    services.enabled,\n    grantee.roles AS grantee_roles,\n    granter.roles AS granter_roles\nFROM identity_shares_access isa\nJOIN identities ON identities.id = isa.identity_id\nJOIN shares ON shares.id = isa.share_id\nJOIN services ON services.id = shares.service_id\nJOIN users AS grantee ON shares.user_id = grantee.id\nJOIN users AS granter ON services.user_id = granter.id\nWHERE shares.service_id = :service_id"};
 
 /**
  * Query generated from SQL:
@@ -222,10 +234,16 @@ const selectIdentitySharesAccessByServiceIdIR: any = {"usedParamSet":{"service_i
  * SELECT
  *     isa.*,
  *     shares.slug AS share_slug,
- *     identities.ziti_id AS identity_ziti_id
+ *     identities.ziti_id AS identity_ziti_id,
+ *     services.enabled,
+ *     grantee.roles AS grantee_roles,
+ *     granter.roles AS granter_roles
  * FROM identity_shares_access isa
  * JOIN identities ON identities.id = isa.identity_id
  * JOIN shares ON shares.id = isa.share_id
+ * JOIN services ON services.id = shares.service_id
+ * JOIN users AS grantee ON shares.user_id = grantee.id
+ * JOIN users AS granter ON services.user_id = granter.id
  * WHERE shares.service_id = :service_id
  * ```
  */

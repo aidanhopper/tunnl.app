@@ -1,4 +1,4 @@
-import { deleteServiceBySlug, insertService, ISelectServiceByIdResult, ISelectServiceBySlugResult, ISelectServicesByUserIdResult, selectServiceById, selectServiceBySlug, selectServicesByUserId } from "@/db/types/services.queries";
+import { deleteServiceBySlug, disableServiceBySlug, enableServiceBySlug, insertService, ISelectServiceByIdResult, ISelectServiceBySlugResult, ISelectServicesByUserIdResult, selectServiceById, selectServiceBySlug, selectServicesByUserId } from "@/db/types/services.queries";
 import { Pool } from "pg";
 import slugify from "../slugify";
 import { selectServiceDialsByServiceId } from "@/db/types/service_dials.queries";
@@ -101,6 +101,30 @@ export class ServiceManager {
             return true;
         } catch {
             await client.query('ROLLBACK');
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    async disableServiceBySlug(slug: string) {
+        const client = await this.pool.connect();
+        try {
+            const res = await disableServiceBySlug.run({ slug }, client);
+            return res.length !== 0;
+        } catch {
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+
+    async enableServiceBySlug(slug: string) {
+        const client = await this.pool.connect();
+        try {
+            const res = await enableServiceBySlug.run({ slug }, client);
+            return res.length !== 0;
+        } catch {
             return false;
         } finally {
             client.release();

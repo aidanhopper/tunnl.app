@@ -5,6 +5,7 @@ import { selectServiceById } from "@/db/types/services.queries";
 import slugify from "../slugify";
 import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, selectIdentitySharesAccessByServiceId, selectIdentitySharesAccessByUserId } from "@/db/types/identity_shares_access.queries";
 import { patchIdentity } from "../ziti/identities";
+import { isApproved, UserManager } from "./user";
 
 export class ShareAccessManager {
     private userId: string;
@@ -20,6 +21,10 @@ export class ShareAccessManager {
     }) {
         this.userId = userId;
         this.pool = pool;
+    }
+
+    private async getUser() {
+        return await new UserManager(this.pool).getUserById(this.userId);
     }
 
     async createShare(serviceId: string) {
@@ -147,6 +152,12 @@ export class ShareAccessManager {
             const identityMap = new Map<string, string[]>();
 
             await Promise.all(res.map(async e => {
+                if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
+                    || !isApproved(e.granter_roles.split(' '))) {
+                    if (!identityMap.has(e.identity_ziti_id))
+                        identityMap.set(e.identity_ziti_id, []);
+                    return;
+                }
                 if (!identityMap.has(e.identity_ziti_id))
                     identityMap.set(e.identity_ziti_id, []);
                 const role = await this.getRole(e.share_slug);
@@ -287,6 +298,12 @@ export class ShareGrantManager {
             const identityMap = new Map<string, string[]>();
 
             await Promise.all(res.map(async e => {
+                if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
+                    || !isApproved(e.granter_roles.split(' '))) {
+                    if (!identityMap.has(e.identity_ziti_id))
+                        identityMap.set(e.identity_ziti_id, []);
+                    return;
+                }
                 if (!identityMap.has(e.identity_ziti_id))
                     identityMap.set(e.identity_ziti_id, []);
                 const role = await this.getRole(e.share_slug);
