@@ -292,6 +292,20 @@ export class ShareGrantManager {
         }
     }
 
+    async getEffectedUserIds() {
+        const client = await this.pool.connect();
+        try {
+            const res = await selectIdentitySharesAccessByServiceId
+                .run({ service_id: this.serviceId }, client);
+            const userIdSet = new Set<string>(res.map(e => e.grantee_id));
+            return [...userIdSet];
+        } catch {
+            return [];
+        } finally {
+            client.release();
+        }
+    }
+
     async updateZitiDialRoles() {
         const client = await this.pool.connect();
         try {
@@ -304,14 +318,12 @@ export class ShareGrantManager {
             res.forEach(e => userIdSet.add(e.grantee_id));
             const userIds = [...userIdSet];
 
-            console.log('userIds', userIds);
             await Promise.all(userIds.map(async id => {
                 const user = await userManager.getUserById(id);
                 if (!user) return;
                 console.log('got user', user.getEmail());
                 await user.getShareAccessManager().updateZitiDialRoles();
             }));
-            console.log('DONE UPDATING ZITI ROLES');
 
             return true;
         } catch {

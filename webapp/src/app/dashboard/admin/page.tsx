@@ -41,9 +41,15 @@ const AdminPage = async () => {
                                     if (!user) return res;
                                     await user.getShareAccessManager().updateZitiDialRoles()
                                     const services = await user.getServiceManager().getServices();
-                                    console.log(services)
+                                    const userIdSet = new Set<string>();
                                     await Promise.all(services.map(async service => {
-                                        await service.getShareGrantManager().updateZitiDialRoles();
+                                        const ids = await service.getShareGrantManager().getEffectedUserIds();
+                                        ids.forEach(e => userIdSet.add(e));
+                                    }));
+                                    await Promise.all([...userIdSet].map(async e => {
+                                        const user = await userManager.getUserById(e);
+                                        if (!user) return;
+                                        await user.getShareAccessManager().updateZitiDialRoles();
                                     }));
                                 }
                                 return res;
@@ -57,8 +63,15 @@ const AdminPage = async () => {
                                     if (!user) return res;
                                     await user.getShareAccessManager().updateZitiDialRoles()
                                     const services = await user.getServiceManager().getServices();
+                                    const userIdSet = new Set<string>();
                                     await Promise.all(services.map(async service => {
-                                        await service.getShareGrantManager().updateZitiDialRoles();
+                                        const ids = await service.getShareGrantManager().getEffectedUserIds();
+                                        ids.forEach(e => userIdSet.add(e));
+                                    }));
+                                    await Promise.all([...userIdSet].map(async e => {
+                                        const user = await userManager.getUserById(e);
+                                        if (!user) return;
+                                        await user.getShareAccessManager().updateZitiDialRoles();
                                     }));
                                 }
                                 return res;
