@@ -162,7 +162,8 @@ export class ShareAccessManager {
                     identityMap.set(e.identity_ziti_id, []);
                 const role = await this.getRole(e.share_slug);
                 if (role) {
-                    identityMap.get(e.identity_ziti_id)?.push(role);
+                    const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
+                    identityMap.set(e.identity_ziti_id, roles);
                 }
             }));
 
@@ -308,7 +309,8 @@ export class ShareGrantManager {
                     identityMap.set(e.identity_ziti_id, []);
                 const role = await this.getRole(e.share_slug);
                 if (role) {
-                    identityMap.get(e.identity_ziti_id)?.push(role);
+                    const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
+                    identityMap.set(e.identity_ziti_id, roles);
                 }
             }));
 
