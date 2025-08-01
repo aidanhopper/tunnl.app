@@ -18,7 +18,6 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
@@ -30,7 +29,6 @@ import {
     Users,
     HelpingHand,
     MonitorSmartphone,
-    BadgeCheck,
     ChevronsUpDown,
     LogOut,
     ShieldUser,
@@ -98,7 +96,7 @@ const DashboardSidebar = ({ isAdmin, ...props }: { isAdmin: boolean }) => {
         <Sidebar {...props}>
             <SidebarContent>
                 <SidebarHeader className='font-bold font-mono text-left text-2xl p-0 m-0 w-full bg-accent/60'>
-                    <div className='h-[95px] flex items-center justify-center border-b w-full pr-10'>
+                    <div className='h-[66px] flex items-center justify-center border-b w-full pr-10'>
                         <Link href='/'>
                             🚂 tunnl.app
                         </Link>

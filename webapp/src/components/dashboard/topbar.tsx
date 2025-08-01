@@ -19,9 +19,6 @@ const Topbar = ({ message = <>&nbsp;</> }: { message?: ReactNode }) => {
 
     return (
         <div className='z-10 bg-accent/60 backdrop-blur-3xl fixed'>
-            <div className='flex justify-center items-center p-1 font-mono text-center text-sm border-b'>
-                {message}
-            </div>
             <div
                 style={{ width: topbarWidth ?? `calc(100vw - 255px)` }}
                 className={`flex px-4 h-[66px] items-center 

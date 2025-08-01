@@ -167,8 +167,6 @@ export class ShareAccessManager {
                 }
             }));
 
-            console.log('identitymap', identityMap.entries());
-
             await Promise.all(
                 Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
                     await patchIdentity({
@@ -321,7 +319,6 @@ export class ShareGrantManager {
             await Promise.all(userIds.map(async id => {
                 const user = await userManager.getUserById(id);
                 if (!user) return;
-                console.log('got user', user.getEmail());
                 await user.getShareAccessManager().updateZitiDialRoles();
             }));
 
