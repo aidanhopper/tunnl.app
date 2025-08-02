@@ -31,7 +31,7 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
 
     return (
         <DashboardLayout>
-            <SubscribeProvider url={process.env.NEXT_PUBLIC_PUBLISHER_URL} token={token}>
+            <SubscribeProvider url={process.env.PUBLISHER_URL} token={token}>
                 <RefreshOnEvent onEvent={async (payload) => {
                     'use server'
                     return payload.entityType === 'enrollments' && payload.eventType === 'deleted'

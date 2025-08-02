@@ -47,7 +47,7 @@ const Identities = async () => {
     return (
         <DashboardLayout>
             <div className='flex gap-8 flex-col'>
-                <SubscribeProvider url={process.env.NEXT_PUBLIC_PUBLISHER_URL} token={token}>
+                <SubscribeProvider url={process.env.PUBLISHER_URL} token={token}>
                     <RefreshOnEvent onEvent={async (payload) => {
                         'use server'
                         return payload.namespace === 'sdk'
