@@ -30,6 +30,7 @@
             go
             tree
             sshpass
+            postgresql
           ]; 
         };
       });
