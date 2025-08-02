@@ -3,6 +3,15 @@ http:
     insecureTransport:
       insecureSkipVerify: true
   routers:
+    publisher-router:
+      rule: 'HOST(`publisher.tunnl.app`)'
+      service: publisher-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.tunnl.app" 
     tunnl-router:
       rule: 'HOST(`tunnl.app`)'
       service: tunnl-service
@@ -44,6 +53,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://127.0.0.1:3000"
+    publisher-service:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:3444"
 tcp:
   routers:
     controller-router:

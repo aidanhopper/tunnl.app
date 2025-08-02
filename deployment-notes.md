@@ -61,3 +61,14 @@ Instructions on installing the ZAC https://openziti.io/docs/learn/quickstarts/za
 For advertising 443 in ziti you must go into the controller config and edge router config and change all advertised ports to 443. Leave the bind ports.
 
 Will need an email provider to verify email.
+
+## Notes on TLS for Ziti intercepts
+When browsers query a FQDN it may force the protocol to be HTTPS, so don't be
+surprised when you can't query a FQDN using unencrypted HTTP. As long as you
+can curl the endpoint it should work for HTTPS. To get HTTPS grab a cert for a
+domain without a public DNS record (can be wildcard). The domain on
+the cert should not successfully resolve to any IP through an A or CNAME
+record. This way Ziti can intercept the domain and route the request through
+the fabric. Here Ziti is acting as a private DNS provider, so the record
+doesn't exist publically but can be resolved when the Ziti intercept is
+available for that identity.

@@ -41,6 +41,8 @@ services:
       - db
     ports:
       - "127.0.0.1:3444:3444"
+    volumes:
+      - ./publisher.log:/app/publisher.log
     env_file:
       - .env
     restart: unless-stopped
