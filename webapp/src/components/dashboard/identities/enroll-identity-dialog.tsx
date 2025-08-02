@@ -44,7 +44,7 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
                         </span>
                     </span>
                     <Button
-                        className='cursor-pointer w-[300px]'
+                        className='cursor-pointer w-full'
                         onClick={downloadFile}>
                         Download JWT File
                     </Button>

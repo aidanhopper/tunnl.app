@@ -86,14 +86,14 @@ const ShareLinkPage = async ({
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle className='text-center'>What to do When You&apos;ve Received an Invite</CardTitle>
+                        <CardTitle className='text-center'>What To Do When You&apos;ve Received An Invite On Tunnl.app</CardTitle>
                         <CardDescription className='text-center'>Watch this tutorial if this is your first time here</CardDescription>
                     </CardHeader>
                     <CardContent className='justify-center flex '>
                         <iframe
                             className='h-full w-full aspect-video'
-                            src="https://www.youtube.com/embed/erYEcA-F5zQ"
-                            title="What To Do When You&#39;ve Received An Invite on Tunnl.app"
+                            src="https://www.youtube.com/embed/wGIxnk59Cco"
+                            title="What To Do When You&#39;ve Recieved An Invite On Tunnl.app"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             referrerPolicy="strict-origin-when-cross-origin"
                             allowFullScreen></iframe>
