@@ -38,7 +38,7 @@ import { unauthorized } from "next/navigation";
 const Identities = async () => {
     const user = await new UserManager(pool).auth() || unauthorized()
 
-    if (!process.env.NEXT_PUBLIC_PUBLISHER_URL) return <>Error</>;
+    if (!process.env.PUBLISHER_URL) return <>Error</>;
 
     const identityManager = user.getIdentityManager();
     const identities = await identityManager.getIdentities();

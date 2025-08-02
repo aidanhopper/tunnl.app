@@ -8,6 +8,7 @@ import { getLatestUpdateMessage, IGetLatestUpdateMessageResult } from "@/db/type
 import client from "@/lib/db";
 import pool from "@/lib/db";
 import { UserManager } from "@/lib/models/user";
+import host from "@/lib/host";
 
 const DashboardLayout = async ({ children }: { children?: ReactNode }) => {
     const user = await new UserManager(pool).auth();
@@ -21,7 +22,7 @@ const DashboardLayout = async ({ children }: { children?: ReactNode }) => {
                 <Topbar message={<>
                     {message?.content}
                 </>} />
-                <Content className='py-4 mt-20'>
+                <Content className='pb-12 mt-26'>
                     <ValidateUserSession>
                         {children}
                     </ValidateUserSession>

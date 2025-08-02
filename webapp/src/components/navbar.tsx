@@ -24,8 +24,8 @@ const Navbar = () => {
                 <div>
                     <Link
                         href='/'
-                        className='flex h-full font-mono items-center text-lg cursor-pointer'>
-                        🚂 tunnl.app
+                        className='flex h-full font-mono items-center text-lg cursor-pointer font-bold'>
+                        🚂 Tunnl.app
                     </Link>
                 </div>
                 <div className=' md:gap-4 flex h-full justify-end items-center'>

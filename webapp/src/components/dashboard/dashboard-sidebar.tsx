@@ -36,7 +36,12 @@ import {
 import { signOut } from 'next-auth/react';
 import { useLocalSession, clearLocalSession, useCachedImage } from '@/lib/hooks';
 
-const DashboardSidebar = ({ isAdmin, ...props }: { isAdmin: boolean }) => {
+const DashboardSidebar = ({
+    isAdmin,
+    ...props
+}: {
+    isAdmin: boolean
+}) => {
     const router = useRouter();
     const { data } = useLocalSession();
     const { isMobile } = useSidebar();
@@ -95,10 +100,12 @@ const DashboardSidebar = ({ isAdmin, ...props }: { isAdmin: boolean }) => {
     return (
         <Sidebar {...props}>
             <SidebarContent>
-                <SidebarHeader className='font-bold font-mono text-left text-2xl p-0 m-0 w-full bg-accent/60'>
-                    <div className='h-[66px] flex items-center justify-center border-b w-full pr-10'>
-                        <Link href='/'>
-                            🚂 tunnl.app
+                <SidebarHeader className='font-bold font-mono text-left text-lg p-0 m-0 w-full bg-accent/60'>
+                    <div className='h-[66px] flex items-center justify-start border-b w-full px-4'>
+                        <Link
+                            className='block truncate text-xl'
+                            href='/'>
+                            🚂 Tunnl.app
                         </Link>
                     </div>
                 </SidebarHeader>
@@ -140,7 +147,7 @@ const DashboardSidebar = ({ isAdmin, ...props }: { isAdmin: boolean }) => {
                             <DropdownMenuTrigger className='cursor-pointer' asChild>
                                 <SidebarMenuButton
                                     size="lg"
-                                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                                    className="data-:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                                 >
                                     <UserPanel />
                                     <ChevronsUpDown className="ml-auto size-4" />

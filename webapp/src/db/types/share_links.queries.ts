@@ -18,6 +18,7 @@ export interface IInsertShareLinkResult {
   one_time_use: boolean;
   producer_email: string;
   service_id: string;
+  service_name: string;
   slug: string;
 }
 
@@ -27,7 +28,7 @@ export interface IInsertShareLinkQuery {
   result: IInsertShareLinkResult;
 }
 
-const insertShareLinkIR: any = {"usedParamSet":{"expires":true,"slug":true,"service_id":true,"one_time_use":true},"params":[{"name":"expires","required":false,"transform":{"type":"scalar"},"locs":[{"a":156,"b":163}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":174,"b":178}]},{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":189,"b":199}]},{"name":"one_time_use","required":false,"transform":{"type":"scalar"},"locs":[{"a":210,"b":222}]}],"statement":"WITH inserted_share_links AS (\n    INSERT INTO share_links (\n        expires,\n        slug,\n        service_id,\n        one_time_use\n    ) VALUES (\n        :expires,\n        :slug,\n        :service_id,\n        :one_time_use\n    ) RETURNING *\n)\nSELECT\n    inserted_share_links.*,\n    users.email AS producer_email\nFROM inserted_share_links\nJOIN services ON inserted_share_links.service_id = services.id\nJOIN users ON services.user_id = users.id"};
+const insertShareLinkIR: any = {"usedParamSet":{"expires":true,"slug":true,"service_id":true,"one_time_use":true},"params":[{"name":"expires","required":false,"transform":{"type":"scalar"},"locs":[{"a":156,"b":163}]},{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":174,"b":178}]},{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":189,"b":199}]},{"name":"one_time_use","required":false,"transform":{"type":"scalar"},"locs":[{"a":210,"b":222}]}],"statement":"WITH inserted_share_links AS (\n    INSERT INTO share_links (\n        expires,\n        slug,\n        service_id,\n        one_time_use\n    ) VALUES (\n        :expires,\n        :slug,\n        :service_id,\n        :one_time_use\n    ) RETURNING *\n)\nSELECT\n    inserted_share_links.*,\n    services.name AS service_name,\n    users.email AS producer_email\nFROM inserted_share_links\nJOIN services ON inserted_share_links.service_id = services.id\nJOIN users ON services.user_id = users.id"};
 
 /**
  * Query generated from SQL:
@@ -47,6 +48,7 @@ const insertShareLinkIR: any = {"usedParamSet":{"expires":true,"slug":true,"serv
  * )
  * SELECT
  *     inserted_share_links.*,
+ *     services.name AS service_name,
  *     users.email AS producer_email
  * FROM inserted_share_links
  * JOIN services ON inserted_share_links.service_id = services.id
@@ -110,6 +112,7 @@ export interface ISelectShareLinksByServiceIdResult {
   one_time_use: boolean;
   producer_email: string;
   service_id: string;
+  service_name: string;
   slug: string;
 }
 
@@ -119,13 +122,14 @@ export interface ISelectShareLinksByServiceIdQuery {
   result: ISelectShareLinksByServiceIdResult;
 }
 
-const selectShareLinksByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":192,"b":202}]}],"statement":"SELECT\n    share_links.*,\n    users.email AS producer_email\nFROM share_links\nJOIN services ON share_links.service_id = services.id\nJOIN users ON services.user_id = users.id\nWHERE service_id = :service_id"};
+const selectShareLinksByServiceIdIR: any = {"usedParamSet":{"service_id":true},"params":[{"name":"service_id","required":false,"transform":{"type":"scalar"},"locs":[{"a":227,"b":237}]}],"statement":"SELECT\n    share_links.*,\n    services.name AS service_name,\n    users.email AS producer_email\nFROM share_links\nJOIN services ON share_links.service_id = services.id\nJOIN users ON services.user_id = users.id\nWHERE service_id = :service_id"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT
  *     share_links.*,
+ *     services.name AS service_name,
  *     users.email AS producer_email
  * FROM share_links
  * JOIN services ON share_links.service_id = services.id
@@ -181,6 +185,7 @@ export interface ISelectShareLinkBySlugResult {
   one_time_use: boolean;
   producer_email: string;
   service_id: string;
+  service_name: string;
   slug: string;
 }
 
@@ -190,13 +195,14 @@ export interface ISelectShareLinkBySlugQuery {
   result: ISelectShareLinkBySlugResult;
 }
 
-const selectShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":198,"b":202}]}],"statement":"SELECT\n    share_links.*,\n    users.email AS producer_email\nFROM share_links\nJOIN services ON share_links.service_id = services.id\nJOIN users ON services.user_id = users.id\nWHERE share_links.slug = :slug"};
+const selectShareLinkBySlugIR: any = {"usedParamSet":{"slug":true},"params":[{"name":"slug","required":false,"transform":{"type":"scalar"},"locs":[{"a":233,"b":237}]}],"statement":"SELECT\n    share_links.*,\n    services.name AS service_name,\n    users.email AS producer_email\nFROM share_links\nJOIN services ON share_links.service_id = services.id\nJOIN users ON services.user_id = users.id\nWHERE share_links.slug = :slug"};
 
 /**
  * Query generated from SQL:
  * ```
  * SELECT
  *     share_links.*,
+ *     services.name AS service_name,
  *     users.email AS producer_email
  * FROM share_links
  * JOIN services ON share_links.service_id = services.id

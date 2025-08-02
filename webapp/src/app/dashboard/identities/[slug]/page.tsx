@@ -27,7 +27,7 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
         ]
     });
 
-    if (!process.env.NEXT_PUBLIC_PUBLISHER_URL) return <>Error</>;
+    if (!process.env.PUBLISHER_URL) return <>Error</>;
 
     return (
         <DashboardLayout>

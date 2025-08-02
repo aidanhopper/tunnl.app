@@ -14,6 +14,7 @@ WITH inserted_share_links AS (
 )
 SELECT
     inserted_share_links.*,
+    services.name AS service_name,
     users.email AS producer_email
 FROM inserted_share_links
 JOIN services ON inserted_share_links.service_id = services.id
@@ -35,6 +36,7 @@ JOIN users ON users.id = services.user_id;
 /* @name selectShareLinksByServiceId */
 SELECT
     share_links.*,
+    services.name AS service_name,
     users.email AS producer_email
 FROM share_links
 JOIN services ON share_links.service_id = services.id
@@ -49,6 +51,7 @@ RETURNING *;
 /* @name selectShareLinkBySlug */
 SELECT
     share_links.*,
+    services.name AS service_name,
     users.email AS producer_email
 FROM share_links
 JOIN services ON share_links.service_id = services.id

@@ -1,7 +1,9 @@
 import Content from "@/components/content";
 import JoinShareButton from "@/components/join-share-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { selectShareLinkBySlug } from "@/db/types/share_links.queries";
 import pool from "@/lib/db";
+import getHost from "@/lib/host";
 import { getShareLink, ShareLink } from "@/lib/models/share-link";
 import { UserManager } from "@/lib/models/user";
 import { Metadata } from "next";
@@ -14,20 +16,31 @@ export const generateMetadata = async ({
     params: Promise<{ slug: string }>,
 }): Promise<Metadata> => {
 
+    const host = await getHost();
+
     const defaultMetadata: Metadata = {
-        title: "Tunnl.app — Not Found",
-        description: "Tunnl.app makes it easy to share private services with yourself and your friends over the internet.",
+        title: `${host} — Not Found`,
+        description: `${host} makes it easy to share private services with yourself and your friends over the internet.`,
     }
 
     const slug = (await params).slug;
 
-
-    // return {
-    //     title: `Tunnl.app — Invite to a ${service.name} service share`,
-    //     description: `Click the link to join a ${service.name} service share from ${ownerEmail}.`,
-    // }
-
-    return defaultMetadata;
+    const client = await pool.connect();
+    try {
+        const res = await selectShareLinkBySlug.run({ slug }, client);
+        if (res.length === 0) throw new Error('Share ')
+        const shareLink = new ShareLink({ pool, data: res[0] });
+        const service = await shareLink.getService()
+        if (!service) throw new Error('Service does not exist');
+        return {
+            title: `${host} — Invite to a ${service.getName()} service share`,
+            description: `Click the link to join a ${service.getName()} service share from ${shareLink.getProducerEmail()}.`,
+        }
+    } catch {
+        return defaultMetadata;
+    } finally {
+        client.release();
+    }
 }
 
 const ShareLinkPage = async ({
@@ -86,9 +99,6 @@ const ShareLinkPage = async ({
                             allowFullScreen></iframe>
                     </CardContent>
                 </Card>
-                <p className='text-center'>
-                    Leave feedback at <b>aidanhop1@gmail.com</b>  or my discord  <b>aidan12312</b>
-                </p>
             </div>
         </Content>
     );

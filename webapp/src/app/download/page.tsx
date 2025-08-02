@@ -14,6 +14,7 @@ const DownloadPage = async () => {
     let message: IGetLatestUpdateMessageResult | null = null;
     const messageList = await getLatestUpdateMessage.run(undefined, client);
     if (messageList.length !== 0) message = messageList[0];
+    const contactEmail = process.env.CONTACT_EMAIL;
     return (
         <main className='min-h-screen flex flex-col'>
             <div className='flex justify-center items-center text-center p-1 bg-accent font-mono text-sm'>
@@ -48,9 +49,9 @@ const DownloadPage = async () => {
                 <PlatformSwitch />
             </Content>
             <div className='flex items-end flex-1 mt-10'>
-                <div className='w-full text-center bg-accent text-muted-foreground'>
-                    Leave feedback at <b>aidanhop1@gmail.com</b>  or my discord  <b>aidan12312</b>
-                </div>
+                {contactEmail && <div className='flex items-center justify-center w-full bg-accent text-muted-foreground'>
+                    Questions, comments, or concerns? Contact <b className='ml-1'>{contactEmail}</b>
+                </div>}
             </div>
         </main>
     );

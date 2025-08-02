@@ -10,6 +10,7 @@ const ApprovalCard = ({
     children,
     className = ''
 }: { email: string | null | undefined, children?: ReactNode, className?: string }) => {
+    const contactEmail = process.env.CONTACT_EMAIL;
     return (
         <Card className={className}>
             <CardContent className='flex flex-col lg:flex-row items-center gap-4'>
@@ -17,7 +18,7 @@ const ApprovalCard = ({
                     Your account must be approved to create identities &amp; services
                 </h3>
                 <div className='flex lg:justify-end w-full md:w-fit'>
-                    <Dialog>
+                    {contactEmail && <Dialog>
                         <DialogTrigger className='cursor-pointer' asChild>
                             <Button className='w-full'>
                                 Request
@@ -35,13 +36,12 @@ const ApprovalCard = ({
                             </DialogHeader>
                             <div className='grid gap-4'>
                                 <p>
-                                    To request approval you can contact me via email
-                                    aidanhop1@gmail.com or discord aidan12312. Once
+                                    To request approval you can contact {contactEmail} Once
                                     approved the changes will show up in your account
                                     immediately.
                                 </p>
                                 {email && <Button className='cursor-pointer' asChild>
-                                    <Link href={`mailto:aidanhop1@gmail.com?subject=${encodeURIComponent(
+                                    <Link href={`mailto:${contactEmail}?subject=${encodeURIComponent(
                                         `Requesting Approval For ${email} in Tunnl.app`
                                     )}&body=${encodeURIComponent('<justification here>')}`}>
                                         Email <MailIcon />
@@ -49,7 +49,7 @@ const ApprovalCard = ({
                                 </Button>}
                             </div>
                         </DialogContent>
-                    </Dialog>
+                    </Dialog>}
                 </div>
             </CardContent>
         </Card>

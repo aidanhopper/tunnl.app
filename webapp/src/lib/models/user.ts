@@ -131,7 +131,7 @@ export class User {
     }
 
     isAdmin() {
-        const emails = process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? '';
+        const emails = process.env.ADMIN_EMAILS ?? '';
         return emails.split(',').find(e => e === this.getEmail()) !== undefined;
     }
 

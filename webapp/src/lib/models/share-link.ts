@@ -159,7 +159,7 @@ export class ShareLink {
         data
     }: {
         pool: Pool,
-        data: IInsertShareLinkResult | ISelectShareLinkBySlugResult | ISelectShareLinksByServiceIdResult
+            data: IInsertShareLinkResult | ISelectShareLinkBySlugResult | ISelectShareLinksByServiceIdResult
     }) {
         this.id = data.id;
         this.expires = data.expires;

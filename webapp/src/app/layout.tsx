@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeProvider from '@/components/theme-provider';
 import { UserSession } from '@/components/user-session';
 import { PlatformProvider } from "@/components/download/platform-provider";
+import getHost from "@/lib/host";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -15,10 +16,19 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-    title: "Tunnl.app — The easy service sharing platform",
-    description: "Tunnl.app makes it easy to share private services yourself and your friends over the internet.",
-};
+export const generateMetadata = async ({
+    params,
+}: {
+    params: Promise<{ slug: string }>,
+}): Promise<Metadata> => {
+    const host = await getHost();
+
+    const metadata = {
+        title: `${host} — The easy service sharing platform"`,
+        description: `${host} makes it easy to share private services with yourself and your friends over the internet.`,
+    }
+    return metadata;
+}
 
 export default function RootLayout({
     children,
