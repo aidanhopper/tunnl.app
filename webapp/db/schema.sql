@@ -22,112 +22,6 @@ CREATE TYPE public.protocol AS ENUM (
 );
 
 
---
--- Name: enforce_binding_policy_type(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.enforce_binding_policy_type() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  -- Check dial_policy_id is a binding policy
-  IF NEW.dial_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM ziti_policies WHERE id = NEW.dial_policy_id AND type = 'Dial';
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'dial_policy_id % must reference a policy of type Dial', NEW.dial_policy_id;
-    END IF;
-  END IF;
-
-  -- Check bind_policy_id is a binding policy
-  IF NEW.bind_policy_id IS NOT NULL THEN
-    PERFORM 1 FROM ziti_policies WHERE id = NEW.bind_policy_id AND type = 'Bind';
-    IF NOT FOUND THEN
-      RAISE EXCEPTION 'bind_policy_id % must reference a policy of type Bind', NEW.bind_policy_id;
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-
---
--- Name: is_valid_domain_list(text); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.is_valid_domain_list(input text) RETURNS boolean
-    LANGUAGE plpgsql IMMUTABLE
-    AS $_$
-DECLARE
-  domain TEXT;
-BEGIN
-  IF input IS NULL OR input = '' THEN
-    RETURN FALSE;
-  END IF;
-
-  FOREACH domain IN ARRAY regexp_split_to_array(input, '\s+') LOOP
-    IF NOT domain ~* '^([a-z0-9]([-a-z0-9]*[a-z0-9])?\.)+[a-z]{2,}$' THEN
-      RETURN FALSE;
-    END IF;
-  END LOOP;
-
-  RETURN TRUE;
-END;
-$_$;
-
-
---
--- Name: is_valid_port(character varying); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.is_valid_port(character varying) RETURNS boolean
-    LANGUAGE sql IMMUTABLE
-    AS $_$
-  SELECT $1 ~ '^\d{1,5}$' AND $1::int BETWEEN 1 AND 65535;
-$_$;
-
-
---
--- Name: is_valid_port_range_list(text); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.is_valid_port_range_list(input text) RETURNS boolean
-    LANGUAGE plpgsql IMMUTABLE
-    AS $_$
-DECLARE
-  token TEXT;
-  start_port INT;
-  end_port INT;
-BEGIN
-  IF input IS NULL OR input = '' THEN
-    RETURN FALSE;
-  END IF;
-
-  FOREACH token IN ARRAY regexp_split_to_array(input, '\s+') LOOP
-    IF token ~ '^\d+$' THEN
-      -- Single port
-      start_port := token::INT;
-      IF start_port < 1 OR start_port > 65535 THEN
-        RETURN FALSE;
-      END IF;
-    ELSIF token ~ '^\d+-\d+$' THEN
-      -- Port range
-      start_port := split_part(token, '-', 1)::INT;
-      end_port := split_part(token, '-', 2)::INT;
-      IF start_port < 1 OR end_port > 65535 OR start_port >= end_port THEN
-        RETURN FALSE;
-      END IF;
-    ELSE
-      -- Invalid token
-      RETURN FALSE;
-    END IF;
-  END LOOP;
-
-  RETURN TRUE;
-END;
-$_$;
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -207,14 +101,6 @@ CREATE TABLE public.private_https_bindings (
     ziti_bind_id character varying(32) NOT NULL,
     created timestamp with time zone DEFAULT now() NOT NULL,
     domain character varying(70) NOT NULL
-);
-
-
---
--- Name: public_port_bindings; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.public_port_bindings (
 );
 
 
@@ -645,11 +531,7 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250520000000'),
     ('20250520051951'),
     ('20250520051952'),
-    ('20250520184601'),
-    ('20250520184602'),
-    ('20250520185103'),
     ('20250521004548'),
-    ('20250521010113'),
     ('20250702014631'),
     ('20250702014647'),
     ('20250713163208'),
