@@ -135,17 +135,6 @@ export class TunnelBindingManager {
 
             const zitiServiceName = slugify(this.service.getSlug());
 
-            console.log(
-
-                    host.portConfig.forwardPorts ? {
-                        forwardPort: true,
-                        allowedPortRanges: host.portConfig.portRange,
-                    } : {
-                        port: Number(host.portConfig.port)
-                    }
-
-            );
-
             const hostRes = await postConfig({
                 configTypeId: hostV1Id,
                 name: `${zitiServiceName}-host-config`,

@@ -6,6 +6,7 @@ import slugify from "../slugify";
 import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, selectIdentitySharesAccessByServiceId, selectIdentitySharesAccessByUserId } from "@/db/types/identity_shares_access.queries";
 import { patchIdentity } from "../ziti/identities";
 import { isApproved, UserManager } from "./user";
+import withTimeout from "../with-timeout";
 
 export class ShareAccessManager {
     private userId: string;
@@ -151,33 +152,42 @@ export class ShareAccessManager {
 
             const identityMap = new Map<string, string[]>();
 
-            await Promise.all(res.map(async e => {
-                if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
-                    || !isApproved(e.granter_roles.split(' '))) {
+            try {
+                await withTimeout(Promise.all(res.map(async e => {
+                    if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
+                        || !isApproved(e.granter_roles.split(' '))) {
+                        if (!identityMap.has(e.identity_ziti_id))
+                            identityMap.set(e.identity_ziti_id, []);
+                        return;
+                    }
                     if (!identityMap.has(e.identity_ziti_id))
                         identityMap.set(e.identity_ziti_id, []);
-                    return;
-                }
-                if (!identityMap.has(e.identity_ziti_id))
-                    identityMap.set(e.identity_ziti_id, []);
-                const role = await this.getRole(e.share_slug);
-                if (role) {
-                    const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
-                    identityMap.set(e.identity_ziti_id, roles);
-                }
-            }));
+                    const role = await this.getRole(e.share_slug);
+                    if (role) {
+                        const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
+                        identityMap.set(e.identity_ziti_id, roles);
+                    }
+                })), 1000);
+            } catch {
+                throw new Error(`Failed to get new identity roles for user: ${this.userId}`);
+            }
 
-            await Promise.all(
-                Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
-                    await patchIdentity({
-                        ziti_id: zitiIdentityId,
-                        data: { roleAttributes: roles }
+            try {
+                await withTimeout(Promise.all(
+                    Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
+                        await patchIdentity({
+                            ziti_id: zitiIdentityId,
+                            data: { roleAttributes: roles }
+                        })
                     })
-                })
-            );
+                ), 1000);
+            } catch {
+                throw new Error(`Failed to patch ziti with new identity roles for user: ${this.userId}`);
+            }
 
             return true;
-        } catch {
+        } catch (err) {
+            console.error(err);
             return false;
         } finally {
             client.release();

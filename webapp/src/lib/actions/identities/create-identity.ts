@@ -3,6 +3,7 @@
 import pool from '@/lib/db';
 import identitySchema from '@/lib/form-schemas/create-identity-form-schema';
 import { UserManager } from '@/lib/models/user';
+import withTimeout from '@/lib/with-timeout';
 import { redirect } from 'next/navigation';
 
 const createIdentity = async (formData: unknown) => {
@@ -19,12 +20,13 @@ const createIdentity = async (formData: unknown) => {
         slug = identity.getSlug();
 
         const shares = await user.getShareAccessManager().getShares();
-        await Promise.all(shares.map(async share => {
+
+        await withTimeout(Promise.all(shares.map(async share => {
             await user.getShareAccessManager().addIdentityToShare({
                 identitySlug: slug,
                 shareSlug: share.getSlug()
             });
-        }));
+        })), 1000);
         await user.getShareAccessManager().updateZitiDialRoles();
     } catch (err) {
         console.error(err);
