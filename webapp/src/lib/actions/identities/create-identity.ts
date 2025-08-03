@@ -27,6 +27,7 @@ const createIdentity = async (formData: unknown) => {
                 shareSlug: share.getSlug()
             });
         })), 1000);
+
         await user.getShareAccessManager().updateZitiDialRoles();
     } catch (err) {
         console.error(err);

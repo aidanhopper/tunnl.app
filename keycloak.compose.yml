@@ -11,7 +11,7 @@ services:
     image: quay.io/keycloak/keycloak:latest
     command: start
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
     env_file:
       - .keycloak.env
     volumes:
