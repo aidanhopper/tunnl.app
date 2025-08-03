@@ -4,26 +4,7 @@ import pool from "@/lib/db";
 import tunnelHostFormSchema from "@/lib/form-schemas/tunnel-host-form-schema";
 import tunnelInterceptFormSchema from "@/lib/form-schemas/tunnel-intercept-form-schema";
 import { UserManager } from "@/lib/models/user";
-import { Play } from "next/font/google";
-
-const parsePortRange = (input: string) => {
-    if (input.trim() === '') throw new Error('Port range cannot be empty');
-    return input
-        .trim()
-        .split(" ")
-        .filter(e => e !== '')
-        .map(e => {
-            const s = e.split("-");
-            if (s.length === 1) return {
-                high: Number(e),
-                low: Number(e),
-            };
-            return {
-                high: Number(s[1]),
-                low: Number(s[0]),
-            }
-        });
-}
+import parsePortRange from "@/lib/parse-port-range";
 
 const editTunnelBinding = async ({
     hostConfig,

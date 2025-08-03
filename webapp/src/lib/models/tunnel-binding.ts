@@ -135,6 +135,17 @@ export class TunnelBindingManager {
 
             const zitiServiceName = slugify(this.service.getSlug());
 
+            console.log(
+
+                    host.portConfig.forwardPorts ? {
+                        forwardPort: true,
+                        allowedPortRanges: host.portConfig.portRange,
+                    } : {
+                        port: Number(host.portConfig.port)
+                    }
+
+            );
+
             const hostRes = await postConfig({
                 configTypeId: hostV1Id,
                 name: `${zitiServiceName}-host-config`,
@@ -160,7 +171,7 @@ export class TunnelBindingManager {
                 }
             });
 
-            if (!hostRes) throw new Error('Error posting host host config');
+            if (!hostRes) throw new Error('Error posting host config');
 
             const interceptRes = await postConfig({
                 name: `${zitiServiceName}-intercept-config`,
