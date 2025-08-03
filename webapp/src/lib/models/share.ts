@@ -83,12 +83,15 @@ export class ShareAccessManager {
         if (this.roleCache.has(shareSlug)) return this.roleCache.get(shareSlug) ?? null;
         const client = await this.pool.connect();
         try {
+            console.log(`Getting share ${shareSlug}...`);
             const resultList = await selectShareBySlug
                 .run({ slug: shareSlug }, client);
             if (resultList.length === 0 || resultList[0].user_id !== this.userId)
                 return null;
             const share = new Share({ data: resultList[0], pool: this.pool });
+            console.log('Got share', share, 'now getting role...');
             const role = await share.getRole();
+            console.log('Got role', role);
             if (!role) return null;
             this.roleCache.set(shareSlug, role);
             return role;
@@ -162,6 +165,7 @@ export class ShareAccessManager {
                     }
                     if (!identityMap.has(e.identity_ziti_id))
                         identityMap.set(e.identity_ziti_id, []);
+                    console.log('getting role...')
                     const role = await this.getRole(e.share_slug);
                     if (role) {
                         const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
