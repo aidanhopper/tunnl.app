@@ -156,7 +156,7 @@ export class ShareAccessManager {
             const identityMap = new Map<string, string[]>();
 
             try {
-                await withTimeout(Promise.all(res.map(async e => {
+                for (const e of res) {
                     if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
                         || !isApproved(e.granter_roles.split(' '))) {
                         if (!identityMap.has(e.identity_ziti_id))
@@ -171,7 +171,7 @@ export class ShareAccessManager {
                         const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
                         identityMap.set(e.identity_ziti_id, roles);
                     }
-                })), 1000);
+                }
             } catch {
                 throw new Error(`Failed to get new identity roles for user: ${this.userId}`);
             }
