@@ -1,9 +1,0 @@
-letsencrypt
-dynamic.json
-identities
-ziti-edge-tunnel
-certs
-custom-templates
-media
-postgres_data
-traefik.yml
