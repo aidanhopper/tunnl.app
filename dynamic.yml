@@ -1,0 +1,84 @@
+http:
+  serversTransports:
+    insecureTransport:
+      insecureSkipVerify: true
+  routers:
+    publisher-router:
+      rule: 'HOST(`publisher.mesh.ahop.dev`)'
+      service: publisher-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.mesh.ahop.dev" 
+    tunnl-router:
+      rule: 'HOST(`mesh.ahop.dev`)'
+      service: tunnl-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "mesh.ahop.dev" 
+    keycloak-router:
+      rule: 'HOST(`auth.mesh.ahop.dev`)'
+      service: keycloak-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.mesh.ahop.dev" 
+    ziti-router:
+      rule: 'HOST(`ziti.mesh.ahop.dev`)'
+      service: http-controller-service
+      entryPoints:
+        - tcp_tls
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "*.mesh.ahop.dev" 
+  services:
+    http-controller-service:
+      loadBalancer:
+        serversTransport: insecureTransport
+        servers:
+          - url: "https://127.0.0.1:10443"
+    keycloak-service:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
+    tunnl-service:
+      loadBalancer:
+        servers:
+          - url: "http://web:3000"
+    publisher-service:
+      loadBalancer:
+        servers:
+          - url: "http://publisher:3444"
+  tcp:
+    routers:
+      controller-router:
+        entryPoints:
+          - tcp_tls
+        rule: "HostSNI(`ctrl.ziti.mesh.ahop.dev`)"
+        service: controller-service
+        tls:
+          passthrough: true
+      edge-router:
+        entryPoints:
+          - tcp_tls
+        rule: "HostSNI(`er1.ziti.mesh.ahop.dev`)"
+        service: edge-service
+        tls:
+          passthrough: true
+    services:
+      controller-service:
+        loadBalancer:
+          servers:
+            - address: host.docker.internal:10443
+      edge-service:
+        loadBalancer:
+          servers:
+            - address: host.docker.internal:11443
