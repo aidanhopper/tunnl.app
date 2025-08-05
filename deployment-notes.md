@@ -72,3 +72,23 @@ record. This way Ziti can intercept the domain and route the request through
 the fabric. Here Ziti is acting as a private DNS provider, so the record
 doesn't exist publically but can be resolved when the Ziti intercept is
 available for that identity.
+
+# Docker compose file with ziti edge tunnel
+
+```yaml
+services: 
+  ziti-edge-tunnel:
+    image: openziti/ziti-edge-tunnel:latest
+    container_name: ziti-edge-tunnel
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./identities:/ziti-edge-tunnel
+    restart: unless-stopped
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      ZITI_ENROLL_TOKEN
+```
+
+ziti host doesn't need net admin

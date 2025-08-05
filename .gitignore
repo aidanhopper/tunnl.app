@@ -10,3 +10,4 @@ pgdata
 *publisher.log
 data/*
 *identities
+bin/*
