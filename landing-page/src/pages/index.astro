@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import '@/styles/globals.css';
+
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { AvatarComponent } from "../components/Avatar.tsx";
+import Footer from '@/components/Footer.astro';
+
+
+---
+
+<Layout title="Welcome to Astro x Shadcn Starter">
+    <Navbar/>            
+    <main class='flex flex-col min-h-screen'>
+        <div class="container mx-auto max-w-4xl flex-1">
+        </div>
+        <div class='justify-end'>
+            <Footer />
+        </div>
+    </main>
+</Layout>
