@@ -1,0 +1,45 @@
+---
+import { Button } from '../components/ui/button.tsx'
+import { Separator } from "@/components/ui/separator";
+---
+
+<nav class='fixed w-full bg-background/90 z-10 backdrop-blur-md shadow-lg'> 
+    <div class='px-4 py-4 flex items-center'>
+        <div class='flex-1 flex items-center gap-8'>
+            <a href='/' class='text-2xl font-bold cursor-pointer'>
+                🚂 &nbsp; Tunnl.app
+            </a>
+            <a href='#'>
+                <Button variant='ghost' className='text-muted-foreground'>
+                    FAQ 
+                </Button>
+            </a>
+            <a href='#'>
+                <Button 
+                    variant='ghost'
+                    className='text-muted-foreground'>
+                    Contact 
+                </Button>
+            </a>
+            <a href='#'>
+                <Button 
+                    variant='ghost'
+                    className='text-muted-foreground'>
+                    Github 
+                </Button>
+            </a>
+            <a href='#'>
+                <Button 
+                    variant='ghost'
+                    className='text-muted-foreground'>
+                    Docs 
+                </Button>
+            </a>
+        </div>
+        <div>
+            <Button>
+                Get Started
+            </Button>
+        </div>
+    </div>
+</nav>

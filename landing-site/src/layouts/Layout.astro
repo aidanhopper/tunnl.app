@@ -4,7 +4,6 @@ interface Props {
 }
 
 const { title } = Astro.props;
-import '@fontsource-variable/space-grotesk';
 ---
 
 <!doctype html>
@@ -24,8 +23,9 @@ import '@fontsource-variable/space-grotesk';
 		<meta property="og:url" content="https://astroshadcnstarter.netlify.app" />
 		<meta property="og:type" content="website" />
 	</head>
-	<body>
+	<body class='min-h-screen'>
 		<slot />
+        <script src="https://cdn.jsdelivr.net/npm/trig-js/src/trig.min.js" defer></script>
 	</body>
 </html>
 <style is:global>

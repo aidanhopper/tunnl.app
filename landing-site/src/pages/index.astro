@@ -1,0 +1,144 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import '@/styles/globals.css';
+
+import { buttonVariants } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { AvatarComponent } from "../components/Avatar.tsx";
+import Footer from '@/components/Footer.astro';
+import Content from '@/components/Content.astro';
+---
+
+<Layout title="Welcome to Astro x Shadcn Starter">
+    <main class='flex flex-col min-h-screen'>
+        <Navbar/>
+        <Content>
+            <div class='flex flex-col items-center mt-40'>
+                <h1 class="text-7xl font-semibold text-center max-w-5xl slide1">
+                    Share private services securely — one at a time.
+                </h1>
+                <p class='text-2xl text-center max-w-4xl slide2 pt-16 text-muted-foreground'>
+                    <span class='bg-accent-foreground text-accent font-bold italic'>Tunnl.app</span> 
+                    is a fully self-hostable multi-tenant platform that allows you 
+                    and your friends to share services across the Internet.
+                    Use private DNS to access services within the mesh.
+                    Nothing is exposed by default. No open ports. No complex ACLs.
+                    Just an intuitive way to create and share services.
+                </p>
+                <div class='w-full pt-16'>
+                    <div class='relative w-full container flex flex-col items-center pb-[170px] p-3 pt-8 '>
+                        <img 
+                            class='shadow-2xl slide3 max-w-5xl w-full h-auto outline-4 
+                            outline rounded-lg outline-neutral-700'
+                            src='/src/assets/service-general.png'/>
+                        <img 
+                            class='static lg:absolute right-10 bottom-0
+                            shadow-2xl slide3 max-w-2xl mt-8 outline-4 xl:block
+                            outline outline-neutral-700 rounded-lg w-full h-auto'
+                            src='/src/assets/service-bindings.png'/>
+                    </div>
+                </div>
+                <div class='w-full pt-48 max-w-5xl flex flex-col items-center fade-in-section'>
+                    <h1 class='text-4xl text-center font-semibold'>
+                        Self-hosting can be
+                        <span class='bg-primary text-primary-foreground italic'>nightmare</span>
+                        when you want to share across networks
+                    </h1>
+                    <p class='mt-6 text-center text-xl max-w-4xl text-muted-foreground'>
+                        Ports. DNS. Firewalls. VPNs. ACLs. Every “simple” service turns 
+                        into a pile of configuration debt the second you or someone else 
+                        needs access outside your home network.
+                    </p>
+                    <div class='grid gap-12 grid-cols-2 mt-12 w-full max-w-5xl mb-96'>
+                        <Card className='w-full'>
+                            <CardHeader>
+                                <CardTitle className='text-xl'>Managing service access with VPNs</CardTitle>
+                                <CardDescription>Headache ensues...</CardDescription>
+                            </CardHeader> 
+                            <CardContent className='w-full'>
+                            
+                            </CardContent> 
+                        </Card>
+                        <Card className='w-full'>
+                            <CardHeader>
+                                <CardTitle className='text-xl'>Managing service access with Tunnl.app</CardTitle>
+                                <CardDescription>How it should be</CardDescription>
+                            </CardHeader> 
+                            <CardContent>
+                            </CardContent> 
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        </Content>
+        <div class='justify-end pt-10'>
+            <Footer />
+        </div>
+    </main>
+</Layout>
+
+<script>
+  // This script runs on the client
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Optional: stop observing after animation triggers
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe all fade-in sections
+  document.querySelectorAll('.fade-in-section').forEach((section) => {
+    observer.observe(section);
+  });
+</script>
+
+<style>
+@keyframes slidein {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 100;
+  }
+}  
+
+.fade-in-section {
+    opacity: 0;
+}
+
+.fade-in-section.visible {
+    animation: slidein 0.3s linear forwards;
+    animation-delay: 0.3s;
+    opacity: 0;
+}
+
+.slide1 {
+    animation: slidein 0.4s linear forwards;
+    animation-delay: 0.1s;
+    opacity: 0;
+}
+
+.slide2 {
+    animation: slidein 0.4s linear forwards;
+    animation-delay: 0.1s;
+    opacity: 0;
+}
+
+.slide3 {
+    animation: slidein 0.4s linear forwards;
+    animation-delay: 0.4s;
+    opacity: 0;
+}
+</style>
