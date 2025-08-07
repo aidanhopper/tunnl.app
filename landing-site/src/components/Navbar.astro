@@ -3,8 +3,8 @@ import { Button } from '../components/ui/button.tsx'
 import { Separator } from "@/components/ui/separator";
 ---
 
-<nav class='fixed w-full bg-background/90 z-10 backdrop-blur-md shadow-lg'> 
-    <div class='px-4 py-4 flex items-center'>
+<nav class='fixed w-full bg-background z-10 navbar transition duration-300'> 
+    <div class='px-4 py-2 flex items-center'>
         <div class='flex-1 flex items-center gap-8'>
             <a href='/' class='text-2xl font-bold cursor-pointer'>
                 🚂 &nbsp; Tunnl.app
@@ -21,11 +21,11 @@ import { Separator } from "@/components/ui/separator";
                     Contact 
                 </Button>
             </a>
-            <a href='#'>
+            <a href='https://github.com/aidanhopper/tunnl.app' target='_blank'>
                 <Button 
                     variant='ghost'
                     className='text-muted-foreground'>
-                    Github 
+                    Github
                 </Button>
             </a>
             <a href='#'>
@@ -43,3 +43,41 @@ import { Separator } from "@/components/ui/separator";
         </div>
     </div>
 </nav>
+
+<script>
+  let isScrolled = false;
+  const navbar = document.querySelector('.navbar');
+  
+  function handleScroll() {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const shouldHaveShadow = scrollTop > 10;
+    
+    if (shouldHaveShadow && !isScrolled) {
+      navbar?.classList.add('scrolled');
+      isScrolled = true;
+    } else if (!shouldHaveShadow && isScrolled) {
+      navbar?.classList.remove('scrolled');
+      isScrolled = false;
+    }
+  }
+  
+  // Throttle scroll events for better performance
+  let ticking = false;
+  function requestTick() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        handleScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+  
+  window.addEventListener('scroll', requestTick);
+</script>
+
+<style>
+  .navbar.scrolled {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+</style>

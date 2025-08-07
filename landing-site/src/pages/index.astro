@@ -3,10 +3,10 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import '@/styles/globals.css';
 
-import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Button } from '@/components/ui/button';
+import TunnelActions from '@/components/TunnlActions.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { AvatarComponent } from "../components/Avatar.tsx";
 import Footer from '@/components/Footer.astro';
 import Content from '@/components/Content.astro';
 ---
@@ -17,15 +17,12 @@ import Content from '@/components/Content.astro';
         <Content>
             <div class='flex flex-col items-center mt-40'>
                 <h1 class="text-7xl font-semibold text-center max-w-5xl slide1">
-                    Share private services securely — one at a time.
+                    Share private services without a hassel.
                 </h1>
-                <p class='text-2xl text-center max-w-4xl slide2 pt-16 text-muted-foreground'>
-                    <span class='bg-accent-foreground text-accent font-bold italic'>Tunnl.app</span> 
+                <p class='text-2xl text-center max-w-4xl slide2 pt-16'>
+                    <span class='bg-primary text-background font-bold italic'>Tunnl.app</span> 
                     is a fully self-hostable multi-tenant platform that allows you 
                     and your friends to share services across the Internet.
-                    Use private DNS to access services within the mesh.
-                    Nothing is exposed by default. No open ports. No complex ACLs.
-                    Just an intuitive way to create and share services.
                 </p>
                 <div class='w-full pt-16'>
                     <div class='relative w-full container flex flex-col items-center pb-[170px] p-3 pt-8 '>
@@ -40,35 +37,87 @@ import Content from '@/components/Content.astro';
                             src='/src/assets/service-bindings.png'/>
                     </div>
                 </div>
-                <div class='w-full pt-48 max-w-5xl flex flex-col items-center fade-in-section'>
-                    <h1 class='text-4xl text-center font-semibold'>
-                        Self-hosting can be
-                        <span class='bg-primary text-primary-foreground italic'>nightmare</span>
-                        when you want to share across networks
+                <div class='w-full pt-40 max-w-5xl flex flex-col items-center fade-in-section'>
+                    <h1 class='text-5xl text-center font-semibold'>
+                        Self-hosting can be a
+                        <span class='bg-primary text-background italic'>nightmare</span>
+                        when you want to share across networks.
                     </h1>
-                    <p class='mt-6 text-center text-xl max-w-4xl text-muted-foreground'>
-                        Ports. DNS. Firewalls. VPNs. ACLs. Every “simple” service turns 
-                        into a pile of configuration debt the second you or someone else 
-                        needs access outside your home network.
+                    <p class='mt-10 text-center max-w-4xl text-xl '>
+                        Ports. DNS. Firewalls. VPNs. ACLs. Way too much to think about when you or someone else 
+                        needs access outside your home network. Typically solutions to this involve using
+                        some companies closed source SaaS built on wireguard.
                     </p>
-                    <div class='grid gap-12 grid-cols-2 mt-12 w-full max-w-5xl mb-96'>
+                    <div class='grid gap-12 grid-cols-2 mt-12 w-full max-w-5xl'>
                         <Card className='w-full'>
                             <CardHeader>
-                                <CardTitle className='text-xl'>Managing service access with VPNs</CardTitle>
-                                <CardDescription>Headache ensues...</CardDescription>
+                                <CardTitle className='text-xl'>Managing service access with a VPN SaaS</CardTitle>
+                                <CardDescription>Tailscale, ZeroTier, ...</CardDescription>
                             </CardHeader> 
-                            <CardContent className='w-full'>
-                            
+                            <CardContent className='w-full space-y-6'>
+                                <ul class='list-disc px-8 space-y-4'>
+                                    <li>
+                                        Critical parts are closed source.
+                                    </li>
+                                    <li>
+                                        Want to enroll more devices into your network?
+                                        Make sure you're not 
+                                        exceeding the device limit.
+                                    </li>
+                                    <li>
+                                        Self-hosting a useful service and want to share? 
+                                        Share the entire machine and configure the ACLs
+                                        correctly.
+                                    </li>
+                                    <li>
+                                        Tailscale or other VPN solutions are blocked on your network? 
+                                        Too bad.
+                                    </li>
+                                </ul>
                             </CardContent> 
                         </Card>
                         <Card className='w-full'>
                             <CardHeader>
                                 <CardTitle className='text-xl'>Managing service access with Tunnl.app</CardTitle>
-                                <CardDescription>How it should be</CardDescription>
+                                <CardDescription>
+                                    Tunnl.app fixes this.
+                                </CardDescription>
                             </CardHeader> 
-                            <CardContent>
+                            <CardContent className='w-full space-y-6'>
+                                <ul class='list-disc px-8 space-y-4'>
+                                    <li>
+                                        Entire stack is open source from top to bottom.
+                                    </li>
+                                    <li>
+                                        Need to enroll more devices?
+                                        Enroll as many as you want, users manage their own.
+                                    </li>
+                                    <li>
+                                        Want to share a self-hosted app?
+                                        Share just that service, with just one click.
+                                    </li>
+                                    <li>
+                                        Stuck behind network restrictions?
+                                        Tunnl uses outbound-only TCP connections on port 443 to make connections in the mesh.
+                                    </li>
+                                </ul>
                             </CardContent> 
                         </Card>
+                    </div>
+                </div>
+                <div class='w-full pt-40 max-w-3xl flex flex-col fade-in-section'>
+                    <TunnelActions client:load/>
+                </div>
+                <div class='w-full pt-40 pb-10 max-w-4xl flex flex-col fade-in-section'>
+                    <h1 class='text-5xl font-bold text-center'>Ready to give Tunnl.app a shot?</h1>
+                    <p class='text-center mt-8 text-3xl'>
+                        Pick up a cheap VPS (I've been using Hetzner) 
+                        and follow the Tunnl.app quickstart to get up and running in less than an hour!
+                    </p>
+                    <div class='flex w-full justify-center mt-8'>
+                        <Button className='text-2xl py-10 px-32 rounded-xl'>
+                            Start here &rightarrow;
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -120,7 +169,7 @@ import Content from '@/components/Content.astro';
 
 .fade-in-section.visible {
     animation: slidein 0.3s linear forwards;
-    animation-delay: 0.3s;
+    animation-delay: 0.2s;
     opacity: 0;
 }
 
