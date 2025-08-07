@@ -1,35 +1,41 @@
 ---
 import { Button } from '../components/ui/button.tsx'
-import { Separator } from "@/components/ui/separator";
+import NavMenu from '@/components/NavMenu';
 ---
 
-<nav class='fixed w-full bg-background z-10 navbar transition duration-300'> 
-    <div class='px-4 py-2 flex items-center'>
-        <div class='flex-1 flex items-center gap-8'>
-            <a href='/' class='text-2xl font-bold cursor-pointer'>
+<nav class='fixed w-full bg-background/90 backdrop-blur-md z-10 navbar'> 
+    <div class='px-4 py-2 hidden sm:flex items-center'>
+        <div class='flex flex-1 items-center gap-8'>
+            <a href='/' class='text-lg md:text-2xl font-bold cursor-pointer slide1'>
                 🚂 &nbsp; Tunnl.app
             </a>
-            <a href='#'>
-                <Button variant='ghost' className='text-muted-foreground'>
+            <a class='slide2' href='#'>
+                <Button
+                    size='sm'
+                    variant='ghost'
+                    className='text-muted-foreground'>
                     FAQ 
                 </Button>
             </a>
-            <a href='#'>
+            <a class='slide3' href='#'>
                 <Button 
+                    size='sm'
                     variant='ghost'
                     className='text-muted-foreground'>
                     Contact 
                 </Button>
             </a>
-            <a href='https://github.com/aidanhopper/tunnl.app' target='_blank'>
+            <a class='slide4' href='https://github.com/aidanhopper/tunnl.app' target='_blank'>
                 <Button 
+                    size='sm'
                     variant='ghost'
                     className='text-muted-foreground'>
                     Github
                 </Button>
             </a>
-            <a href='#'>
+            <a class='slide5' href='#'>
                 <Button 
+                    size='sm'
                     variant='ghost'
                     className='text-muted-foreground'>
                     Docs 
@@ -37,10 +43,18 @@ import { Separator } from "@/components/ui/separator";
             </a>
         </div>
         <div>
-            <Button>
+            <Button className='slide6'>
                 Get Started
             </Button>
         </div>
+    </div>
+    <div class='px-4 py-2 flex sm:hidden'>
+        <div class='flex items-center gap-8'>
+            <a href='/' class='text-2xl md:text-2xl font-bold cursor-pointer'>
+                🚂 &nbsp; Tunnl.app
+            </a>
+        </div>
+        <NavMenu className='ml-4' client:load/>
     </div>
 </nav>
 
@@ -80,4 +94,60 @@ import { Separator } from "@/components/ui/separator";
   .navbar.scrolled {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   }
+@keyframes slidein2 {
+  from {
+    transform: translateY(15px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 100;
+  }
+}  
+
+.fade-in-section {
+    opacity: 0;
+}
+
+.fade-in-section.visible {
+    animation: slidein 0.3s linear forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+}
+
+.slide1 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+}
+
+.slide2 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.3s;
+    opacity: 0;
+}
+
+.slide3 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.4s;
+    opacity: 0;
+}
+
+.slide4 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.5s;
+    opacity: 0;
+}
+
+.slide5 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.6s;
+    opacity: 0;
+}
+
+.slide6 {
+    animation: slidein2 0.2s ease-out forwards;
+    animation-delay: 0.7s;
+    opacity: 0;
+}
 </style>

@@ -20,7 +20,7 @@ const CreatingAction = () => {
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
                     src={createTunnelBindingImage.src} />
             </CardContent>
-            <CardFooter className='text-lg'>
+            <CardFooter className='sm:text-lg'>
                 Create services that can be accessed on any domain.
                 Services can be TCP, UDP, or both. Map a port to another port, or forward the ports
                 from the client to the host.
@@ -41,7 +41,7 @@ const SharingAction = () => {
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
                     src={serviceShareInviteImage.src} />
             </CardContent>
-            <CardFooter className='text-lg'>
+            <CardFooter className='sm:text-lg'>
                 To accept the share recipients can click the Accept button to get access to the service.
                 Then all their enrolled identities will be granted access to the intercept.
             </CardFooter>
@@ -61,7 +61,7 @@ const EnrollingAction = () => {
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
                     src={identityEnrollmentImage.src} />
             </CardContent>
-            <CardFooter className='text-lg'>
+            <CardFooter className='sm:text-lg'>
                 Identities are program with a connection to the OpenZiti fabric.
                 Edge tunnelers are identities that correspond to your device,
                 giving your device direct access to the OpenZiti fabric.
@@ -82,7 +82,7 @@ const MetricsAction = () => {
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
                     src={metricsImage.src} />
             </CardContent>
-            <CardFooter className='text-lg'>
+            <CardFooter className='sm:text-lg'>
                 Tunnl.app provides metrics on who is accessing your services, providing
                 insights into who is doing what on the services you own.
             </CardFooter>
@@ -123,7 +123,7 @@ const TunnelActions = () => {
     const activeVariant = 'default';
     return isLoaded ? (
         <div>
-            <div className='flex gap-6 w-full justify-center'>
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-6 sm:w-full justify-center px-10'>
                 <Button
                     onClick={() => setActiveSection('creating')}
                     variant={activeSection === 'creating' ? activeVariant : inactiveVariant}>
@@ -144,8 +144,8 @@ const TunnelActions = () => {
                     View Metrics <ChartSpline />
                 </Button>
             </div>
-            <div className='mt-6'>
-                <Card className='w-full min-h-[630px]'>
+            <div className='mt-6 px-4 sm:min-h-[620px]'>
+                <Card className='w-full'>
                     <TunnlAction action={activeSection} />
                 </Card>
             </div>

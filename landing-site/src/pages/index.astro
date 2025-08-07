@@ -18,39 +18,39 @@ import serviceBindingsImage from '@/assets/service-bindings.png';
         <Navbar/>
         <Content>
             <div class='flex flex-col items-center mt-40'>
-                <h1 class="text-7xl font-semibold text-center max-w-5xl slide1">
+                <h1 class="text-4xl sm:text-7xl font-semibold text-center max-w-5xl slide1 px-2">
                     Share private services without a hassel.
                 </h1>
-                <p class='text-2xl text-center max-w-4xl slide2 pt-16'>
+                <p class='text-xl sm:text-2xl text-center max-w-4xl slide2 pt-16 px-4'>
                     <span class='bg-primary text-background font-bold italic'>Tunnl.app</span> 
                     is a fully self-hostable multi-tenant platform that allows you 
                     and your friends to share services across the Internet.
                 </p>
                 <div class='w-full pt-16'>
-                    <div class='relative w-full container flex flex-col items-center pb-[170px] p-3 pt-8 '>
+                    <div class='relative w-full container flex flex-col items-center pb-[170px] p-3 pt-8'>
                         <img 
                             class='shadow-2xl slide3 max-w-5xl w-full h-auto outline-4 
                             outline rounded-lg outline-neutral-700'
                             src={serviceGeneralImage.src}/>
                         <img 
-                            class='static lg:absolute right-10 bottom-0
-                            shadow-2xl slide3 max-w-2xl mt-8 outline-4 xl:block
+                            class='static md:absolute right-10 bottom-0 mt-3
+                            shadow-2xl slide3 max-w-2xl md:mt-8 outline-4 xl:block
                             outline outline-neutral-700 rounded-lg w-full h-auto'
                             src={serviceBindingsImage.src}/>
                     </div>
                 </div>
                 <div class='w-full pt-40 max-w-5xl flex flex-col items-center fade-in-section'>
-                    <h1 class='text-5xl text-center font-semibold'>
+                    <h1 class='text-2xl sm:text-5xl text-center font-semibold px-4'>
                         Self-hosting can be a
                         <span class='bg-primary text-background italic'>nightmare</span>
                         when you want to share across networks.
                     </h1>
-                    <p class='mt-10 text-center max-w-4xl text-xl '>
+                    <p class='mt-10 text-center max-w-4xl text-md sm:text-xl px-4'>
                         Ports. DNS. Firewalls. VPNs. ACLs. Way too much to think about when you or someone else 
                         needs access outside your home network. Typically solutions to this involve using
                         some companies closed source SaaS built on wireguard.
                     </p>
-                    <div class='grid gap-12 grid-cols-2 mt-12 w-full max-w-5xl'>
+                    <div class='grid gap-4 md:grid-cols-2 mt-12 w-full max-w-5xl px-4'>
                         <Card className='w-full'>
                             <CardHeader>
                                 <CardTitle className='text-xl'>Managing service access with a VPN SaaS</CardTitle>
@@ -110,14 +110,14 @@ import serviceBindingsImage from '@/assets/service-bindings.png';
                 <div class='w-full pt-40 max-w-3xl flex flex-col fade-in-section'>
                     <TunnelActions client:load/>
                 </div>
-                <div class='w-full pt-40 pb-10 max-w-4xl flex flex-col fade-in-section'>
-                    <h1 class='text-5xl font-bold text-center'>Ready to give Tunnl.app a shot?</h1>
-                    <p class='text-center mt-8 text-3xl'>
+                <div class='w-full pt-40 pb-10 max-w-3xl flex flex-col fade-in-section'>
+                    <h1 class='text-3xl md:text-5xl font-bold text-center px-4'>Ready to give Tunnl.app a shot?</h1>
+                    <p class='text-center mt-8 text-xl md:text-3xl px-4'>
                         Pick up a cheap VPS (I've been using Hetzner) 
                         and follow the Tunnl.app quickstart to get up and running in less than an hour!
                     </p>
-                    <div class='flex w-full justify-center mt-8'>
-                        <Button className='text-2xl py-10 px-32 rounded-xl'>
+                    <div class='flex w-full justify-center mt-8 px-4'>
+                        <Button className='text-2xl py-10 rounded-xl w-full'>
                             Start here &rightarrow;
                         </Button>
                     </div>
