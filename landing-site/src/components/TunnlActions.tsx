@@ -21,7 +21,7 @@ const CreatingAction = () => {
                     src={createTunnelBindingImage.src} />
             </CardContent>
             <CardFooter className='sm:text-lg'>
-                Create services that can be accessed on any domain.
+                Create services that can be accessed on any domain that's not a valid TLD.
                 Services can be TCP, UDP, or both. Map a port to another port, or forward the ports
                 from the client to the host.
             </CardFooter>
@@ -42,8 +42,9 @@ const SharingAction = () => {
                     src={serviceShareInviteImage.src} />
             </CardContent>
             <CardFooter className='sm:text-lg'>
-                To accept the share recipients can click the Accept button to get access to the service.
-                Then all their enrolled identities will be granted access to the intercept.
+                To accept the share recipients can click the Accept button.
+                Then all their enrolled identities will be granted access to the Intercept.
+                Any changes to the Intercept will update their identities service list.
             </CardFooter>
         </>
     );
@@ -62,9 +63,10 @@ const EnrollingAction = () => {
                     src={identityEnrollmentImage.src} />
             </CardContent>
             <CardFooter className='sm:text-lg'>
-                Identities are program with a connection to the OpenZiti fabric.
-                Edge tunnelers are identities that correspond to your device,
-                giving your device direct access to the OpenZiti fabric.
+                Identities are program connected to the OpenZiti fabric.
+                Edge tunnelers are identities that correspond to a device,
+                with access to Intercept and Host configs created in
+                the Tunnl.app dashboard.
             </CardFooter>
         </>
     );
@@ -83,7 +85,7 @@ const MetricsAction = () => {
                     src={metricsImage.src} />
             </CardContent>
             <CardFooter className='sm:text-lg'>
-                Tunnl.app provides metrics on who is accessing your services, providing
+                Tunnl.app provides data on who is accessing your services, giving
                 insights into who is doing what on the services you own.
             </CardFooter>
         </>
