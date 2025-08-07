@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button"
 import { HandHelping, Users, MonitorSmartphone, ChartSpline } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
+import createTunnelBindingImage from '@/assets/create-tunnel-binding.png';
+import serviceShareInviteImage from '@/assets/service-share-invite.png';
+import identityEnrollmentImage from '@/assets/identity-enrollment.png';
+import metricsImage from '@/assets/metrics.png';
+
 
 const CreatingAction = () => {
     return (
@@ -13,7 +18,7 @@ const CreatingAction = () => {
             <CardContent className='w-full flex flex-col justify-center gap-8'>
                 <img
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
-                    src='/src/assets/create-tunnel-binding.png' />
+                    src={createTunnelBindingImage.src} />
             </CardContent>
             <CardFooter className='text-lg'>
                 Create services that can be accessed on any domain.
@@ -34,7 +39,7 @@ const SharingAction = () => {
             <CardContent className='w-full flex flex-col justify-center gap-8'>
                 <img
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
-                    src='/src/assets/service-share-invite.png' />
+                    src={serviceShareInviteImage.src} />
             </CardContent>
             <CardFooter className='text-lg'>
                 To accept the share recipients can click the Accept button to get access to the service.
@@ -54,7 +59,7 @@ const EnrollingAction = () => {
             <CardContent className='w-full flex flex-col justify-center gap-8'>
                 <img
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
-                    src='/src/assets/identity-enrollment.png' />
+                    src={identityEnrollmentImage.src} />
             </CardContent>
             <CardFooter className='text-lg'>
                 Identities are program with a connection to the OpenZiti fabric.
@@ -75,7 +80,7 @@ const MetricsAction = () => {
             <CardContent className='w-full flex flex-col justify-center gap-8'>
                 <img
                     className='shadow-2xl slide3 w-full h-auto outline-4 rounded-lg'
-                    src='/src/assets/metrics.png' />
+                    src={metricsImage.src} />
             </CardContent>
             <CardFooter className='text-lg'>
                 Tunnl.app provides metrics on who is accessing your services, providing
@@ -107,10 +112,10 @@ const TunnelActions = () => {
             img.src = src;
         };
 
-        preloadImage('/src/assets/create-tunnel-binding.png');
-        preloadImage('/src/assets/service-share-invite.png');
-        preloadImage('/src/assets/metrics.png');
-        preloadImage('/src/assets/identity-enrollment.png');
+        preloadImage(createTunnelBindingImage.src);
+        preloadImage(serviceShareInviteImage.src);
+        preloadImage(identityEnrollmentImage.src);
+        preloadImage(metricsImage.src);
 
         setIsLoaded(true);
     }, []);

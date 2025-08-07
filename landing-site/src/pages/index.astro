@@ -9,6 +9,8 @@ import TunnelActions from '@/components/TunnlActions.tsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import Footer from '@/components/Footer.astro';
 import Content from '@/components/Content.astro';
+import serviceGeneralImage from '@/assets/service-general.png';
+import serviceBindingsImage from '@/assets/service-bindings.png';
 ---
 
 <Layout title="Welcome to Astro x Shadcn Starter">
@@ -29,12 +31,12 @@ import Content from '@/components/Content.astro';
                         <img 
                             class='shadow-2xl slide3 max-w-5xl w-full h-auto outline-4 
                             outline rounded-lg outline-neutral-700'
-                            src='/src/assets/service-general.png'/>
+                            src={serviceGeneralImage.src}/>
                         <img 
                             class='static lg:absolute right-10 bottom-0
                             shadow-2xl slide3 max-w-2xl mt-8 outline-4 xl:block
                             outline outline-neutral-700 rounded-lg w-full h-auto'
-                            src='/src/assets/service-bindings.png'/>
+                            src={serviceBindingsImage.src}/>
                     </div>
                 </div>
                 <div class='w-full pt-40 max-w-5xl flex flex-col items-center fade-in-section'>
