@@ -7,7 +7,7 @@ http:
       rule: 'HOST(`publisher.ROOT_DOMAIN`)'
       service: publisher-service
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
         domains:
@@ -16,7 +16,7 @@ http:
       rule: 'HOST(`ROOT_DOMAIN`)'
       service: tunnl-service
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
         domains:
@@ -25,7 +25,7 @@ http:
       rule: 'HOST(`auth.ROOT_DOMAIN`)'
       service: keycloak-service
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
         domains:
@@ -34,7 +34,7 @@ http:
       rule: 'HOST(`ziti.ROOT_DOMAIN`)'
       service: http-controller-service
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
         domains:
@@ -61,14 +61,14 @@ tcp:
   routers:
     controller-router:
       entryPoints:
-        - tcp_tls
+        - websecure
       rule: "HostSNI(`ctrl.ziti.ROOT_DOMAIN`)"
       service: controller-service
       tls:
         passthrough: true
     edge-router:
       entryPoints:
-        - tcp_tls
+        - websecure
       rule: "HostSNI(`er1.ziti.ROOT_DOMAIN`)"
       service: edge-service
       tls:
