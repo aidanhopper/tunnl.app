@@ -37,7 +37,7 @@ jq_check() {
 ask_for_target_dir () {
     if [ -z "$TARGET_DIRECTORY" ]; then
         printf "Enter the target directory for the Tunnl.app quickstart (default tunnl-quickstart): "
-        read -r dir
+        read -r dir < /dev/tty
         if [ -z "$dir" ]; then dir="tunnl-quickstart" ; fi
         TARGET_DIRECTORY=$dir
     fi
@@ -47,7 +47,7 @@ ask_for_target_dir () {
 ask_for_root_domain () {
     if [ -z "$ROOT_DOMAIN" ]; then 
         printf "Enter the root domain (ex: tunnl.app): "
-        read -r domain
+        read -r domain < /dev/tty
         if [ -z "$domain" ]; then
             echo "[ERROR] Must specify root domain."
             exit 1
@@ -60,7 +60,7 @@ ask_for_root_domain () {
 ask_for_admin_email () {
     if [ -z "$ADMIN_EMAIL" ]; then 
         printf "Enter your email (to create admin account): "
-        read -r email
+        read -r email < /dev/tty
         if [ -z "$email" ]; then
             echo "[ERROR] Must specify email for admin user."
             exit 1
@@ -73,7 +73,7 @@ ask_for_admin_email () {
 ask_to_install_ziti () {
     if [ -z "$INSTALL_ZITI" ]; then 
         printf "Would you like to install the OpenZiti Controller & Edge Router with the OpenZiti quickstart? (y/N) "
-        read -r install_ziti
+        read -r install_ziti < /dev/tty
     else
         install_ziti=$INSTALL_ZITI
     fi
@@ -97,8 +97,10 @@ extract_and_move_to_target_dir () {
         exit 1
     fi
     mkdir -p $TARGET_DIRECTORY
-    echo "[INFO] Extracting tunnl-quickstart.tar.xz into $TARGET_DIRECTORY"
-    tar -xJf tunnl-quickstart.tar.xz -C $TARGET_DIRECTORY
+    echo "[INFO] Extracting quickstart.tar.xz into $TARGET_DIRECTORY"
+    curl -sL tunnl.app/quickstart.tar.xz -O quickstart.tar.xz
+    tar -xJf quickstart.tar.xz -C $TARGET_DIRECTORY
+    STARTING_DIRECTORY=$(PWD)
     cd "$TARGET_DIRECTORY" || exit 1
 }
 
@@ -251,18 +253,19 @@ EOF
     sudo systemctl enable --now ziti-router
 }
 
-sudo echo "[INFO] Got super user permissions."
-docker_check
-jq_check
-ask_for_target_dir
-ask_for_root_domain
-ask_for_admin_email
-ask_to_install_ziti
-install_ziti_if_yes
-extract_and_move_to_target_dir
-create_files_and_directories
-
-cat <<EOF
+tunnl_install () {
+    sudo echo "[INFO] Got super user permissions."
+    docker_check
+    jq_check
+    ask_for_target_dir
+    ask_for_root_domain
+    ask_for_admin_email
+    ask_to_install_ziti
+    install_ziti_if_yes
+    extract_and_move_to_target_dir
+    create_files_and_directories
+    cd $STARTING_DIRECTORY
+    cat <<EOF
 
 ✅ Setup complete!
 
@@ -282,3 +285,23 @@ cat <<EOF
 
 4. Start the whole stack and login to $ROOT_DOMAIN to start creating & sharing services!
 EOF
+}
+
+tunnl_uninstall () {
+    if [ -z $ZITI_HOME ]; then 
+        echo "[Error] Please specify a ZITI_HOME environment variable."
+        exit 1
+    fi
+
+    if [ -z $TARGET_DIRECTORY ]; then 
+        echo "[Error] Please specify a TARGET_DIRECTORY environment variable."
+        exit 1
+    fi
+
+    sudo systemctl disable --now ziti-controller.service
+    sudo systemctl disable --now ziti-router.service
+
+    rm -rf $ZITI_HOME
+    sudo rm -rf $TARGET_DIRECTORY
+    rm ./quickstart.tar.xz
+}

@@ -572,7 +572,7 @@ const CreateBindingForm = ({
     const bindingTitles = (type: string) => {
         switch (type) {
             case 'private-https': return 'Private HTTPS';
-            case 'tunnel': return 'Private HTTPS';
+            case 'tunnel': return 'Tunnel';
             default: return type
         }
     }
