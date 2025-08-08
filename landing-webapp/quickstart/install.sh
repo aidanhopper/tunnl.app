@@ -96,10 +96,10 @@ extract_and_move_to_target_dir () {
         echo "[ERROR] Must specify target directory."
         exit 1
     fi
-    mkdir -p $TARGET_DIRECTORY
+    mkdir -p "$TARGET_DIRECTORY"
     echo "[INFO] Extracting quickstart.tar.xz into $TARGET_DIRECTORY"
     curl -sL tunnl.app/quickstart.tar.xz -O quickstart.tar.xz
-    tar -xJf quickstart.tar.xz -C $TARGET_DIRECTORY
+    tar -xJf quickstart.tar.xz -C "$TARGET_DIRECTORY"
     STARTING_DIRECTORY=$(PWD)
     cd "$TARGET_DIRECTORY" || exit 1
 }
@@ -149,7 +149,7 @@ KEYCLOAK_CLIENT_ID=
 EOF
 )
 
-    if [ ! -f ".tunnl.env" ]; then printf "%s\n" $tunnl_env > .tunnl.env ; fi
+    if [ ! -f ".tunnl.env" ]; then printf "%s\n" "$tunnl_env" > .tunnl.env ; fi
 
     keycloak_postgres_password=$(generate_secret)
 
@@ -174,7 +174,7 @@ KC_PROXY_HEADERS=xforwarded
 EOF
 )
 
-    if [ ! -f ".keycloak.env" ]; then printf "%s\n" $keycloak_env > .keycloak.env ; fi
+    if [ ! -f ".keycloak.env" ]; then printf "%s\n" "$keycloak_env" > .keycloak.env ; fi
     
     if [ ! -f ".traefik.env" ]; then touch .traefik.env ; fi
 
@@ -235,13 +235,13 @@ EOF
         exit 1
     fi
 
-    sed -i "s/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" $ZITI_HOME/$(hostname).yaml
+    sed -i "s/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname).yaml"
 
-    sed -i "s/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:$ZITI_CTRL_EDGE_ADVERTISED_PORT/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:443/g" $ZITI_HOME/$(hostname).yaml
+    sed -i "s/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:$ZITI_CTRL_EDGE_ADVERTISED_PORT/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname).yaml"
 
-    sed -i "s/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" $ZITI_HOME/$(hostname)-edge-router.yaml
+    sed -i "s/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname)-edge-router.yaml"
 
-    sed -i "s/$ZITI_ROUTER_ADVERTISED_ADDRESS:$ZITI_ROUTER_PORT/$ZITI_ROUTER_ADVERTISED_ADDRESS:443/g" $ZITI_HOME/$(hostname)-edge-router.yaml
+    sed -i "s/$ZITI_ROUTER_ADVERTISED_ADDRESS:$ZITI_ROUTER_PORT/$ZITI_ROUTER_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname)-edge-router.yaml"
 
     createControllerSystemdFile
     createRouterSystemdFile "${ZITI_ROUTER_NAME}"
@@ -254,6 +254,7 @@ EOF
 }
 
 tunnl_install () {
+    echo "[INFO] Running tunnl_install."
     sudo echo "[INFO] Got super user permissions."
     docker_check
     jq_check
@@ -264,36 +265,48 @@ tunnl_install () {
     install_ziti_if_yes
     extract_and_move_to_target_dir
     create_files_and_directories
-    cd $STARTING_DIRECTORY
+    cd "$STARTING_DIRECTORY"
     cat <<EOF
+
+
 
 ✅ Setup complete!
 
 🔧 Next steps:
 
 1. Make sure your Traefik configuration is working:
-   It should be able to request certificates via the certificate resolver. The recommended method is to use an API key supported by Traefik (see the Traefik documentation for more details). Put your API key environment variable in: $TARGET_DIRECTORY/.traefik.env
+   It should be able to request certificates via the
+   certificate resolver. The recommended method is
+   to use an API key supported by Traefik (see the
+   Traefik documentation for more details). Put your
+   API key environment variable in: $TARGET_DIRECTORY/.traefik.env
 
 2. Start the following containers:
    - keycloak
    - keycloak-postgres
 
-   Then, log into Keycloak at https://auth.$ROOT_DOMAIN and create a new realm with a client configured for OIDC.
+   Then, log into Keycloak at https://auth.$ROOT_DOMAIN 
+   and create a new realm with a client configured for OIDC.
 
 3. Configure your Keycloak OIDC environment variables in:
    $TARGET_DIRECTORY/.tunnl.env
 
-4. Start the whole stack and login to $ROOT_DOMAIN to start creating & sharing services!
+4. Start the whole stack and login to $ROOT_DOMAIN to 
+   start creating & sharing services!
+
+
+
 EOF
 }
 
 tunnl_uninstall () {
-    if [ -z $ZITI_HOME ]; then 
+    echo "[INFO] Running tunnl_uninstall."
+    if [ -z "$ZITI_HOME" ]; then 
         echo "[Error] Please specify a ZITI_HOME environment variable."
         exit 1
     fi
 
-    if [ -z $TARGET_DIRECTORY ]; then 
+    if [ -z "$TARGET_DIRECTORY" ]; then 
         echo "[Error] Please specify a TARGET_DIRECTORY environment variable."
         exit 1
     fi
@@ -301,7 +314,7 @@ tunnl_uninstall () {
     sudo systemctl disable --now ziti-controller.service
     sudo systemctl disable --now ziti-router.service
 
-    rm -rf $ZITI_HOME
-    sudo rm -rf $TARGET_DIRECTORY
+    rm -rf "$ZITI_HOME"
+    sudo rm -rf "$TARGET_DIRECTORY"
     rm ./quickstart.tar.xz
 }
