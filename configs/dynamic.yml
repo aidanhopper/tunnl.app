@@ -1,84 +1,52 @@
 http:
-  serversTransports:
-    insecureTransport:
-      insecureSkipVerify: true
+  middlewares:
+    redirect-to-root:
+      redirectRegex:
+        regex: "^https?://www\\.tunnl\\.app(.*)"
+        replacement: "https://tunnl.app$1"
+        permanent: true
+
   routers:
-    publisher-router:
-      rule: 'HOST(`publisher.tunnl.app`)'
-      service: publisher-service
-      entryPoints:
-        - tcp_tls
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "*.tunnl.app" 
     tunnl-router:
-      rule: 'HOST(`tunnl.app`)'
+      rule: "Host(`tunnl.app`)"
       service: tunnl-service
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
-        domains:
-          - main: "tunnl.app" 
-    keycloak-router:
-      rule: 'HOST(`auth.tunnl.app`)'
-      service: keycloak-service
+
+    install-file:
+      rule: "Host(`tunnl.app`) && Path(`/install.sh`)"
+      service: file-server
       entryPoints:
-        - tcp_tls
+        - websecure
       tls:
         certResolver: letsencrypt
-        domains:
-          - main: "*.tunnl.app" 
-    ziti-router:
-      rule: 'HOST(`ziti.tunnl.app`)'
-      service: http-controller-service
+
+    quickstart-file:
+      rule: "Host(`tunnl.app`) && Path(`/quickstart.tar.xz`)"
+      service: file-server
       entryPoints:
-        - tcp_tls
+        - websecure
+      tls:
+        certResolver: myresolver
+
+    www-router:
+      rule: "Host(`www.tunnl.app`)"
+      service: tunnl-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - redirect-to-root
       tls:
         certResolver: letsencrypt
-        domains:
-          - main: "*.tunnl.app" 
+
   services:
-    http-controller-service:
-      loadBalancer:
-        serversTransport: insecureTransport
-        servers:
-          - url: "https://127.0.0.1:10443"
-    keycloak-service:
-      loadBalancer:
-        servers:
-          - url: "http://127.0.0.1:8080"
     tunnl-service:
       loadBalancer:
         servers:
-          - url: "http://127.0.0.1:3000"
-    publisher-service:
+          - url: "http://landing:3000"
+    file-server:
       loadBalancer:
         servers:
-          - url: "http://127.0.0.1:3444"
-tcp:
-  routers:
-    controller-router:
-      entryPoints:
-        - tcp_tls
-      rule: "HostSNI(`ctrl.ziti.tunnl.app`)"
-      service: controller-service
-      tls:
-        passthrough: true
-    edge-router:
-      entryPoints:
-        - tcp_tls
-      rule: "HostSNI(`er1.ziti.tunnl.app`)"
-      service: edge-service
-      tls:
-        passthrough: true
-  services:
-    controller-service:
-      loadBalancer:
-        servers:
-          - address: 127.0.0.1:10443
-    edge-service:
-      loadBalancer:
-        servers:
-          - address: 127.0.0.1:11443
+          - url: "http://file-server:80"
