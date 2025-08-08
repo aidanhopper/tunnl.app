@@ -1,0 +1,24 @@
+services: 
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./configs/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./data/letsencrypt:/letsencrypt
+    restart: unless-stopped
+    env_file:
+      - .traefik.env
+  landing:
+    build: ./landing-site
+    container_name: landing
+    restart: unless-stopped
+  file-server:
+    image: nginx:alpine
+    container_name: file-server
+    volumes:
+      - ./quickstart:/usr/share/nginx/html:ro
+    restart: unless-stopped
