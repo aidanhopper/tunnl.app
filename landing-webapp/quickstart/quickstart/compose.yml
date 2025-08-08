@@ -1,0 +1,60 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: unless-stopped
+    env_file:
+      - .tunnl.env
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+      - ./data/tunnl-data:/var/lib/postgresql/data
+  web:
+    image: aidanhopper/tunnl.app:latest
+    depends_on:
+      - postgres
+    ports:
+      - "127.0.0.1:3000:3000"
+    env_file:
+      - .tunnl.env
+    restart: unless-stopped
+  publisher:
+    image: aidanhopper/tunnl.app-publisher:latest
+    ports:
+      - "127.0.0.1:3444:3444"
+    depends_on:
+      - postgres
+    volumes:
+      - ./publisher.log:/app/publisher.log
+    env_file:
+      - .tunnl.env
+    restart: unless-stopped
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    network_mode: host
+    volumes:
+      - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./configs/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./data/letsencrypt:/letsencrypt
+    restart: unless-stopped
+    env_file:
+      - .traefik.env
+  keycloak-postgres:
+    container_name: keycloak-postgres
+    image: postgres:latest
+    volumes:
+      - ./data/keycloak-postgres-data:/var/lib/postgresql/data
+    env_file:
+      - .keycloak.env
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:latest
+    command: start
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - .keycloak.env
+    volumes:
+    - ./data/keycloak-data:/data:rw
+    depends_on:
+    - keycloak-postgres

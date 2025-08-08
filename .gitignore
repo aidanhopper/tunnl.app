@@ -11,3 +11,4 @@ pgdata
 data/*
 *identities
 bin/*
+quickstart.tar.xz
