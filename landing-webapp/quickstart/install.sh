@@ -100,7 +100,7 @@ extract_and_move_to_target_dir () {
     echo "[INFO] Extracting quickstart.tar.xz into $TARGET_DIRECTORY"
     curl -sL tunnl.app/quickstart.tar.xz -O quickstart.tar.xz
     tar -xJf quickstart.tar.xz -C "$TARGET_DIRECTORY"
-    STARTING_DIRECTORY=$(PWD)
+    STARTING_DIRECTORY=$(pwd)
     cd "$TARGET_DIRECTORY" || exit 1
 }
 
