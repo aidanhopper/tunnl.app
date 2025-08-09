@@ -330,7 +330,7 @@ export class ShareGrantManager {
             res.forEach(e => userIdSet.add(e.grantee_id));
             const userIds = [...userIdSet];
 
-            for (const id in userIds) {
+            for (const id of userIds) {
                 const user = await userManager.getUserById(id);
                 if (!user) return;
                 await user.getShareAccessManager().updateZitiDialRoles();
