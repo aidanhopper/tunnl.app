@@ -357,4 +357,6 @@ tunnl_uninstall () {
     if [ -L "/etc/systemd/system/multi-user.target.wants/ziti-router.service" ]; then
         sudo rm /etc/systemd/system/multi-user.target.wants/ziti-router.service
     fi
+
+    unset TARGET_DIRECTORY ROOT_DOMAIN ADMIN_EMAIL INSTALL_ZITI
 }
