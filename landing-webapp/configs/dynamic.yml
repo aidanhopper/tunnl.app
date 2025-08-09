@@ -45,7 +45,7 @@ http:
     tunnl-service:
       loadBalancer:
         servers:
-          - url: "http://landing:3000"
+          - url: "http://landing:80"
     file-server:
       loadBalancer:
         servers:
