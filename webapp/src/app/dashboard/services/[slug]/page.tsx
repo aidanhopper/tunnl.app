@@ -40,7 +40,7 @@ const mostDials = (events: EnrichedZitiCircuitEvent[], n: number) => {
     });
 
     const list = Array.from(map.entries().map(e => e[1]));
-    list.sort();
+    list.sort((a, b) => b.count - a.count);
     return list.slice(0, n);
 }
 

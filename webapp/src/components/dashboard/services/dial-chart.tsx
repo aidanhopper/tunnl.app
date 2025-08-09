@@ -100,12 +100,6 @@ const DialEventsChart: React.FC<DialChartProps> = ({
         <ChartContainer config={chartConfig}>
             <BarChart
                 data={chartData}
-                margin={{
-                    top: 20,
-                    right: 30,
-                    left: 20,
-                    bottom: 60,
-                }}
             >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
