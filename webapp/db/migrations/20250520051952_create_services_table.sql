@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE services (
+CREATE TABLE IF NOT EXISTS services (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -12,4 +12,4 @@ CREATE TABLE services (
 );
 
 -- migrate:down
-DROP TABlE services;
+DROP TABlE IF EXISTS services;

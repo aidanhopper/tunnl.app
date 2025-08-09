@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE identities (
+CREATE TABLE IF NOT EXISTS identities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
     ziti_id VARCHAR(16) UNIQUE NOT NULL,
@@ -15,4 +15,4 @@ CREATE TABLE identities (
 );
 
 -- migrate:down
-DROP TABLE identities;
+DROP TABLE IF EXISTS identities;

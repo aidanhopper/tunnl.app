@@ -34,6 +34,8 @@ const createService = async (formData: unknown) => {
                 });
             })
         );
+
+        await user.getShareAccessManager().updateZitiDialRoles();
     } catch (err) {
         console.error(err);
         return false;

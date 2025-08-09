@@ -87,24 +87,6 @@ CREATE TABLE public.identity_shares_access (
 
 
 --
--- Name: private_https_bindings; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.private_https_bindings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
-    tunnel_binding_id uuid NOT NULL,
-    slug character varying(64) NOT NULL,
-    ziti_service_id character varying(32) NOT NULL,
-    ziti_intercept_id character varying(32) NOT NULL,
-    ziti_dial_id character varying(32) NOT NULL,
-    ziti_bind_id character varying(32) NOT NULL,
-    created timestamp with time zone DEFAULT now() NOT NULL,
-    domain character varying(70) NOT NULL
-);
-
-
---
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -256,30 +238,6 @@ ALTER TABLE ONLY public.identity_shares_access
 
 ALTER TABLE ONLY public.identity_shares_access
     ADD CONSTRAINT identity_shares_access_pkey PRIMARY KEY (id);
-
-
---
--- Name: private_https_bindings private_https_bindings_domain_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.private_https_bindings
-    ADD CONSTRAINT private_https_bindings_domain_user_id_key UNIQUE (domain, user_id);
-
-
---
--- Name: private_https_bindings private_https_bindings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.private_https_bindings
-    ADD CONSTRAINT private_https_bindings_pkey PRIMARY KEY (id);
-
-
---
--- Name: private_https_bindings private_https_bindings_tunnel_binding_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.private_https_bindings
-    ADD CONSTRAINT private_https_bindings_tunnel_binding_id_key UNIQUE (tunnel_binding_id);
 
 
 --
@@ -458,22 +416,6 @@ ALTER TABLE ONLY public.identity_shares_access
 
 ALTER TABLE ONLY public.identity_shares_access
     ADD CONSTRAINT identity_shares_access_share_id_fkey FOREIGN KEY (share_id) REFERENCES public.shares(id) ON DELETE CASCADE;
-
-
---
--- Name: private_https_bindings private_https_bindings_tunnel_binding_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.private_https_bindings
-    ADD CONSTRAINT private_https_bindings_tunnel_binding_id_fkey FOREIGN KEY (tunnel_binding_id) REFERENCES public.tunnel_bindings(id) ON DELETE CASCADE;
-
-
---
--- Name: private_https_bindings private_https_bindings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.private_https_bindings
-    ADD CONSTRAINT private_https_bindings_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --

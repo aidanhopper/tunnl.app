@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE tunnel_bindings (
+CREATE TABLE IF NOT EXISTS tunnel_bindings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID NOT NULL,
     ziti_host_id VARCHAR(32) NOT NULL,

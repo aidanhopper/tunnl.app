@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE identity_shares_access (
+CREATE TABLE IF NOT EXISTS identity_shares_access (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     identity_id UUID NOT NULL,
     share_id UUID NOT NULL,
@@ -9,4 +9,4 @@ CREATE TABLE identity_shares_access (
 );
 
 -- migrate:down
-DROP TABLE identity_shares_access;
+DROP TABLE IF EXISTS identity_shares_access;

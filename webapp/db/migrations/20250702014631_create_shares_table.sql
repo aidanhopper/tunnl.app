@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE shares (
+CREATE TABLE IF NOT EXISTS shares (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_id UUID NOT NULL, 
     user_id UUID NOT NULL,
@@ -10,4 +10,4 @@ CREATE TABLE shares (
 );
 
 -- migrate:down
-DROP TABLE shares;
+DROP TABLE IF EXISTS shares;

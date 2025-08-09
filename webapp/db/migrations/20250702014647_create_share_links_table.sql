@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE TABLE share_links (
+CREATE TABLE IF NOT EXISTS share_links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     expires TIMESTAMPTZ NOT NULL,
     slug VARCHAR(32) UNIQUE NOT NULL,
@@ -9,4 +9,4 @@ CREATE TABLE share_links (
 );
 
 -- migrate:down
-DROP TABLE share_links;
+DROP TABLE IF EXISTS share_links;
