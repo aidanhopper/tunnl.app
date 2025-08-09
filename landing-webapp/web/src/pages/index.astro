@@ -10,14 +10,20 @@ import Footer from '@/components/Footer.astro';
 import Content from '@/components/Content.astro';
 import serviceGeneralImage from '@/assets/service-general.png';
 import serviceBindingsImage from '@/assets/service-bindings.png';
+import linuxImage from '@/assets/linux.png';
+import windowsImage from '@/assets/windows.png';
+import macosImage from '@/assets/macos.png';
+import dockerImage from '@/assets/docker.png';
+import androidImage from '@/assets/android.png';
+import iosImage from '@/assets/ios.png';
 ---
 
 <Layout title="Tunnl.app — Easy service sharing">
     <main class='flex flex-col min-h-screen'>
         <Navbar animate={true}/>
         <Content>
-            <div class='flex flex-col items-center mt-40'>
-                <h1 class="text-4xl sm:text-7xl font-semibold text-center max-w-5xl slide1 px-2">
+            <div class='flex flex-col items-center mt-32 sm:mt-48'>
+                <h1 class="text-5xl sm:text-7xl font-semibold text-center max-w-5xl slide1 px-2">
                     Share private services without a hassel.
                 </h1>
                 <p class='text-xl sm:text-2xl text-center max-w-4xl slide2 pt-16 px-4'>
@@ -38,7 +44,7 @@ import serviceBindingsImage from '@/assets/service-bindings.png';
                             src={serviceBindingsImage.src}/>
                     </div>
                 </div>
-                <div class='w-full pt-40 max-w-5xl flex flex-col items-center fade-in-section'>
+                <div class='w-full pt-48 max-w-5xl flex flex-col items-center fade-in-section'>
                     <h1 class='text-2xl sm:text-5xl text-center font-semibold px-4'>
                         Self-hosting can be a
                         <span class='bg-primary text-background italic'>nightmare</span>
@@ -109,7 +115,63 @@ import serviceBindingsImage from '@/assets/service-bindings.png';
                 <div class='w-full pt-40 max-w-3xl flex flex-col fade-in-section'>
                     <TunnelActions client:load/>
                 </div>
-                <div class='w-full pt-40 pb-10 max-w-3xl flex flex-col fade-in-section'>
+                <div>
+                <div class='w-full pt-48 max-w-3xl flex flex-col fade-in-section px-4'>
+                    <h1 class='text-3xl md:text-5xl font-bold text-center px-4'>
+                        Edge clients are available on
+                    </h1>
+                    <div class='grid grid-cols-2 sm:grid-cols-3 w-full justify-center items-center gap-8 mt-10'>
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>Windows</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-24' src={windowsImage.src} />
+                            </CardContent>
+                        </Card> 
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>Linux</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-24' src={linuxImage.src} />
+                            </CardContent>
+                        </Card> 
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>Android</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-24' src={androidImage.src} />
+                            </CardContent>
+                        </Card> 
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>MacOS</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-32' src={macosImage.src} />
+                            </CardContent>
+                        </Card> 
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>iOS</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-24' src={iosImage.src} />
+                            </CardContent>
+                        </Card> 
+                        <Card className='h-full duration-100 hover:translate-y-[-5px]'>
+                            <CardHeader>
+                                <CardTitle className='text-center'>Docker</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex justify-center items-center'>
+                                <img class='w-32' src={dockerImage.src} />
+                            </CardContent>
+                        </Card> 
+                    </div>
+                </div>
+                <div class='w-full pt-48 pb-10 max-w-3xl flex flex-col fade-in-section'>
                     <h1 class='text-3xl md:text-5xl font-bold text-center px-4'>Ready to give Tunnl.app a shot?</h1>
                     <p class='text-center mt-8 text-lg md:text-2xl px-4'>
                         Pick up a cheap VPS (I've been using Hetzner) 

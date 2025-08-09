@@ -126,7 +126,7 @@ const TunnelActions = () => {
     const activeVariant = 'default';
     return isLoaded ? (
         <div>
-            <div className='flex flex-col sm:flex-row gap-2 sm:gap-6 sm:w-full justify-center px-10'>
+            <div className='flex flex-col sm:flex-row gap-2 sm:gap-6 sm:w-full justify-center px-4'>
                 <Button
                     onClick={() => setActiveSection('creating')}
                     variant={activeSection === 'creating' ? activeVariant : inactiveVariant}>
