@@ -34,12 +34,22 @@ jq_check() {
     fi
 }
 
+make_absolute_path() {
+    local path="$1"
+    if [[ "$path" != /* ]]; then
+        # It's relative → prepend current working directory
+        path="$(pwd)/$path"
+    fi
+    echo "$path"
+}
+
 ask_for_target_dir () {
     if [ -z "$TARGET_DIRECTORY" ]; then
         printf "Enter the target directory for the Tunnl.app quickstart (default tunnl-quickstart): "
         read -r dir < /dev/tty
         if [ -z "$dir" ]; then dir="tunnl-quickstart" ; fi
         TARGET_DIRECTORY=$dir
+        TARGET_DIRECTORY=$(make_absolute_path "$TARGET_DIRECTORY")
     fi
     echo "[INFO] Using directory: $TARGET_DIRECTORY"
 }
@@ -243,12 +253,17 @@ EOF
 
     sed -i "s/$ZITI_ROUTER_ADVERTISED_ADDRESS:$ZITI_ROUTER_PORT/$ZITI_ROUTER_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname)-edge-router.yaml"
 
+    stopRouter
+    stopController
+
     createControllerSystemdFile
     createRouterSystemdFile "${ZITI_ROUTER_NAME}"
 
     sudo cp "${ZITI_HOME}/${ZITI_CTRL_NAME}.service" /etc/systemd/system/ziti-controller.service
     sudo cp "${ZITI_HOME}/${ZITI_ROUTER_NAME}.service" /etc/systemd/system/ziti-router.service
+
     sudo systemctl daemon-reload
+
     sudo systemctl enable --now ziti-controller
     sudo systemctl enable --now ziti-router
 }
@@ -299,6 +314,9 @@ tunnl_install () {
 EOF
 }
 
+# May want to change TARGET DIRECTORY to always be an absolute path
+# so that if the user runs tunnl_uninstall in a directory other
+# than the one they ran it in it will still work.
 tunnl_uninstall () {
     echo "[INFO] Running tunnl_uninstall."
     if [ -z "$ZITI_HOME" ]; then 
@@ -311,10 +329,32 @@ tunnl_uninstall () {
         exit 1
     fi
 
+    cur=$(pwd)
+    cd "$TARGET_DIRECTORY" || exit 1
+    docker compose down 
+    cd "$cur" || exit 1
+
     sudo systemctl disable --now ziti-controller.service
     sudo systemctl disable --now ziti-router.service
 
-    rm -rf "$ZITI_HOME"
-    sudo rm -rf "$TARGET_DIRECTORY"
-    rm ./quickstart.tar.xz
+    if [ -d "$ZITI_HOME" ]; then rm -rf "$ZITI_HOME" ; fi
+    if [ -d "$TARGET_DIRECTORY" ]; then sudo rm -rf "$TARGET_DIRECTORY" ; fi
+    if [ -d "$HOME/.ziti" ]; then sudo rm -rf "$HOME/.ziti" ; fi
+    if [ -f "./quickstart.tar.xz" ]; then rm ./quickstart.tar.xz ; fi
+
+    if [ -f "/etc/systemd/system/ziti-controller.service" ]; then
+        sudo rm /etc/systemd/system/ziti-controller.service
+    fi
+
+    if [ -f "/etc/systemd/system/ziti-router.service" ]; then
+        sudo rm /etc/systemd/system/ziti-router.service
+    fi
+
+    if [ -L "/etc/systemd/system/multi-user.target.wants/ziti-controller.service" ]; then
+        sudo rm /etc/systemd/system/multi-user.target.wants/ziti-controller.service
+    fi
+
+    if [ -L "/etc/systemd/system/multi-user.target.wants/ziti-router.service" ]; then
+        sudo rm /etc/systemd/system/multi-user.target.wants/ziti-router.service
+    fi
 }

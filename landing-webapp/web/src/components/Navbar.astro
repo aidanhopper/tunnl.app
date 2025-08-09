@@ -1,31 +1,21 @@
 ---
 import { Button } from '../components/ui/button.tsx'
 import NavMenu from '@/components/NavMenu';
+
+interface Props {
+    animate: boolean;
+}
+
+const { animate } = Astro.props;
 ---
 
 <nav class='fixed w-full bg-background/90 backdrop-blur-md z-10 navbar'> 
     <div class='px-4 py-2 hidden sm:flex items-center'>
         <div class='flex flex-1 items-center gap-8'>
-            <a href='/' class='text-lg md:text-2xl font-bold cursor-pointer slide1'>
+            <a href='/' class={`text-lg md:text-2xl font-bold cursor-pointer ${animate ? 'slide1' : ''}`}>
                 🚂 &nbsp; Tunnl.app
             </a>
-            <a class='slide2' href='#'>
-                <Button
-                    size='sm'
-                    variant='ghost'
-                    className='text-muted-foreground'>
-                    FAQ 
-                </Button>
-            </a>
-            <a class='slide3' href='#'>
-                <Button 
-                    size='sm'
-                    variant='ghost'
-                    className='text-muted-foreground'>
-                    Contact 
-                </Button>
-            </a>
-            <a class='slide4' href='https://github.com/aidanhopper/tunnl.app' target='_blank'>
+            <a class={animate ? 'slide2' : ''} href='https://github.com/aidanhopper/tunnl.app' target='_blank'>
                 <Button 
                     size='sm'
                     variant='ghost'
@@ -33,18 +23,10 @@ import NavMenu from '@/components/NavMenu';
                     Github
                 </Button>
             </a>
-            <a class='slide5' href='#'>
-                <Button 
-                    size='sm'
-                    variant='ghost'
-                    className='text-muted-foreground'>
-                    Docs 
-                </Button>
-            </a>
         </div>
         <div>
             <a href='/get-started'>
-                <Button className='slide6'>
+                <Button className={animate ? 'slide3' : ''}>
                     Get Started
                 </Button>
             </a>

@@ -22,6 +22,7 @@ const CreatingAction = () => {
             </CardContent>
             <CardFooter className='sm:text-lg'>
                 Create services that can be accessed on any domain that's not a valid TLD.
+                Essentially the domain should not be resolvable by traditional public DNS.
                 Services can be TCP, UDP, or both. Map a port to another port, or forward the ports
                 from the client to the host.
             </CardFooter>
@@ -146,7 +147,7 @@ const TunnelActions = () => {
                     View Metrics <ChartSpline />
                 </Button>
             </div>
-            <div className='mt-6 px-4 sm:min-h-[620px]'>
+            <div className='mt-6 px-4 sm:min-h-[640px]'>
                 <Card className='w-full'>
                     <TunnlAction action={activeSection} />
                 </Card>

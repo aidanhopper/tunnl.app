@@ -1,7 +1,116 @@
 ---
+import '@/styles/globals.css';
 import Layout from '../layouts/Layout.astro';
+import Footer from '@/components/Footer.astro';
+import Navbar from '../components/Navbar.astro';
+import Content from '@/components/Content.astro';
+import {Separator} from '@/components/ui/separator';
+import Code from '@/components/Code';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 ---
 
 <Layout title="Tunnl.app — Get started">
-    hello world!
+    <Navbar animate={false}/>
+    <main class='flex flex-col min-h-screen'>
+        <Content>
+            <div class='flex flex-col items-center mt-24 p-4'>
+                <div class='w-full max-w-xl flex flex-col gap-4 text-lg'>
+                    <h1 class='text-5xl font-semibold mb-3'>Get started guide</h1>
+                    <h2 class='text-3xl font-semibold'>Setup your VPS</h2>
+                    <Separator/>
+                    <ol class='list-decimal space-y-6 ml-5'>
+                        <li>
+                            Pick up a cheap VPS with a public IPv4 or IPv6 address, 
+                            personally I use a Ubuntu 24.04 Hetzner VPS but you can
+                            use any provider.
+                        </li>
+                        <li>
+                            Setup your user, add your ssh key to the VPS, and allow 
+                            port 22/TCP through the firewall.
+                        </li>
+                        <li>
+                            Install <Code>docker</Code>, <Code>openssl</Code>, 
+                            and <Code>jq</Code> on your VPS.
+                        </li>
+                    </ol>
+                    <h2 class='text-3xl font-semibold mt-6'>Install the Tunnl.app dashboard</h2>
+                    <Separator/>
+                    <ol class='list-decimal space-y-6 ml-5'>
+                        <li>
+                            <p>
+                                Get the quickstart commands source the installer.
+                            </p>
+                            <Code className='my-1 p-1'>
+                                source &lt;(curl -sL tunnl.app/install.sh)
+                            </Code>
+                        </li>
+                        <li>
+                            Run <Code>tunnl_install</Code> to install the Tunnl.app dashboard,
+                            keycloak, Traefik and the Publisher.
+                            To uninstall run <Code>tunnl_uninstall</Code> if you
+                            want to remove the Tunnl.app quickstart for any reason.
+                        </li>
+                        <li>
+                            If you're going to install OpenZiti in a way other than the
+                            OpenZiti quickstart answer no to install Ziti. Otherwise
+                            answer yes.
+                        </li>
+                        <li>
+                            <div class='flex flex-col gap-3'>
+                                <p>
+                                    Now you need to configure your DNS and get certificates 
+                                    for the publisher, the dashboard, and Keycloak services.
+                                </p>
+                                <p>
+                                    Generally to configure DNS make sure you have these domains
+                                    pointing to your VPS.
+                                </p>
+                                <Code className='p-2'>
+                                    <ul class='list-disc ml-5 space-y-1'>
+                                        <li>ROOT_DOMAIN &rarr; A : VPS IP</li>
+                                        <li>publisher.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
+                                        <li>auth.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
+                                        <li>ziti.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
+                                        <li>*.ziti.ROOT_DOMAIN &rarr; CNAME : ziti.ROOT_DOMAIN</li>
+                                    </ul>
+                                </Code>
+                                <p>
+                                    To get the IP of your VPS run <Code className='w-fit'>curl -4 ifconfig.io</Code>.
+                                </p>
+                                <p>
+                                    My preferred way to get certificates is to use the Cloudflare
+                                    DNS proxy. The other way is to get certificates through
+                                    Traefik with a API key. You could also manage the certificates
+                                    externally yourself.
+                                </p>
+                                <p>
+                                    If you're using Cloudflare proxy DNS protect the ROOT_DOMAIN, publisher, and auth
+                                    with proxy DNS.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            Create a Keycloak client and configure it for OIDC.
+                            Once you do that add those as environemnt variables in
+                            <Code>TARGET_DIRECTORY/.keycloak.env</Code>.
+                        </li>
+                        <li>
+                            Run <Code>docker compose down && docker compose up -d</Code>
+                            to redeploy with the new environemnt variables.
+                        </li>
+                        <li>
+                            Test if the dashboard works by going to https://ROOT_DOMAIN,
+                            signing in, enrolling an idenity, and creat a service!
+                        </li>
+                    </ol>
+                </div> 
+            </div>
+        </Content>
+        <div class='justify-end pt-10'>
+            <Footer />
+        </div>
+    </main>
 </Layout>
+
+<style>
+</style>

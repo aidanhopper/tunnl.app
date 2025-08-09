@@ -1,0 +1,34 @@
+---
+import '@/styles/globals.css';
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import {Separator} from '@/components/ui/separator';
+import {Button} from '@/components/ui/button';
+import Content from '@/components/Content.astro';
+import Footer from '@/components/Footer.astro';
+import {Mail} from '@lucide/astro';
+---
+
+<Layout title='Tunnl.app — Contact'>
+    <Navbar animate={false}/>
+    <main class='flex flex-col min-h-screen'>
+        <Content>
+            <div class='flex flex-col items-center mt-24'>
+                <div class='w-full max-w-xl flex flex-col gap-4 text-lg'>
+                    <h1 class='text-5xl font-semibold'>Contact</h1>
+                    <p>
+                        Send an email if you need to contact me.
+                    </p>
+                    <a href='mailto:aidanhop1@gmail.com'>
+                        <Button>
+                            Email <Mail/>
+                        </Button>
+                    </a>
+                </div>
+            </div>
+        </Content>
+        <div class='justify-end pt-10'>
+            <Footer />
+        </div>
+    </main>
+</Layout>
