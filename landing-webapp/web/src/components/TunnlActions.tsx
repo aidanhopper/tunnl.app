@@ -64,10 +64,10 @@ const EnrollingAction = () => {
                     src={identityEnrollmentImage.src} />
             </CardContent>
             <CardFooter className='sm:text-lg'>
-                Identities are program connected to the OpenZiti fabric.
+                Identities are a program connected to the OpenZiti fabric.
                 Edge tunnelers are identities that correspond to a device,
-                with access to Intercept and Host configs created in
-                the Tunnl.app dashboard.
+                which use Intercept and Host configs created in
+                the Tunnl.app dashboard to access and host the service.
             </CardFooter>
         </>
     );

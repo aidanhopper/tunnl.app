@@ -7,6 +7,8 @@ import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, s
 import { patchIdentity } from "../ziti/identities";
 import { isApproved, UserManager } from "./user";
 import withTimeout from "../with-timeout";
+import { globalLockManager } from "../resource-lock/resource-lock-manager";
+import isHealthy from "../ziti/is-healthy";
 
 export class ShareAccessManager {
     private userId: string;
@@ -145,7 +147,9 @@ export class ShareAccessManager {
 
     // get all users identities that have 
     async updateZitiDialRoles() {
+        if (!(await isHealthy())) return false;
         const client = await this.pool.connect();
+        const release = await globalLockManager.acquireLock(this.userId);
         try {
             const res = await selectIdentitySharesAccessByUserId
                 .run({ user_id: this.userId }, client);
@@ -173,14 +177,14 @@ export class ShareAccessManager {
             }
 
             try {
-                await withTimeout(Promise.all(
+                Promise.all(
                     Array.from(identityMap.entries()).map(async ([zitiIdentityId, roles]) => {
                         await patchIdentity({
                             ziti_id: zitiIdentityId,
                             data: { roleAttributes: roles }
-                        })
+                        });
                     })
-                ), 5000);
+                );
             } catch {
                 throw new Error(`Failed to patch ziti with new identity roles for user: ${this.userId}`);
             }
@@ -191,6 +195,7 @@ export class ShareAccessManager {
             return false;
         } finally {
             client.release();
+            release();
         }
     }
 }
@@ -315,6 +320,7 @@ export class ShareGrantManager {
     }
 
     async updateZitiDialRoles() {
+        if (!(await isHealthy())) return false;
         const client = await this.pool.connect();
         try {
             const res = await selectIdentitySharesAccessByServiceId
@@ -328,8 +334,7 @@ export class ShareGrantManager {
 
             for (const id of userIds) {
                 const user = await userManager.getUserById(id);
-                if (!user) return;
-                await user.getShareAccessManager().updateZitiDialRoles();
+                if (user) await user.getShareAccessManager().updateZitiDialRoles();
             }
 
             return true;

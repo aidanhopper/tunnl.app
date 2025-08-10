@@ -8,6 +8,8 @@ import { Service } from './service';
 import slugify from "../slugify";
 import { selectIdentityBySlug } from "@/db/types/identities.queries";
 import { Identity, IdentityClientData } from "./identity";
+import { globalLockManager } from '@/lib/resource-lock/resource-lock-manager';
+import isHealthy from "../ziti/is-healthy";
 
 interface PortConfigForwardFalse {
     forwardPorts: false;
@@ -125,6 +127,8 @@ export class TunnelBindingManager {
         host: TunnelBindingHost,
         intercept: TunnelBindingIntercept
     }) {
+        if (!(await isHealthy())) return;
+
         // dont let users create more than one tunnel binding for now
         const count = await this.getCount();
         if (count !== 0) return false;
@@ -247,6 +251,7 @@ export class TunnelBindingManager {
         host: TunnelBindingHost,
         intercept: TunnelBindingIntercept
     }) {
+        if (!(await isHealthy())) return;
         const tunnelBinding = await this.getTunnelBindingBySlug(slug);
         if (!tunnelBinding) return false;
 
@@ -302,9 +307,12 @@ export class TunnelBindingManager {
             ziti_id: tunnelBinding.getZitiBindId(),
             data: { identityRoles: [`@${host.zitiIdentityId}`] }
         });
+
+        return true;
     }
 
     async deleteTunnelBindings() {
+        if (!(await isHealthy())) return;
         const tunnelBindings = await this.getTunnelBindings();
         Promise.all(tunnelBindings.map(async e => {
             await this.deleteTunnelBindingBySlug(e.getSlug());
@@ -312,6 +320,7 @@ export class TunnelBindingManager {
     }
 
     async deleteTunnelBindingBySlug(slug: string) {
+        if (!(await isHealthy())) return false;
         const client = await this.pool.connect();
         try {
             client.query('BEGIN');
@@ -360,7 +369,6 @@ export class TunnelBinding {
     private zitiIntercept: GetConfigData<InterceptV1ConfigData> | null = null;
     private zitiBind: ServicePolicyDetail | null = null;
     private zitiDial: ServicePolicyDetail | null = null;
-    private zitiService: GetServiceData | null = null;
 
     constructor({
         pool,
@@ -383,13 +391,25 @@ export class TunnelBinding {
     }
 
     private async getZitiConfig<T>(id: string) {
-        const res = await getConfig<T>(id);
-        return res?.data ?? null;
+        if (!(await isHealthy())) return null;
+        const release = await globalLockManager.acquireLock(id);
+        try {
+            const res = await getConfig<T>(id);
+            return res?.data ?? null;
+        } finally {
+            release();
+        }
     }
 
     private async getZitiPolicy(id: string) {
-        const res = await getPolicy(id);
-        return res?.data ?? null;
+        if (!(await isHealthy())) return null;
+        const release = await globalLockManager.acquireLock(id);
+        try {
+            const res = await getPolicy(id);
+            return res?.data ?? null;
+        } finally {
+            release();
+        }
     }
 
     private async getZitiIntercept() {
@@ -410,12 +430,6 @@ export class TunnelBinding {
     private async getZitiBind() {
         if (this.zitiBind) return;
         this.zitiBind = await this.getZitiPolicy(this.zitiBindId);
-    }
-
-    private async getZitiService() {
-        if (this.zitiService) return;
-        const res = await getService(this.zitiServiceId);
-        this.zitiService = res?.data ?? null;
     }
 
     async getAddresses() {

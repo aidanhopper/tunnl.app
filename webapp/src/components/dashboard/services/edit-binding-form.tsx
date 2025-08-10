@@ -76,6 +76,7 @@ const EditTunnelBindingForm = ({
 
     const handleSubmit = async (formData: z.infer<typeof combinedSchema>) => {
         console.log(formData);
+        setIsSaveSuccessful(null);
         const res = await editTunnelBinding({
             hostConfig: formData.host,
             interceptConfig: formData.intercept,

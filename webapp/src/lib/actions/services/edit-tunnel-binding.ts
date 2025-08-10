@@ -35,7 +35,7 @@ const editTunnelBinding = async ({
         if (intercept.portConfig.forwardPorts !== host.portConfig.forwardPorts)
             throw new Error('Error');
 
-        await service.getTunnelBindingManager().updateTunnelBinding({
+        return await service.getTunnelBindingManager().updateTunnelBinding({
             slug: tunnelBindingSlug,
             host: {
                 protocol: protocol,
