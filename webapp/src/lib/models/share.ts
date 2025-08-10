@@ -3,12 +3,13 @@ import { Pool } from "pg";
 import { Service, ServiceClientData } from "./service";
 import { selectServiceById } from "@/db/types/services.queries";
 import slugify from "../slugify";
-import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, selectIdentitySharesAccessByServiceId, selectIdentitySharesAccessByUserId } from "@/db/types/identity_shares_access.queries";
+import { deleteIdentitySharesAccessBySlugs, insertIdentitySharesAccessBySlugs, ISelectIdentitySharesAccessByUserIdResult, selectIdentitySharesAccessByServiceId, selectIdentitySharesAccessByUserId } from "@/db/types/identity_shares_access.queries";
 import { patchIdentity } from "../ziti/identities";
 import { isApproved, UserManager } from "./user";
 import withTimeout from "../with-timeout";
 import { globalLockManager } from "../resource-lock/resource-lock-manager";
 import isHealthy from "../ziti/is-healthy";
+import { selectIdentitiesByUserId } from "@/db/types/identities.queries";
 
 export class ShareAccessManager {
     private userId: string;
@@ -101,6 +102,19 @@ export class ShareAccessManager {
         }
     }
 
+    async addIdentitiesToShare(shareSlug: string): Promise<boolean> {
+        const user = await new UserManager(this.pool).getUserById(this.userId);
+        if (!user) return false;
+        const identities = await user.getIdentityManager().getIdentities();
+        await Promise.all(
+            identities.map(async e => await this.addIdentityToShare({
+                identitySlug: e.getSlug(),
+                shareSlug: shareSlug
+            }))
+        );
+        return true;
+    }
+
     async addIdentityToShare({
         shareSlug,
         identitySlug
@@ -145,27 +159,32 @@ export class ShareAccessManager {
         }
     }
 
+    private identitySharesAccessIsValid(e: ISelectIdentitySharesAccessByUserIdResult) {
+        return e.enabled && isApproved(e.grantee_roles.split(' ')) && isApproved(e.granter_roles.split(' '));
+    }
+
     // get all users identities that have 
     async updateZitiDialRoles() {
         if (!(await isHealthy())) return false;
         const client = await this.pool.connect();
         const release = await globalLockManager.acquireLock(this.userId);
         try {
-            const res = await selectIdentitySharesAccessByUserId
-                .run({ user_id: this.userId }, client);
-
+            const identities = await selectIdentitiesByUserId
+                .run({ id: this.userId }, this.pool);
             const identityMap = new Map<string, string[]>();
+            identities.forEach(e => identityMap.set(e.ziti_id, []));
 
+            const identityShareAccessRes = await selectIdentitySharesAccessByUserId
+                .run({ user_id: this.userId }, client);
+            console.log(identityShareAccessRes);
             try {
-                for (const e of res) {
-                    if (!e.enabled || !isApproved(e.grantee_roles.split(' '))
-                        || !isApproved(e.granter_roles.split(' '))) {
+                for (const e of identityShareAccessRes) {
+                    if (this.identitySharesAccessIsValid(e)) {
                         if (!identityMap.has(e.identity_ziti_id))
-                            identityMap.set(e.identity_ziti_id, []);
-                    } else {
-                        if (!identityMap.has(e.identity_ziti_id))
-                            identityMap.set(e.identity_ziti_id, []);
+                            throw new Error('This identity does not belong to the user');
+
                         const role = await this.getRole(e.share_slug);
+
                         if (role) {
                             const roles = [...identityMap.get(e.identity_ziti_id) ?? [], role]
                             identityMap.set(e.identity_ziti_id, roles);
@@ -175,6 +194,8 @@ export class ShareAccessManager {
             } catch {
                 throw new Error(`Failed to get new identity roles for user: ${this.userId}`);
             }
+
+            console.log('identityMap', identityMap);
 
             try {
                 Promise.all(
@@ -298,6 +319,21 @@ export class ShareGrantManager {
             if (!role) return null;
             this.roleCache.set(shareSlug, role);
             return role;
+        } catch {
+            return null;
+        } finally {
+            client.release();
+        }
+    }
+
+    async getShareBySlug(slug: string): Promise<Share | null> {
+        const client = await this.pool.connect()
+        try {
+            const res = await selectShareBySlug.run({ slug }, client);
+            if (res.length === 0 || res[0].granter_user_id !== this.ownerUserId)
+                throw new Error('Share does not exist');
+            const share = new Share({ data: res[0], pool: this.pool });
+            return share;
         } catch {
             return null;
         } finally {

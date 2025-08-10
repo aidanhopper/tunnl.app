@@ -15,9 +15,17 @@ const deleteShare = async ({
     if (serviceSlug) {
         const service = await user.getServiceManager().getServiceBySlug(serviceSlug);
         if (!service) return false;
-        return await service.getShareGrantManager().deleteShareBySlug(shareSlug);
+        const share = await service.getShareGrantManager().getShareBySlug(shareSlug);
+        if (!share) return false;
+        const ret = await service.getShareGrantManager().deleteShareBySlug(shareSlug);
+        const grantee = await new UserManager(pool).getUserById(share.getUserId());
+        if (!grantee) return false;
+        await grantee.getShareAccessManager().updateZitiDialRoles();
+        return ret;
     } else {
-        return await user.getShareAccessManager().deleteShareBySlug(shareSlug);
+        const ret = await user.getShareAccessManager().deleteShareBySlug(shareSlug);
+        if (ret) await user.getShareAccessManager().updateZitiDialRoles();
+        return ret;
     }
 }
 

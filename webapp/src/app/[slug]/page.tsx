@@ -57,7 +57,12 @@ const ShareLinkPage = async ({
         const user = await new UserManager(pool).auth();
         if (!user) redirect(`/login?autologin&redirect=${encodeURIComponent('/' + shareLinkClientData.slug + '?autojoin')}`);
         if (user.getEmail() === shareLinkClientData.producerEmail) redirect('/dashboard');
-        await user.getShareLinkConsumerManager().consume(shareLinkClientData.slug);
+        const share = await user.getShareLinkConsumerManager().consume(shareLinkClientData.slug);
+        console.log('SHARE', share);
+        if (share) {
+            console.log('add identities to share', await user.getShareAccessManager().addIdentitiesToShare(share.getSlug()));
+            await user.getShareAccessManager().updateZitiDialRoles();
+        }
         redirect('/dashboard/shares');
     }
 

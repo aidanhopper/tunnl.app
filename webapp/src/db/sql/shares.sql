@@ -12,6 +12,8 @@ WITH inserted_shares AS (
 )
 SELECT 
     inserted_shares.*,
+    grantee.id AS grantee_user_id,
+    granter.id AS granter_user_id,
     grantee.email AS grantee_email,
     granter.email AS granter_email,
     grantee.roles AS grantee_roles,
@@ -24,6 +26,8 @@ JOIN users AS granter ON services.user_id = granter.id;
 /* @name selectSharesByUserId */
 SELECT 
     shares.*,
+    grantee.id AS grantee_user_id,
+    granter.id AS granter_user_id,
     grantee.email AS grantee_email,
     granter.email AS granter_email,
     grantee.roles AS grantee_roles,
@@ -37,6 +41,8 @@ WHERE shares.user_id = :user_id;
 /* @name selectShareBySlug */
 SELECT 
     shares.*,
+    grantee.id AS grantee_user_id,
+    granter.id AS granter_user_id,
     grantee.email AS grantee_email,
     granter.email AS granter_email,
     grantee.roles AS grantee_roles,
@@ -50,6 +56,8 @@ WHERE shares.slug = :slug;
 /* @name selectSharesByServiceId */
 SELECT 
     shares.*,
+    grantee.id AS grantee_user_id,
+    granter.id AS granter_user_id,
     grantee.email AS grantee_email,
     granter.email AS granter_email,
     grantee.roles AS grantee_roles,

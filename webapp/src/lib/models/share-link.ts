@@ -50,8 +50,9 @@ export class ShareLinkConsumerManager {
             const res = resultList[0];
             if (res.service_owner_user_id === this.userId)
                 throw new Error('Cannot consume your own service share');
-            this.shareAccessManager.createShare(res.service_id);
+            const ret = this.shareAccessManager.createShare(res.service_id);
             await client.query('COMMIT');
+            return ret;
         } catch {
             await client.query('ROLLBACK');
             return null;
