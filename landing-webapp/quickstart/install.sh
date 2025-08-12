@@ -80,27 +80,6 @@ ask_for_admin_email () {
     echo "[INFO] Using admin email: $ADMIN_EMAIL"
 }
 
-ask_to_install_ziti () {
-    if [ -z "$INSTALL_ZITI" ]; then 
-        printf "Would you like to install the OpenZiti Controller & Edge Router with the OpenZiti quickstart? (y/N) "
-        read -r install_ziti < /dev/tty
-    else
-        install_ziti=$INSTALL_ZITI
-    fi
-
-    if [ -z "$install_ziti" ]; then
-        INSTALL_ZITI="no"
-    elif [ "y" = "$install_ziti" ]; then
-        INSTALL_ZITI="yes"
-    elif [ "Y" = "$install_ziti" ]; then
-        INSTALL_ZITI="yes"
-    else
-        INSTALL_ZITI="no"
-    fi
-
-    echo "[INFO] Installing Ziti: $INSTALL_ZITI"
-}
-
 extract_and_move_to_target_dir () {
     if [ -z "$TARGET_DIRECTORY" ]; then
         echo "[ERROR] Must specify target directory."
@@ -108,8 +87,9 @@ extract_and_move_to_target_dir () {
     fi
     mkdir -p "$TARGET_DIRECTORY"
     echo "[INFO] Extracting quickstart.tar.xz into $TARGET_DIRECTORY"
-    curl -sL tunnl.app/quickstart.tar.xz -O quickstart.tar.xz
-    tar -xJf quickstart.tar.xz -C "$TARGET_DIRECTORY"
+    # curl -sL tunnl.app/quickstart.tar.xz -O quickstart.tar.xz
+    # tar -xJf quickstart.tar.xz -C "$TARGET_DIRECTORY"
+    cp -r tarball/* "$TARGET_DIRECTORY"
     STARTING_DIRECTORY=$(pwd)
     cd "$TARGET_DIRECTORY" || exit 1
 }
@@ -134,8 +114,33 @@ create_files_and_directories () {
     if [ ! -d "data" ]; then mkdir data ; fi 
 
     tunnl_postgres_password=$(generate_secret)
+    ziti_pwd=$(generate_secret)
+    base_dns="ziti.$ROOT_DOMAIN"
+    controller_port=443
+    router_port=443
 
-    tunnl_env=$(cat <<EOF > .tunnl.env
+    ZITI_CTRL_ADVERTISED_ADDRESS="ctrl.${base_dns}"
+    ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="ctrl.${base_dns}"
+    ZITI_ROUTER_ADVERTISED_ADDRESS="er1.${base_dns}"
+    ZITI_CTRL_ADVERTISED_PORT=${controller_port}
+    ZITI_CTRL_EDGE_ADVERTISED_PORT="${controller_port}"
+    ZITI_ROUTER_PORT=${router_port}
+    ZITI_ROUTER_LISTENER_BIND_PORT=${router_port}
+    ZITI_PWD=${ziti_pwd}
+
+
+    tunnl_env=$(cat <<EOF > .env
+# ZITI CONTROLLER & ROUTER VARS
+ZITI_CTRL_ADVERTISED_ADDRESS="ctrl.${base_dns}"
+ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="ctrl.${base_dns}"
+ZITI_ROUTER_ADVERTISED_ADDRESS="er1.${base_dns}"
+ZITI_CTRL_ADVERTISED_PORT=${controller_port}
+ZITI_CTRL_EDGE_ADVERTISED_PORT="${controller_port}"
+ZITI_ROUTER_PORT=${router_port}
+ZITI_ROUTER_LISTENER_BIND_PORT=${router_port}
+ZITI_PWD=${ziti_pwd}
+
+# TUNNL.APP VARS
 NODE_ENV=production
 PUBLISHER_PORT=3444
 PUBLISHER_JWT_SECRET=$(generate_secret)
@@ -145,21 +150,21 @@ CONTACT_EMAIL=$ADMIN_EMAIL
 PUBLISHER_URL=publisher.$ROOT_DOMAIN
 NEXTAUTH_SECRET=$(generate_secret)
 NEXTAUTH_URL=$ROOT_DOMAIN
+
+POSTGRES_DB=appdb
 POSTGRES_USER=app
 POSTGRES_PASSWORD=$tunnl_postgres_password
-POSTGRES_DB=appdb
+
 ZITI_CONTROLLER_URL=https://ziti.$ROOT_DOMAIN
 ZITI_WEBSOCKET_CONTROLLER_URL=wss://ctrl.ziti.$ROOT_DOMAIN
 ZITI_ADMIN_USERNAME=admin
-ZITI_ADMIN_PASSWORD=$ZITI_PWD
+ZITI_ADMIN_PASSWORD=${ziti_pwd}
 
 KEYCLOAK_ISSUER=
 KEYCLOAK_CLIENT_SECRET=
 KEYCLOAK_CLIENT_ID=
 EOF
 )
-
-    if [ ! -f ".tunnl.env" ]; then printf "%s\n" "$tunnl_env" > .tunnl.env ; fi
 
     keycloak_postgres_password=$(generate_secret)
 
@@ -188,84 +193,63 @@ EOF
     
     if [ ! -f ".traefik.env" ]; then touch .traefik.env ; fi
 
-    echo "[INFO] Getting database schema..."
-    if [ ! -d "db-init" ]; then mkdir db-init ; fi
-    curl -s https://raw.githubusercontent.com/aidanhopper/tunnl.app/refs/heads/main/webapp/db/schema.sql > db-init/schema.sql
-
     sed -i "s/ADMIN_EMAIL/$ADMIN_EMAIL/g" configs/traefik.yml
     sed -i "s/ROOT_DOMAIN/$ROOT_DOMAIN/g" configs/dynamic.yml
 }
 
-install_ziti_if_yes () {
-    if [ "$INSTALL_ZITI" = "no" ]; then
-        return 0;
+install_ziti_cli () {
+    echo "[INFO] Installing OpenZiti CLI."
+    if command -v ziti >/dev/null 2>&1; then
+      return 0
     fi
 
+    curl -sS https://get.openziti.io/install.bash | sudo bash -s openziti
+}
+
+ziti_login () {
+    local advertised_host_port="${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS}:${ZITI_CTRL_EDGE_ADVERTISED_PORT}"
+    ziti edge login "${advertised_host_port}" -u "admin" -p "${ZITI_PWD}" -y 2>&1
+}
+
+install_ziti () {
     echo "[INFO] Installing OpenZiti."
 
-    base_dns="ziti.$ROOT_DOMAIN"
-    controller_port=10443
-    router_port=11443
-    export EXTERNAL_IP="$(curl -s eth0.me)"
-    export ZITI_CTRL_EDGE_IP_OVERRIDE="${EXTERNAL_IP}"
-    export ZITI_ROUTER_IP_OVERRIDE="${EXTERNAL_IP}"
-    export ZITI_CTRL_ADVERTISED_ADDRESS="ctrl.${base_dns}"
-    export ZITI_CTRL_EDGE_ADVERTISED_ADDRESS="ctrl."${base_dns}
-    export ZITI_ROUTER_ADVERTISED_ADDRESS="er1.${base_dns}"
-    export ZITI_CTRL_ADVERTISED_PORT=${controller_port}
-    export ZITI_CTRL_EDGE_ADVERTISED_PORT=${controller_port}
-    export ZITI_ROUTER_PORT=${router_port}
-    export ZITI_ROUTER_LISTENER_BIND_PORT=${router_port}
-    export ZITI_PWD=$(generate_secret)
-
-
+    docker compose up -d
+    sleep 15 # TODO Make this wait until controller is online
 
     echo "[INFO] Using these environment variables for the OpenZiti install."
 
     cat <<EOF
-[INFO] EXTERNAL_DNS=$EXTERNAL_DNS
-[INFO] EXTERNAL_IP=$EXTERNAL_IP
-[INFO] ZITI_CTRL_EDGE_IP_OVERRIDE=$ZITI_CTRL_EDGE_IP_OVERRIDE
 [INFO] ZITI_CTRL_ADVERTISED_ADDRESS=$ZITI_CTRL_ADVERTISED_ADDRESS
 [INFO] ZITI_CTRL_ADVERTISED_PORT=$ZITI_CTRL_ADVERTISED_PORT
 [INFO] ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS
 [INFO] ZITI_CTRL_EDGE_ADVERTISED_PORT=$ZITI_CTRL_EDGE_ADVERTISED_PORT
 [INFO] ZITI_ROUTER_ADVERTISED_ADDRESS=$ZITI_ROUTER_ADVERTISED_ADDRESS
-[INFO] ZITI_ROUTER_IP_OVERRIDE="$ZITI_ROUTER_IP_OVERRIDE"
 [INFO] ZITI_ROUTER_PORT=$ZITI_ROUTER_PORT
 [INFO] ZITI_PWD=$ZITI_PWD
 EOF
 
-    source <(wget -qO- https://get.openziti.io/ziti-cli-functions.sh)
-    
-    if declare -f expressInstall > /dev/null; then
-        expressInstall
-    else
-        echo "[ERROR] Failed to source ziti-cli-functions.sh"
-        exit 1
-    fi
+    ziti_login
 
-    sed -i "s/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/advertiseAddress: tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname).yaml"
+    echo ""
+    echo -e "----------  Creating an edge router policy allowing all identities to connect to routers with a #public attribute"
+    ziti edge delete edge-router-policy allEdgeRouters > /dev/null
+    ziti edge create edge-router-policy allEdgeRouters --edge-router-roles '#public' --identity-roles '#all' > /dev/null
 
-    sed -i "s/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:$ZITI_CTRL_EDGE_ADVERTISED_PORT/$ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname).yaml"
+    echo -e "----------  Creating a service edge router policy allowing all services to use #public edge routers"
+    ziti edge delete service-edge-router-policy allSvcAllRouters > /dev/null
+    ziti edge create service-edge-router-policy allSvcAllRouters --edge-router-roles '#all' --service-roles '#all' > /dev/null
+    echo ""
 
-    sed -i "s/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:$ZITI_CTRL_ADVERTISED_PORT/tls:$ZITI_CTRL_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname)-edge-router.yaml"
+    ziti edge delete edge-router "er1"
+    ziti edge create edge-router "er1" -o "er1.jwt" -t -a "public"
+    ROUTER_TOKEN=$(cat ./er1.jwt) 
+    rm er1.jwt
+    echo "ZITI_ENROLL_TOKEN=$ROUTER_TOKEN" >> .env
 
-    sed -i "s/$ZITI_ROUTER_ADVERTISED_ADDRESS:$ZITI_ROUTER_PORT/$ZITI_ROUTER_ADVERTISED_ADDRESS:443/g" "$ZITI_HOME/$(hostname)-edge-router.yaml"
+    docker compose down && docker compose up -d
 
-    stopRouter
-    stopController
-
-    createControllerSystemdFile
-    createRouterSystemdFile "${ZITI_ROUTER_NAME}"
-
-    sudo cp "${ZITI_HOME}/${ZITI_CTRL_NAME}.service" /etc/systemd/system/ziti-controller.service
-    sudo cp "${ZITI_HOME}/${ZITI_ROUTER_NAME}.service" /etc/systemd/system/ziti-router.service
-
-    sudo systemctl daemon-reload
-
-    sudo systemctl enable --now ziti-controller
-    sudo systemctl enable --now ziti-router
+    sleep 15
 }
 
 tunnl_install () {
@@ -276,10 +260,10 @@ tunnl_install () {
     ask_for_target_dir
     ask_for_root_domain
     ask_for_admin_email
-    ask_to_install_ziti
-    install_ziti_if_yes
     extract_and_move_to_target_dir
     create_files_and_directories
+    install_ziti_cli
+    install_ziti
     cd "$STARTING_DIRECTORY"
     cat <<EOF
 
@@ -314,49 +298,4 @@ tunnl_install () {
 EOF
 }
 
-# May want to change TARGET DIRECTORY to always be an absolute path
-# so that if the user runs tunnl_uninstall in a directory other
-# than the one they ran it in it will still work.
-tunnl_uninstall () {
-    echo "[INFO] Running tunnl_uninstall."
-    if [ -z "$ZITI_HOME" ]; then 
-        echo "[Error] Please specify a ZITI_HOME environment variable."
-        exit 1
-    fi
-
-    if [ -z "$TARGET_DIRECTORY" ]; then 
-        echo "[Error] Please specify a TARGET_DIRECTORY environment variable."
-        exit 1
-    fi
-
-    cur=$(pwd)
-    cd "$TARGET_DIRECTORY" || exit 1
-    docker compose down 
-    cd "$cur" || exit 1
-
-    sudo systemctl disable --now ziti-controller.service
-    sudo systemctl disable --now ziti-router.service
-
-    if [ -d "$ZITI_HOME" ]; then rm -rf "$ZITI_HOME" ; fi
-    if [ -d "$TARGET_DIRECTORY" ]; then sudo rm -rf "$TARGET_DIRECTORY" ; fi
-    if [ -d "$HOME/.ziti" ]; then sudo rm -rf "$HOME/.ziti" ; fi
-    if [ -f "./quickstart.tar.xz" ]; then rm ./quickstart.tar.xz ; fi
-
-    if [ -f "/etc/systemd/system/ziti-controller.service" ]; then
-        sudo rm /etc/systemd/system/ziti-controller.service
-    fi
-
-    if [ -f "/etc/systemd/system/ziti-router.service" ]; then
-        sudo rm /etc/systemd/system/ziti-router.service
-    fi
-
-    if [ -L "/etc/systemd/system/multi-user.target.wants/ziti-controller.service" ]; then
-        sudo rm /etc/systemd/system/multi-user.target.wants/ziti-controller.service
-    fi
-
-    if [ -L "/etc/systemd/system/multi-user.target.wants/ziti-router.service" ]; then
-        sudo rm /etc/systemd/system/multi-user.target.wants/ziti-router.service
-    fi
-
-    unset TARGET_DIRECTORY ROOT_DOMAIN ADMIN_EMAIL INSTALL_ZITI
-}
+tunnl_install

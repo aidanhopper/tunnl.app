@@ -1,58 +1,117 @@
+networks:
+  ziti:
+    driver: bridge
+
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:latest
-    restart: unless-stopped
-    env_file:
-      - .tunnl.env
-    volumes:
-      - ./db-init:/docker-entrypoint-initdb.d
-      - ./data/tunnl-data:/var/lib/postgresql/data
-  web:
-    image: aidanhopper/tunnl.app:latest
-    depends_on:
-      - postgres
-    ports:
-      - "127.0.0.1:3000:3000"
-    env_file:
-      - .tunnl.env
-    restart: unless-stopped
-  publisher:
-    image: aidanhopper/tunnl.app-publisher:latest
-    ports:
-      - "127.0.0.1:3444:3444"
-    depends_on:
-      - postgres
-    env_file:
-      - .tunnl.env
-    restart: unless-stopped
   traefik:
     image: traefik:latest
     container_name: traefik
-    network_mode: host
+    ports:
+      - 443:443
+      - 80:80
     volumes:
       - ./configs/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./configs/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ./data/letsencrypt:/letsencrypt
     restart: unless-stopped
+    networks:
+      ziti:
     env_file:
       - .traefik.env
-  keycloak-postgres:
-    container_name: keycloak-postgres
-    image: postgres:latest
+
+  chown-controller:
+    image: busybox
+    command: chown -R ${ZIGGY_UID:-2171} /ziti-controller
     volumes:
-      - ./data/keycloak-postgres-data:/var/lib/postgresql/data
-    env_file:
-      - .keycloak.env
-  keycloak:
-    container_name: keycloak
-    image: quay.io/keycloak/keycloak:latest
-    command: start
-    ports:
-      - "127.0.0.1:8080:8080"
-    env_file:
-      - .keycloak.env
-    volumes:
-    - ./data/keycloak-data:/data:rw
+      - ./data/ziti-controller:/ziti-controller
+
+  ziti-controller:
+    image: ${ZITI_CONTROLLER_IMAGE:-openziti/ziti-controller}
     depends_on:
-    - keycloak-postgres
+      chown-controller:
+        condition: service_completed_successfully
+    user: ${ZIGGY_UID:-2171}
+    volumes:
+      - ./data/ziti-controller:/ziti-controller
+    networks:
+      ziti:
+        aliases:
+          - ${ZITI_CTRL_ADVERTISED_ADDRESS}
+    environment:
+      ZITI_CTRL_ADVERTISED_ADDRESS: ${ZITI_CTRL_ADVERTISED_ADDRESS}
+      ZITI_CTRL_ADVERTISED_PORT: ${ZITI_CTRL_ADVERTISED_PORT}
+      ZITI_PWD: ${ZITI_PWD}
+
+      ZITI_BOOTSTRAP: true
+      ZITI_BOOTSTRAP_PKI: true         # make the default PKI if "true"; requires ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_CONFIG: true      # make config file from env vars and defaults if "true," overwrite if "force"; requires ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_DATABASE: true    # make the default admin user if "true"; requires ZITI_BOOTSTRAP=true
+      ZITI_AUTO_RENEW_CERTS: true      # renew certs automatically every startup; requires ZITI_BOOTSTRAP_PKI=true
+      ZITI_BOOTSTRAP_CONFIG_ARGS:      # additional arguments to: ziti create config controller
+
+    command: run config.yml
+    expose:
+      - ${ZITI_CTRL_ADVERTISED_PORT}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - ziti
+        - agent
+        - stats
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  chown-router:
+    image: busybox
+    command: chown -R ${ZIGGY_UID:-2171} /ziti-router
+    volumes:
+      - ./data/ziti-router:/ziti-router
+
+  ziti-router:
+    image: ${ZITI_ROUTER_IMAGE:-openziti/ziti-router}
+    depends_on:
+      chown-router:
+        condition: service_completed_successfully
+    user: ${ZIGGY_UID:-2171}
+    volumes:
+      - ./data/ziti-router:/ziti-router
+    # these declared vars pass through to container and should be assigned in an .env file or exported from parent env
+    # to ensure consistency throughout the compose project
+    environment:
+      # *** these are the important vars to set ***
+      ZITI_CTRL_ADVERTISED_ADDRESS: ${ZITI_CTRL_ADVERTISED_ADDRESS}
+      ZITI_CTRL_ADVERTISED_PORT: ${ZITI_CTRL_ADVERTISED_PORT}
+      ZITI_ENROLL_TOKEN: ${ZITI_ENROLL_TOKEN:-}
+      ZITI_ROUTER_ADVERTISED_ADDRESS: ${ZITI_ROUTER_ADVERTISED_ADDRESS}
+      ZITI_ROUTER_PORT: ${ZITI_ROUTER_PORT}
+      ZITI_ROUTER_MODE: host
+
+      ZITI_BOOTSTRAP: true             # bootstrap the router if "true"
+      ZITI_BOOTSTRAP_CONFIG: true      # make config file from env vars and defaults if "true," overwrite if "force"; requires ZITI_BOOTSTRAP=true
+      ZITI_BOOTSTRAP_ENROLLMENT: true  # enroll with controller if "true," overwrite if "force"; requires ZITI_BOOTSTRAP=true
+      ZITI_AUTO_RENEW_CERTS: true      # renew certs every startup
+      ZITI_ROUTER_TYPE: edge
+      ZITI_BOOTSTRAP_CONFIG_ARGS:      # additional arguments to "ziti create config ${ZITI_ROUTER_TYPE:-edge} --tunnelerMode ${ZITI_ROUTER_MODE:-host}"
+
+    command: run config.yml
+    expose:
+      - ${ZITI_ROUTER_PORT}
+    restart: unless-stopped
+    networks:
+      ziti:
+        aliases:
+          - ${ZITI_ROUTER_ADVERTISED_ADDRESS}
+    healthcheck:
+      test:
+        - CMD
+        - ziti
+        - agent
+        - stats
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+

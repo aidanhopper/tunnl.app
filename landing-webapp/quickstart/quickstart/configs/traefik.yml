@@ -6,6 +6,7 @@ entryPoints:
         entryPoint:
           to: websecure
           scheme: https
+
   websecure:
     address: ":443"
 
@@ -17,10 +18,12 @@ providers:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: ADMIN_EMAIL
+      email: aidanhop1@gmail.com
       storage: /letsencrypt/acme.json
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 0
+
 log:
   level: DEBUG
+
