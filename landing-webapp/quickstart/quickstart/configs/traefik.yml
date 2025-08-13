@@ -15,15 +15,6 @@ providers:
     filename: "/etc/traefik/dynamic.yml"
     watch: true
 
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      email: aidanhop1@gmail.com
-      storage: /letsencrypt/acme.json
-      dnsChallenge:
-        provider: cloudflare
-        delayBeforeCheck: 0
-
 log:
   level: DEBUG
 

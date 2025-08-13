@@ -1,62 +1,50 @@
-# http:
-#   serversTransports:
-#     insecureTransport:
-#       insecureSkipVerify: true
-#   routers:
-#     publisher-router:
-#       rule: 'HOST(`publisher.ROOT_DOMAIN`)'
-#       service: publisher-service
-#       entryPoints:
-#         - websecure
-#       tls:
-#         certResolver: letsencrypt
-#         domains:
-#           - main: "*.ROOT_DOMAIN" 
-#     tunnl-router:
-#       rule: 'HOST(`ROOT_DOMAIN`)'
-#       service: tunnl-service
-#       entryPoints:
-#         - websecure
-#       tls:
-#         certResolver: letsencrypt
-#         domains:
-#           - main: "ROOT_DOMAIN" 
-#     keycloak-router:
-#       rule: 'HOST(`auth.ROOT_DOMAIN`)'
-#       service: keycloak-service
-#       entryPoints:
-#         - websecure
-#       tls:
-#         certResolver: letsencrypt
-#         domains:
-#           - main: "*.ROOT_DOMAIN" 
-#     ziti-router:
-#       rule: 'HOST(`ziti.ROOT_DOMAIN`)'
-#       service: http-controller-service
-#       entryPoints:
-#         - websecure
-#       tls:
-#         certResolver: letsencrypt
-#         domains:
-#           - main: "*.ROOT_DOMAIN" 
-#   services:
-#     http-controller-service:
-#       loadBalancer:
-#         serversTransport: insecureTransport
-#         servers:
-#           - url: "https://127.0.0.1:10443"
-#     keycloak-service:
-#       loadBalancer:
-#         servers:
-#           - url: "http://127.0.0.1:8080"
-#     tunnl-service:
-#       loadBalancer:
-#         servers:
-#           - url: "http://127.0.0.1:3000"
-#     publisher-service:
-#       loadBalancer:
-#         servers:
-#           - url: "http://127.0.0.1:3444"
+http:
+  serversTransports:
+    insecureTransport:
+      insecureSkipVerify: true
+  routers:
+    publisher-router:
+      rule: 'HOST(`publisher.ROOT_DOMAIN`)'
+      service: publisher-service
+      entryPoints:
+        - websecure
+      tls: {}
+    tunnl-router:
+      rule: 'HOST(`TUNNL_DOMAIN`)'
+      service: tunnl-service
+      entryPoints:
+        - websecure
+      tls: {}
+    keycloak-router:
+      rule: 'HOST(`auth.ROOT_DOMAIN`)'
+      service: keycloak-service
+      entryPoints:
+        - websecure
+      tls: {}
+    ziti-router:
+      rule: 'HOST(`ziti.ROOT_DOMAIN`)'
+      service: http-controller-service
+      entryPoints:
+        - websecure
+      tls: {}
+  services:
+    http-controller-service:
+      loadBalancer:
+        serversTransport: insecureTransport
+        servers:
+          - url: "https://ctrl.ziti.ROOT_DOMAIN:443"
+    keycloak-service:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
+    tunnl-service:
+      loadBalancer:
+        servers:
+          - url: "http://web:3000"
+    publisher-service:
+      loadBalancer:
+        servers:
+          - url: "http://publisher:3444"
 tcp:
   routers:
     controller-router:
