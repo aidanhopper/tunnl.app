@@ -2,6 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Copy } from "lucide-react";
+import { useState } from "react";
 import QRCode from "react-qr-code";
 
 const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: string }) => {
@@ -19,6 +22,15 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
         URL.revokeObjectURL(url);
     };
 
+    const [copied, setCopied] = useState(false);
+
+    const onCopy = () => {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
+    };
+
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -32,22 +44,38 @@ const EnrollIdentityDialog = ({ fileName, value }: { fileName: string, value: st
                         Enroll the Identity
                     </DialogTitle>
                     <DialogDescription className='text-center'>
-                        Enroll with a file or scan the QR code in a Ziti edge app.
+                        Enroll with a file or scan the QR code in a ziti edge app.
                     </DialogDescription>
                 </DialogHeader>
                 <div className='flex justify-center content-center flex-col gap-6 w-full h-full'>
                     <span className='w-full flex justify-center'>
                         <span className='w-fit p-1 bg-white'>
                             <QRCode
-                                size={330}
+                                size={345}
                                 value={value} />
                         </span>
                     </span>
-                    <Button
-                        className='cursor-pointer w-full'
-                        onClick={downloadFile}>
-                        Download JWT File
-                    </Button>
+                    <div className='grid grid-cols-2 gap-4'>
+                        <Button
+                            className='cursor-pointer'
+                            onClick={downloadFile}>
+                            Download JWT File
+                        </Button>
+                        <TooltipProvider>
+                            <Tooltip open={copied}>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        className='cursor-pointer'
+                                        onClick={onCopy}>
+                                        Copy token <Copy />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Copied token
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

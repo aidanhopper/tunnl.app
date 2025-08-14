@@ -246,10 +246,10 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                                 Are you sure you want to enable {service.getName()}? This will
                                 allow all your identities and shares to access this service again.
                             </AreYouSure>
-                            <RevokeButton
-                                className='w-full h-10 lg:w-fit'
-                                variant='default'
-                            >Enable {service.getName()}</RevokeButton>
+                            {/* <RevokeButton */}
+                            {/*     className='w-full h-10 lg:w-fit' */}
+                            {/*     variant='default' */}
+                            {/* >Enable {service.getName()}</RevokeButton> */}
                         </AreYouSureProvider>
                     </> : <AreYouSureProvider>
                         <AreYouSure
@@ -263,10 +263,10 @@ const ServiceGeneral = async ({ params }: { params: Promise<{ slug: string }> })
                             the service from being dialed by your identities and shares.
                             It can be turned back on later.
                         </AreYouSure>
-                        <RevokeButton
-                            className='w-full h-10 lg:w-fit'
-                            variant='secondary'
-                        >Disable {service.getName()}</RevokeButton>
+                        {/* <RevokeButton */}
+                        {/*     className='w-full h-10 lg:w-fit' */}
+                        {/*     variant='secondary' */}
+                        {/* >Disable {service.getName()}</RevokeButton> */}
                     </AreYouSureProvider>}
                 </div>
             </div> : <div className='flex flex-col gap-4'>

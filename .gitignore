@@ -9,6 +9,6 @@ acls.json
 pgdata
 *publisher.log
 data/*
-*identities
 bin/*
 quickstart.tar.xz
+ziti-reverse-proxy/identities
