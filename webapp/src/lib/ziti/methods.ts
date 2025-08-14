@@ -1,6 +1,6 @@
 'use server'
 
-import axios from 'axios';
+import axios from "axios";
 
 const managementAPI = `${process.env.ZITI_CONTROLLER_URL}/edge/management/v1`;
 

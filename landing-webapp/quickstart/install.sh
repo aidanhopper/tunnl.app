@@ -405,6 +405,11 @@ tunnl_install () {
     create_files_and_directories
     setup_keycloak
     cd "$STARTING_DIRECTORY"
+
+    TUNNL_DOMAIN="$ROOT_DOMAIN"
+    if [ -n "$TUNNL_SUBDOMAIN" ]; then
+        TUNNL_DOMAIN="$TUNNL_SUBDOMAIN.$ROOT_DOMAIN"
+    fi
     cat <<EOF
 
 
@@ -418,9 +423,9 @@ tunnl_install () {
    certificate resolver. The recommended method is
    to use an API key supported by Traefik (see the
    Traefik documentation for more details). Put your
-   API key environment variable in: $TARGET_DIRECTORY/.traefik.env
+   API key environment variable in: $TARGET_DIRECTORY/.env
 
-2. Start the whole stack and login to $ROOT_DOMAIN to 
+2. Start the whole stack and login to $TUNNL_DOMAIN to 
    start creating & sharing services!
 
 
