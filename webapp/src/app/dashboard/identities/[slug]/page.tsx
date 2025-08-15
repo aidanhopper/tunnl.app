@@ -95,7 +95,7 @@ const Identity = async ({ params }: { params: Promise<{ slug: string }> }) => {
                                                 <ul className="list-disc ml-5 space-y-1">
                                                     <li><strong>QR Code</strong> – Scan with a Ziti Mobile Edge app</li>
                                                     <li><strong>Download JWT File</strong> – Save a file containing your enrollment token,
-                                                        best for enrolling with a Ziti Destop Edge for Windows or MacOS Application</li>
+                                                        best for enrolling with a Ziti Desktop Edge for Windows or MacOS Application</li>
                                                     <li><strong>Copy Token</strong> – Copy the token to your clipboard,
                                                         best for enrolling the Linux Ziti Edge Tunneler service or with Docker</li>
                                                 </ul>
