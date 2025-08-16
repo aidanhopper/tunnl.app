@@ -52,33 +52,49 @@ import iosImage from '@/assets/ios.png';
                     </h1>
                     <p class='mt-10 text-center max-w-4xl text-md sm:text-xl px-4'>
                         Ports. DNS. Firewalls. VPNs. ACLs. Way too much to think about when you or someone else 
-                        needs access outside your home network. Typically solutions to this involve using
-                        some companies closed source SaaS built on wireguard.
+                        needs access outside your home network.
                     </p>
                     <div class='grid gap-4 md:grid-cols-2 mt-12 w-full max-w-5xl px-4'>
                         <Card className='w-full'>
                             <CardHeader>
                                 <CardTitle className='text-xl'>Managing service access with a VPN SaaS</CardTitle>
-                                <CardDescription>Tailscale, ZeroTier, ...</CardDescription>
+                                <CardDescription>Comparison with Tailscale.</CardDescription>
                             </CardHeader> 
                             <CardContent className='w-full space-y-6'>
                                 <ul class='list-disc px-8 space-y-4'>
                                     <li>
-                                        Critical parts are closed source.
+                                        <strong>Self-hosting & source availability:</strong> Tailscale’s 
+                                        client apps are open source, but the control plane (coordination server)
+                                        is closed and not self-hostable. A community project, Headscale, 
+                                        re-implements the coordination server API and lets you self-host,
+                                        but it’s unofficial and not feature-parity with Tailscale’s SaaS.
                                     </li>
                                     <li>
-                                        Want to enroll more devices into your network?
-                                        Make sure you're not 
-                                        exceeding the device limit.
+                                        <strong>User/device limits:</strong>
+                                        The free Personal plan allows 3 users and up to 100 devices. 
+                                        Paid plans add pooled device quotas, billed per user.
                                     </li>
                                     <li>
-                                        Self-hosting a useful service and want to share? 
-                                        Share the entire machine and configure the ACLs
-                                        correctly.
+                                        <strong>Granular access: </strong>
+                                        You can share at the service/port level with ACLs and 
+                                        features like Tailscale Serve, but you must configure 
+                                        policies within their model, which can be complex.
                                     </li>
                                     <li>
-                                        Tailscale or other VPN solutions are blocked on your network? 
-                                        Too bad.
+                                        <strong>Multi-user self-hosting:</strong> 
+                                        With Headscale, you can self-host a multi-user environment, 
+                                        but it’s unofficial, lacks some enterprise features, and 
+                                        requires manual setup of ACLs and coordination.
+                                    </li>
+                                    <li>
+                                        <strong>Private DNS:</strong> 
+                                        MagicDNS provides DNS inside the tailnet but cannot be fully customized.
+                                    </li>
+                                    <li>
+                                        <strong>Blocked networks: </strong>
+                                        Tailscale defaults to WireGuard/UDP but falls back to relays 
+                                        (DERP) over TLS/TCP 443. It often works in restrictive networks,
+                                        though admins can block relays.
                                     </li>
                                 </ul>
                             </CardContent> 
@@ -87,25 +103,48 @@ import iosImage from '@/assets/ios.png';
                             <CardHeader>
                                 <CardTitle className='text-xl'>Managing service access with Tunnl.app</CardTitle>
                                 <CardDescription>
-                                    Tunnl.app fixes this.
+                                    How Tunnl.app handles this.
                                 </CardDescription>
                             </CardHeader> 
                             <CardContent className='w-full space-y-6'>
                                 <ul class='list-disc px-8 space-y-4'>
                                     <li>
-                                        Entire stack is open source from top to bottom.
+                                        <strong>Self-hosting & source availability:</strong> 
+                                        Fully self-hostable with Docker; you can run your own controller 
+                                        and share services without relying on a hosted SaaS.
                                     </li>
                                     <li>
-                                        Need to enroll more devices?
-                                        Enroll as many as you want, users manage their own.
+                                        <strong>User/device limits:</strong> 
+                                        No artificial limits — unlimited users, devices, and services.
                                     </li>
                                     <li>
-                                        Want to share a self-hosted app?
-                                        Share just that service, with just one click.
+                                        <strong>Granular access:</strong> 
+                                        Service-based by default — share a single service (like a website 
+                                        or game server) with an invite link. No need to expose an entire 
+                                        machine or configure complex ACLs.
                                     </li>
                                     <li>
-                                        Stuck behind network restrictions?
-                                        Tunnl uses outbound-only TCP connections on port 443 to make connections in the mesh.
+                                        <strong>Multi-user hosting:</strong> 
+                                        Designed for communities — self-host a multi-user environment 
+                                        where each user can create and share services within the same network.
+                                    </li>
+                                    <li>
+                                        <strong>Private DNS:</strong> 
+                                        Every network gets its own fully customizable private DNS,
+                                        so services can be reached with simple hostnames instead of raw IPs.
+                                    </li>
+                                    <li>
+                                        <strong>Blocked networks:</strong> 
+                                        Tunnels are always established over HTTPS (TCP 443), 
+                                        appearing like standard web traffic, making blocking harder 
+                                        in restrictive environments. And if your domain is 
+                                        blocked on some network, it's easy to add
+                                        another edge router with a unblocked domain or IP.
+                                    </li> 
+                                    <li>
+                                        <strong>Service usage data:</strong>
+                                        Track connections, and usage per service and per user 
+                                        with built-in analytics.
                                     </li>
                                 </ul>
                             </CardContent> 

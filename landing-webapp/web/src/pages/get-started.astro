@@ -20,53 +20,49 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
                     <Separator/>
                     <ol class='list-decimal space-y-6 ml-5'>
                         <li>
-                            Pick up a cheap VPS with a public IPv4 or IPv6 address, 
-                            personally I use a Ubuntu 24.04 Hetzner VPS but you can
-                            use any provider.
+                            <div class='flex flex-col gap-2'>
+                                <p>
+                                    Pick up a cheap VPS with a public IPv4 or IPv6 address, 
+                                    personally I use a Ubuntu 24.04 Hetzner VPS but you can
+                                    use any provider. 
+                                </p>
+                                <p>
+                                    Just remember, 
+                                    <strong>the VPS should be as close as possible to you</strong>.
+                                    This is because your VPS will host your first OpenZiti Edge Router,
+                                    which will be the entrypoint into your network.
+                                </p>
+                            </div>
                         </li>
                         <li>
                             Setup your user, add your ssh key to the VPS, and allow 
-                            port 22/TCP through the firewall.
+                            port 22/TCP through the firewall for ssh.
                         </li>
                         <li>
                             Install <Code>docker</Code>, <Code>openssl</Code>, 
                             and <Code>jq</Code> on your VPS.
+                        </li>
+                        <li>
+                            Make sure you have a domain you can control.
+                            I recommend Cloudflare if you want to buy one. To get a free domain
+                            use DuckDNS.
                         </li>
                     </ol>
                     <h2 class='text-3xl font-semibold mt-6'>Install the Tunnl.app dashboard</h2>
                     <Separator/>
                     <ol class='list-decimal space-y-6 ml-5'>
                         <li>
-                            <p>
-                                Get the quickstart commands by sourcing the install script:
-                            </p>
-                            <Code className='my-1 p-1'>
-                                source &lt;(curl -sL tunnl.app/install.sh)
-                            </Code>
-                        </li>
-                        <li>
-                            Run <Code>tunnl_install</Code> to install the Tunnl.app dashboard,
-                            keycloak, Traefik and the Publisher.
-                            To uninstall run <Code>tunnl_uninstall</Code> if you
-                            want to remove the Tunnl.app quickstart for any reason.
-                        </li>
-                        <li>
-                            If you're going to install OpenZiti in a way other than the
-                            OpenZiti quickstart answer no to install Ziti. Otherwise
-                            answer yes.
-                        </li>
-                        <li>
                             <div class='flex flex-col gap-3'>
                                 <p>
-                                    Now you need to configure your DNS and get certificates 
-                                    for the publisher, the dashboard, and Keycloak services.
+                                    Before you run the install script you need to configure 
+                                    DNS for the dashboard, publisher, ziti controller, ziti router,
+                                    and keycloak services.
                                 </p>
                                 <p>
-                                    Generally to configure DNS make sure you have these domains
-                                    pointing to your VPS.
+                                    Generally your DNS should look like this.
                                 </p>
                                 <Code className='p-2'>
-                                    <ul class='list-disc ml-5 space-y-1'>
+                                    <ul class='list-none ml-5 space-y-1'>
                                         <li>ROOT_DOMAIN &rarr; A : VPS IP</li>
                                         <li>publisher.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
                                         <li>auth.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
@@ -75,32 +71,73 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
                                     </ul>
                                 </Code>
                                 <p>
+                                    If you want to put the Tunnl.app dashboard on a different subdomain
+                                    than ROOT_DOMAIN which you will specify during the install, add this entry.
+                                </p>
+                                <Code className='p-2'>
+                                    SUB_DOMAIN.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN
+                                </Code>
+                                <p>
+                                    <strong>OR</strong> if you want a super easy DNS configuration 
+                                    (may cause issues if you want letsencrypt certificates for ziti services
+                                    later), add this to your DNS configuration.
+                                </p>
+                                <Code className='p-2'>
+                                    <ul class='list-none ml-5 space-y-1'>
+                                        <li>ROOT_DOMAIN &rarr; A : VPS IP</li>
+                                        <li>*.ROOT_DOMAIN &rarr; CNAME : ROOT_DOMAIN</li>
+                                    </ul>
+                                </Code>
+                                <p>
                                     To get the IP of your VPS run <Code className='w-fit'>curl -4 ifconfig.io</Code>.
                                 </p>
                                 <p>
-                                    My preferred way to get certificates is to use the Cloudflare
-                                    DNS proxy. The other way is to get certificates through
-                                    Traefik with a API key. You could also manage the certificates
-                                    externally yourself.
+                                    My preferred way to get certificates for my web services 
+                                    is with the Cloudflare DNS proxy. Another way is to use
+                                    Traefik with a API key and configure a certResolver. 
+                                    You could also manage the certificates externally yourself.
                                 </p>
                                 <p>
                                     If you're using Cloudflare proxy DNS protect the ROOT_DOMAIN, publisher, and auth
-                                    with proxy DNS.
+                                    with proxy DNS. If you plan to put the dashboar on a subdomain of ROOT_DOMAIN,
+                                    protect that subdomain too. Everything else only needs to resolve to your VPS.
                                 </p>
                             </div>
                         </li>
                         <li>
-                            Create a Keycloak client and configure it for OIDC.
-                            Once you do that add those as environemnt variables in
-                            <Code>TARGET_DIRECTORY/.keycloak.env</Code>.
+                            Run these commands and make sure they all resolve to your VPS.
+                            <div class='grid grid-cols-1 gap-3'>
+                                <Code className='p-1 w-fit'>dig ROOT_DOMAIN</Code>
+                                <Code className='p-1 w-fit'>dig auth.ROOT_DOMAIN</Code>
+                                <Code className='p-1 w-fit'>dig publisher.ROOT_DOMAIN</Code>
+                                <Code className='p-1 w-fit'>dig ziti.ROOT_DOMAIN</Code>
+                                <Code className='p-1 w-fit'>dig ctrl.ziti.ROOT_DOMAIN</Code>
+                                <Code className='p-1 w-fit'>dig er1.ziti.ROOT_DOMAIN</Code>
+                            </div>
                         </li>
                         <li>
-                            Run <Code>docker compose down && docker compose up -d</Code>
-                            to redeploy with the new environemnt variables.
+                            <div class='flex flex-col gap-2'>
+                                <p>
+                                    Run the quickstart script.
+                                </p>
+                                <Code className='my-1 p-1'>
+                                    curl -sL tunnl.app/install.sh | sh
+                                </Code>
+                                <p>
+                                    This with automatically setup a Ziti network with an edge router and controller,
+                                    configure a keycloak realm for OIDC, and deploy the Tunnl.app dashboard
+                                    along with the publisher service.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            Go into the target directory and run <Code>docker compose up -d</Code> 
+                            to deploy the Tunnl.app quickstart stack.
                         </li>
                         <li>
                             Test if the dashboard works by going to https://ROOT_DOMAIN,
-                            signing in, enrolling an idenity, and create a service!
+                            or https://SUB_DOMAIN.ROOT_DOMAIN if you configured it that way.
+                            Sign in enroll an idenity, and create a service!
                         </li>
                     </ol>
                 </div> 
