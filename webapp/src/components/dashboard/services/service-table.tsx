@@ -17,6 +17,7 @@ import AreYouSure from "@/components/are-you-sure"
 import deleteService from "@/lib/actions/services/delete-service"
 import { ServiceClientData } from "@/lib/models/service"
 
+
 const ServicesTable = ({ services }: { services: ServiceClientData[] }) => {
     return (
         <Table>
