@@ -45,7 +45,8 @@ const Services = async () => {
                                         Create a service
                                     </DialogTitle>
                                     <DialogDescription>
-                                        Create a service that can be securely shared across users, identities, and the internet.
+                                        Create a service that can be securely shared
+                                        across users, identities, and the internet.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <CreateServiceForm />

@@ -33,14 +33,6 @@ Reverse proxy and custom domain support will come in later releases.
 
 ---
 
-## Hosted Version (Coming Soon)
-
-A hosted version will be available soon for users who want a simpler way to get started.
-
-**➡ [Sign up to try the hosted version](https://tunnl.app)**
-
----
-
 ## Self-Hosting
 
 The project is fully self-hostable.  
