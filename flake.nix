@@ -20,17 +20,25 @@
         default = pkgs.mkShell {
           packages = with pkgs; [
             nodejs
-            yarn
-            python312
             netcat
             inetutils
             certbot
             typescript
             dbmate
-            go
+            clang
             tree
             sshpass
             postgresql
+            cmake
+            libuv
+            zlib
+            mbedtls
+            openssl
+            llhttp
+            libsodium 
+            pkg-config
+            protobufc
+            json_c
           ]; 
         };
       });

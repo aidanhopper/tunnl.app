@@ -1,0 +1,37 @@
+# Build directories
+/build/
+/build-*/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+
+# compile_commands.json (keep if you want to share with teammates/tools)
+compile_commands.json
+
+# Ninja build files (if you use Ninja instead of Make)
+.ninja_deps
+.ninja_log
+rules.ninja
+build.ninja
+
+# Logs
+*.log
+
+# IDE / editor junk
+.vscode/
+.idea/
+*.swp
+*.swo
+*.kate-swp
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+id.json
+
+.cache
