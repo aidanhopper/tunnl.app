@@ -20,6 +20,7 @@ FetchContent_MakeAvailable(ziti-sdk-c)
 add_executable(my_secure_app
     src/main.cpp
     src/app.cpp
+    src/identity.cpp
 )
 
 target_include_directories(my_secure_app
@@ -28,3 +29,6 @@ target_include_directories(my_secure_app
 )
 
 target_link_libraries(my_secure_app PRIVATE ziti)
+
+find_package(CURL REQUIRED)
+target_link_libraries(my_secure_app PRIVATE CURL::libcurl)

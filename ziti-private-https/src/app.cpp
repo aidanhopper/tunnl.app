@@ -1,9 +1,10 @@
-#include "app.h"
-#include "ziti/ziti.h"
+#include "app.hpp"
+#include "identity.hpp"
+#include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 #include <ziti/zitilib.h> // TODO: Wrap all ziti stuff up into a class
+#include <curl/curl.h>
 
 App::App()
 {
@@ -20,8 +21,9 @@ App &App::getInstance()
 }
 
 /*
- *  Looked into grabbing bind & dial services with Zitilib and couldn't find solution.
- *  Next option is to query the Ziti API preferably using the identity certs.
+ *  Looked into grabbing bind & dial services with Zitilib and couldn't find
+ * solution. Next option is to query the Ziti API preferably using the identity
+ * certs.
  *
  *  The Ziti identity JSON contains all the certificates needed to authenticate
  *  with the client API, so I just need to read that and make my requests.
@@ -41,36 +43,46 @@ void App::run()
 
     Ziti_lib_init();
 
-    std::string identityFile{"./id.json"};
-
-    ziti_handle_t ztx;
-    rc = Ziti_load_context(&ztx, identityFile.c_str());
-
-    std::cout << "ZTX: " << ztx << std::endl;
-
-    if (rc != 0)
+    Identity id{"id.json"};
+    
+    CURL *curl = curl_easy_init();
+    if (curl)
     {
-        throw std::runtime_error(
-            "Could not load ziti context from identity file");
+        CURLcode res; 
+        curl_easy_setopt(curl, CURLOPT_URL, "https://tunnl.app/install.sh");
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
     }
 
-    std::cout << "[INFO] Loaded identity into ziti context" << std::endl;
-
-    // can bind to a service but still need to query services to bind to
-    ziti_socket_t sock = Ziti_socket(SOCK_STREAM);
-    rc = Ziti_bind(sock, ztx, "private-https-dial-dotchosat3uu-C5GaubCdh70g", NULL);
-
-    Ziti_listen(sock, 10);
-    std::cout << "[INFO] Listening to Ziti service" << std::endl;
-
-    do
-    {
-        char caller[128];
-        ziti_socket_t clt = Ziti_accept(sock, caller, (int)sizeof(caller));
-
-        std::cout << caller << std::endl;
-    } while (true);
-
-    Ziti_lib_shutdown();
-
+    // ziti_handle_t ztx;
+    // rc = Ziti_load_context(&ztx, identityFile.c_str());
+    //
+    // std::cout << "ZTX: " << ztx << std::endl;
+    //
+    // if (rc != 0)
+    // {
+    //     throw std::runtime_error(
+    //         "Could not load ziti context from identity file");
+    // }
+    //
+    // std::cout << "[INFO] Loaded identity into ziti context" << std::endl;
+    //
+    // // can bind to a service but still need to query services to bind to
+    // ziti_socket_t sock = Ziti_socket(SOCK_STREAM);
+    // rc = Ziti_bind(sock, ztx,
+    // "private-https-dial-dotchosat3uu-C5GaubCdh70g", NULL);
+    //
+    // Ziti_listen(sock, 10);
+    // std::cout << "[INFO] Listening to Ziti service" << std::endl;
+    //
+    // do
+    // {
+    //     char caller[128];
+    //     ziti_socket_t clt = Ziti_accept(sock, caller, (int)sizeof(caller));
+    //
+    //     std::cout << caller << std::endl;
+    // } while (true);
+    //
+    // Ziti_lib_shutdown();
+    //
 }
