@@ -1,10 +1,11 @@
 #include "app.hpp"
 #include "identity.hpp"
+#include "query.hpp"
+#include <curl/curl.h>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <ziti/zitilib.h> // TODO: Wrap all ziti stuff up into a class
-#include <curl/curl.h>
 
 App::App()
 {
@@ -44,17 +45,27 @@ void App::run()
     Ziti_lib_init();
 
     Identity id{"id.json"};
-    
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    CURL *curl = curl_easy_init();
-    if (curl)
-    {
-        std::string response;
-        CURLcode res; 
-        curl_easy_setopt(curl, CURLOPT_URL, "https://tunnl.app/install.sh");
-        res = curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-    }
+
+    Query http;
+
+    http.setCa(id.getCa());
+    http.setCert(id.getCert());
+    http.setKey(id.getKey());
+
+    http.setUrl(id.getEdgeClientEndpoint());
+
+    http.setUseSSLContext(true);
+    http.setVerbose(true);
+
+    std::string out = http.post("/authenticate?method=cert");
+    std::cout << out << std::endl;
+
+    http.setUseSSLContext(false);
+
+    out = http.get("/services");
+    std::cout << out << std::endl;
+
+    // b6290ceb4b1534ccf0bfff9b1accd0dafbde9479fa6ae257ccbad84b2d168d9a
 
     // ziti_handle_t ztx;
     // rc = Ziti_load_context(&ztx, identityFile.c_str());

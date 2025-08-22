@@ -19,7 +19,6 @@ std::vector<std::string> split(const std::string &s, char delimiter)
 
 Identity::~Identity()
 {
-    SSL_CTX_free(this->apictx);
 }
 
 Identity::Identity(const std::string &identityPath)
@@ -38,14 +37,9 @@ Identity::Identity(const char *identityPath)
 
 void Identity::init()
 {
-    this->apictx = SSL_CTX_new(TLS_client_method());
-    this->loadCerts();
-
     auto tokens = split(this->controllerUrl, ':');
-
     auto domain = tokens[1].substr(2);
     auto port = std::stoi(tokens[2]);
-
 }
 
 void Identity::getDataFromEnrolledIdentity(json &data)
@@ -56,43 +50,27 @@ void Identity::getDataFromEnrolledIdentity(json &data)
     this->controllerUrl = std::string{data["ztAPI"]};
 }
 
-bool Identity::loadCerts()
+std::string Identity::getCa()
 {
-    BIO *bio_cert = BIO_new_mem_buf(this->cert.data(), (int)this->cert.size());
-    X509 *cert = PEM_read_bio_X509(bio_cert, nullptr, nullptr, nullptr);
-    BIO_free(bio_cert);
+    return this->ca;
+}
 
-    BIO *bio_key = BIO_new_mem_buf(this->key.data(), (int)this->key.size());
-    EVP_PKEY *key =
-        PEM_read_bio_PrivateKey(bio_key, nullptr, nullptr, nullptr);
-    BIO_free(bio_key);
+std::string Identity::getCert()
+{
+    return this->cert;
+}
 
-    if (!cert || !key)
-    {
-        return false;
-    }
+std::string Identity::getKey()
+{
+    return this->key;
+}
 
-    if (SSL_CTX_use_certificate(apictx, cert) != 1 ||
-        SSL_CTX_use_PrivateKey(apictx, key) != 1)
-    {
-        return false;
-    }
+std::string Identity::getControllerUrl()
+{
+    return this->controllerUrl;
+}
 
-    if (!this->ca.empty())
-    {
-        BIO *bio_ca = BIO_new_mem_buf(this->ca.data(), (int)this->ca.size());
-        X509 *ca_cert = PEM_read_bio_X509(bio_ca, nullptr, nullptr, nullptr);
-        if (ca_cert)
-        {
-            X509_STORE *store = SSL_CTX_get_cert_store(apictx);
-            X509_STORE_add_cert(store, ca_cert);
-            X509_free(ca_cert);
-        }
-        BIO_free(bio_ca);
-    }
-
-    X509_free(cert);
-    EVP_PKEY_free(key);
-
-    return true;
+std::string Identity::getEdgeClientEndpoint()
+{
+    return this->controllerUrl + "/edge/client/v1";
 }

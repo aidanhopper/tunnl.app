@@ -16,15 +16,19 @@ class Identity
     std::string key;
     std::string controllerUrl;
     std::optional<std::string> token;
-    SSL_CTX *apictx;
 
     void getDataFromEnrolledIdentity(json &data);
     void init();
     std::string getToken();
-    bool loadCerts();
 
   public:
     Identity(const std::string &identityPath);
     Identity(const char *identityPath);
     ~Identity();
+
+    std::string getCa();
+    std::string getCert();
+    std::string getKey();
+    std::string getControllerUrl();
+    std::string getEdgeClientEndpoint();
 };
