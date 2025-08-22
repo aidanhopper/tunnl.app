@@ -45,9 +45,11 @@ void App::run()
 
     Identity id{"id.json"};
     
+    curl_global_init(CURL_GLOBAL_DEFAULT);
     CURL *curl = curl_easy_init();
     if (curl)
     {
+        std::string response;
         CURLcode res; 
         curl_easy_setopt(curl, CURLOPT_URL, "https://tunnl.app/install.sh");
         res = curl_easy_perform(curl);

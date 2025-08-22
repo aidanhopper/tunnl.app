@@ -39,6 +39,8 @@
             pkg-config
             protobufc
             json_c
+            nlohmann_json
+            curl
           ]; 
         };
       });
