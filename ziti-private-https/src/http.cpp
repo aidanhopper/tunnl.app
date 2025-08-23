@@ -1,44 +1,75 @@
-#include "query.hpp"
+#include "http.hpp"
 #include <iostream>
 #include <openssl/ssl.h>
 
-Query::~Query()
+HTTP::~HTTP()
 {
     curl_easy_cleanup(curl);
 }
 
-Query::Query()
+HTTP::HTTP()
 {
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    CURLcode globalRes = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (globalRes != CURLE_OK)
+    {
+        throw std::runtime_error("curl_global_init failed");
+    }
+
     this->curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Query::curlWriteCallback);
+    if (!this->curl)
+    {
+        curl_global_cleanup();
+        throw std::runtime_error("curl_easy_init failed");
+    }
+
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HTTP::curlWriteCallback);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 }
 
-std::string Query::get(const std::string &url)
+const HTTPResponse HTTP::perform(const HTTPRequest &req)
 {
-    std::string response;
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, (this->url + url).c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    CURLcode res = curl_easy_perform(curl);
-    return response;
+    std::string body;
+
+    curl_easy_setopt(curl, CURLOPT_URL,
+                     (this->baseUrl + req.getUrl()).c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HTTP::curlWriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+
+    if (req.getMethod() == HTTPRequest::Method::GET)
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+    }
+    else if (req.getMethod() == HTTPRequest::Method::POST)
+    {
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, req.getBody().c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, req.getBody().size());
+    }
+
+    struct curl_slist *chunk = nullptr;
+    for (const auto &h : req.getHeaders())
+    {
+        chunk = curl_slist_append(chunk, h.c_str());
+    }
+    if (chunk)
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+    }
+
+    CURLcode res = curl_easy_perform(this->curl);
+
+    long code = 0;
+
+    if (res == CURLE_OK)
+    {
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
+    }
+
+    return HTTPResponse(code, body, res);
 }
 
-std::string Query::post(const std::string &url)
-{
-    std::string response;
-    curl_easy_setopt(curl, CURLOPT_POST, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, (this->url + url).c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, 0);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
-    CURLcode res = curl_easy_perform(curl);
-    return response;
-}
-
-size_t Query::curlWriteCallback(void *contents, size_t size, size_t nmemb,
-                                void *userp)
+size_t HTTP::curlWriteCallback(void *contents, size_t size, size_t nmemb,
+                               void *userp)
 {
     size_t totalSize = size * nmemb;
     std::string *response = (std::string *)userp;
@@ -46,9 +77,9 @@ size_t Query::curlWriteCallback(void *contents, size_t size, size_t nmemb,
     return totalSize;
 }
 
-CURLcode Query::sslctx_function(CURL *curl, void *sslctx, void *userptr)
+CURLcode HTTP::sslctx_function(CURL *curl, void *sslctx, void *userptr)
 {
-    Query *self = static_cast<Query *>(userptr);
+    HTTP *self = static_cast<HTTP *>(userptr);
     SSL_CTX *ctx = static_cast<SSL_CTX *>(sslctx);
 
     if (!self->cert || self->cert->empty())
@@ -130,22 +161,25 @@ CURLcode Query::sslctx_function(CURL *curl, void *sslctx, void *userptr)
     return CURLE_OK;
 }
 
-void Query::setCert(const std::string &cert)
+HTTP &HTTP::setCert(const std::string &cert)
 {
     this->cert = cert;
+    return *this;
 }
 
-void Query::setKey(const std::string &key)
+HTTP &HTTP::setKey(const std::string &key)
 {
     this->key = key;
+    return *this;
 }
 
-void Query::setCa(const std::string &ca)
+HTTP &HTTP::setCa(const std::string &ca)
 {
     this->ca = ca;
+    return *this;
 }
 
-void Query::setUseSSLContext(bool enable)
+HTTP &HTTP::setUseSSLContext(bool enable)
 {
     if (enable)
     {
@@ -153,23 +187,23 @@ void Query::setUseSSLContext(bool enable)
         {
             std::cerr << "[ERROR] Please set the cert before using mTLS"
                       << std::endl;
-            return;
+            return *this;
         }
         else if (this->key->empty())
         {
             std::cerr << "[ERROR] Please set the key before using mTLS"
                       << std::endl;
-            return;
+            return *this;
         }
         else if (this->ca->empty())
         {
             std::cerr << "[ERROR] Please set the ca before using mTLS"
                       << std::endl;
-            return;
+            return *this;
         }
 
         curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION,
-                         &Query::sslctx_function);
+                         &HTTP::sslctx_function);
         curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, this);
     }
     else
@@ -177,14 +211,17 @@ void Query::setUseSSLContext(bool enable)
         curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION, nullptr);
         curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, nullptr);
     }
+
+    return *this;
 }
 
-void Query::setUrl(const std::string &url)
+HTTP &HTTP::setBaseUrl(const std::string &url)
 {
-    this->url = url;
+    this->baseUrl = url;
+    return *this;
 }
 
-void Query::setVerbose(bool enable)
+HTTP &HTTP::setVerbose(bool enable)
 {
     if (enable)
     {
@@ -194,4 +231,22 @@ void Query::setVerbose(bool enable)
     {
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0);
     }
+
+    return *this;
+}
+
+HTTP &HTTP::setIgnoreSSL(bool enable)
+{
+    if (enable)
+    {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    }
+    else
+    {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1L);
+    }
+
+    return *this;
 }

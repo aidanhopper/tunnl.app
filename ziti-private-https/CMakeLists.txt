@@ -21,7 +21,9 @@ add_executable(my_secure_app
     src/main.cpp
     src/app.cpp
     src/identity.cpp
-    src/query.cpp
+    src/http-request.cpp
+    src/http-response.cpp
+    src/http.cpp
 )
 
 target_include_directories(my_secure_app

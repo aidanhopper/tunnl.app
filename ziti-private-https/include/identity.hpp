@@ -31,4 +31,5 @@ class Identity
     std::string getKey();
     std::string getControllerUrl();
     std::string getEdgeClientEndpoint();
+    std::string getEdgeManagementEndpoint();
 };

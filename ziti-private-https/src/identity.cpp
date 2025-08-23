@@ -74,3 +74,8 @@ std::string Identity::getEdgeClientEndpoint()
 {
     return this->controllerUrl + "/edge/client/v1";
 }
+
+std::string Identity::getEdgeManagementEndpoint()
+{
+    return this->controllerUrl + "/edge/management/v1";
+}
