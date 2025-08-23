@@ -7,33 +7,41 @@ HTTP::~HTTP()
     curl_easy_cleanup(curl);
 }
 
-HTTP::HTTP()
+void HTTP::globalInit()
 {
     CURLcode globalRes = curl_global_init(CURL_GLOBAL_DEFAULT);
     if (globalRes != CURLE_OK)
     {
         throw std::runtime_error("curl_global_init failed");
     }
+}
 
+void HTTP::globalCleanup()
+{
+    curl_global_cleanup();
+}
+
+HTTP::HTTP()
+{
     this->curl = curl_easy_init();
     if (!this->curl)
     {
         curl_global_cleanup();
         throw std::runtime_error("curl_easy_init failed");
     }
-
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HTTP::curlWriteCallback);
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 }
 
 const HTTPResponse HTTP::perform(const HTTPRequest &req)
 {
-    std::string body;
+    std::string responseBody;
+    std::unordered_map<std::string, std::string> responseHeaders;
 
     curl_easy_setopt(curl, CURLOPT_URL,
                      (this->baseUrl + req.getUrl()).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HTTP::curlWriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &body);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, HTTP::curlHeaderCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &responseHeaders);
 
     if (req.getMethod() == HTTPRequest::Method::GET)
     {
@@ -47,9 +55,10 @@ const HTTPResponse HTTP::perform(const HTTPRequest &req)
     }
 
     struct curl_slist *chunk = nullptr;
-    for (const auto &h : req.getHeaders())
+    for (const auto &[key, value] : req.getHeaders())
     {
-        chunk = curl_slist_append(chunk, h.c_str());
+        const auto header = key + ": " + value;
+        chunk = curl_slist_append(chunk, header.c_str());
     }
     if (chunk)
     {
@@ -65,7 +74,45 @@ const HTTPResponse HTTP::perform(const HTTPRequest &req)
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
     }
 
-    return HTTPResponse(code, body, res);
+    return HTTPResponse(code, responseBody, responseHeaders, res);
+}
+
+size_t HTTP::curlHeaderCallback(char *buffer, size_t size, size_t nitems,
+                                void *userdata)
+{
+    size_t totalSize = size * nitems;
+    std::string headerLine(buffer, totalSize);
+
+    // userdata will be a pointer to your headers map
+    auto *headers =
+        static_cast<std::unordered_map<std::string, std::string> *>(userdata);
+
+    // Header lines look like "Key: Value\r\n"
+    auto pos = headerLine.find(':');
+    if (pos != std::string::npos)
+    {
+        std::string key = headerLine.substr(0, pos);
+        std::string value = headerLine.substr(pos + 1);
+
+        // trim spaces and CRLF
+        auto trim = [](std::string &s) {
+            while (!s.empty() &&
+                   (s.back() == '\r' || s.back() == '\n' || isspace(s.back())))
+                s.pop_back();
+            size_t start = 0;
+            while (start < s.size() && isspace(s[start]))
+                start++;
+            if (start > 0)
+                s = s.substr(start);
+        };
+
+        trim(key);
+        trim(value);
+
+        (*headers)[key] = value;
+    }
+
+    return totalSize;
 }
 
 size_t HTTP::curlWriteCallback(void *contents, size_t size, size_t nmemb,
@@ -246,6 +293,20 @@ HTTP &HTTP::setIgnoreSSL(bool enable)
     {
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 1L);
+    }
+
+    return *this;
+}
+
+HTTP &HTTP::setFollowRedirects(bool enable)
+{
+    if (enable)
+    {
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    }
+    else
+    {
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 0L);
     }
 
     return *this;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class HTTPRequest
@@ -16,7 +17,7 @@ class HTTPRequest
 
     HTTPRequest &setMethod(const Method &method);
     HTTPRequest &setBody(const std::string &body);
-    HTTPRequest &setHeader(const std::string &header);
+    HTTPRequest &setHeader(const std::string &key, const std::string &value);
     HTTPRequest &setUrl(const std::string &url);
 
     HTTPRequest &get();
@@ -24,13 +25,13 @@ class HTTPRequest
 
     const std::string &getUrl() const;
     const std::string &getBody() const;
-    const std::vector<std::string> &getHeaders() const;
+    const std::unordered_map<std::string, std::string> &getHeaders() const;
     const Method &getMethod() const;
 
   private:
     enum Method method;
 
     std::string body;
-    std::vector<std::string> headers;
+    std::unordered_map<std::string, std::string> headers;
     std::string url;
 };

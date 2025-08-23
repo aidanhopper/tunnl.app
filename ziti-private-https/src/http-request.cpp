@@ -22,9 +22,10 @@ HTTPRequest &HTTPRequest::setBody(const std::string &body)
     return *this;
 }
 
-HTTPRequest &HTTPRequest::setHeader(const std::string &header)
+HTTPRequest &HTTPRequest::setHeader(const std::string &key,
+                                    const std::string &value)
 {
-    this->headers.push_back(header);
+    this->headers[key] = value;
     return *this;
 }
 
@@ -44,7 +45,8 @@ const std::string &HTTPRequest::getBody() const
     return this->body;
 }
 
-const std::vector<std::string> &HTTPRequest::getHeaders() const
+const std::unordered_map<std::string, std::string> &HTTPRequest::getHeaders()
+    const
 {
     return this->headers;
 }
@@ -53,4 +55,3 @@ const HTTPRequest::Method &HTTPRequest::getMethod() const
 {
     return this->method;
 }
-

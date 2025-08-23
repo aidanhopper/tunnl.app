@@ -24,6 +24,10 @@ add_executable(my_secure_app
     src/http-request.cpp
     src/http-response.cpp
     src/http.cpp
+    src/utils.cpp
+    src/service.cpp
+    src/config/intercept-v1.cpp
+    src/config/private-https-v1.cpp
 )
 
 target_include_directories(my_secure_app

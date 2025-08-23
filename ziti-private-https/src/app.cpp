@@ -1,18 +1,22 @@
 #include "app.hpp"
+#include "config/intercept-v1.hpp"
+#include "config/private-https-v1.hpp"
 #include "http.hpp"
 #include "identity.hpp"
 #include <curl/curl.h>
-#include <fstream>
 #include <iostream>
+#include <ranges>
 #include <string>
 #include <ziti/zitilib.h> // TODO: Wrap all ziti stuff up into a class
 
 App::App()
 {
+    HTTP::globalInit();
 }
 
 App::~App()
 {
+    HTTP::globalCleanup();
 }
 
 App &App::getInstance()
@@ -41,30 +45,26 @@ App &App::getInstance()
 void App::run()
 {
     Identity id{"id.json"};
+    auto bindServices = id.getBindServices();
+    auto dialServices = id.getDialServices();
 
-    HTTP http;
-    http.setCa(id.getCa())
-        .setCert(id.getCert())
-        .setKey(id.getKey())
-        .setBaseUrl(id.getEdgeClientEndpoint())
-        .setUseSSLContext(true)
-        .setIgnoreSSL(true)
-        .setVerbose(true);
-
-    HTTPRequest req;
-    req.get().setHeader("zt-session: xxx").setUrl("/services?configTypes=all");
-    // ziti_service_get_raw_config
-
-    // 
-
-    const auto res = http.perform(req);
-
-    if (!res.transportOk())
+    for (const auto &s : bindServices | std::views::values)
     {
-        std::cout << res.getTransportError() << std::endl;
-    }
-    else
-    {
-        std::cout << res.getBody() << std::endl;
+        if (s.hasInterceptV1())
+        {
+            auto intercept = s.getInterceptV1().value();
+            std::cout << intercept << std::endl;
+        }
+
+        if (s.hasPrivateHTTPSV1())
+        {
+            auto privateHttps = s.getPrivateHTTPSV1().value();
+            std::cout << privateHttps << std::endl;
+
+            if (dialServices.contains(privateHttps.getTargetService()))
+            {
+                std::cout << "\n" << dialServices.at(privateHttps.getTargetService()) << std::endl;
+            }
+        }
     }
 }
