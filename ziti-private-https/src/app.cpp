@@ -52,7 +52,8 @@ void App::run()
         .setVerbose(true);
 
     HTTPRequest req;
-    req.get().setHeader("").setUrl("/protocols");
+    req.get().setHeader("zt-session: xxx").setUrl("/services?configTypes=all");
+    // ziti_service_get_raw_config
 
     // 
 
