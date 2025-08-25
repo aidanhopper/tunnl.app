@@ -1,5 +1,6 @@
 #include "identity.hpp"
 #include "http-request.hpp"
+#include "utils.hpp"
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -7,21 +8,6 @@
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <string>
-
-std::vector<std::string> split(const std::string &s, char delimiter)
-{
-    std::vector<std::string> tokens;
-    size_t start = 0;
-    size_t end;
-
-    while ((end = s.find(delimiter, start)) != std::string::npos)
-    {
-        tokens.push_back(s.substr(start, end - start));
-        start = end + 1;
-    }
-    tokens.push_back(s.substr(start));
-    return tokens;
-}
 
 Identity::~Identity()
 {
@@ -31,29 +17,28 @@ Identity::Identity() = default;
 
 Identity::Identity(const std::string &identityPath)
 {
+    this->identityPath = identityPath;
+
     json data = json::parse(std::ifstream{identityPath});
     this->getDataFromEnrolledIdentity(data);
-    this->init();
-}
 
-Identity::Identity(const char *identityPath)
-{
-    json data = json::parse(std::ifstream{identityPath});
-    this->getDataFromEnrolledIdentity(data);
-    this->init();
-}
-
-void Identity::init()
-{
     auto tokens = split(this->controllerUrl, ':');
     auto domain = tokens[1].substr(2);
     auto port = std::stoi(tokens[2]);
+
     this->http.setCa(this->getCa())
         .setCert(this->getCert())
         .setKey(this->getKey())
         .setFollowRedirects(true)
         .setBaseUrl(this->getEdgeClientEndpoint())
         .setIgnoreSSL(true);
+
+    int err = Ziti_load_context(&this->ztx, identityPath.c_str());
+
+    if (err != ZITI_OK)
+    {
+        throw std::runtime_error{ziti_errorstr(err)};
+    }
 }
 
 void Identity::getDataFromEnrolledIdentity(json &data)
@@ -256,4 +241,19 @@ const void Identity::getServicesHelper()
     this->services = services;
     this->bindServices = bindServices;
     this->dialServices = dialServices;
+}
+
+void Identity::globalInit()
+{
+    Ziti_lib_init();
+}
+
+void Identity::globalCleanup()
+{
+    Ziti_lib_shutdown();
+}
+
+const ziti_handle_t &Identity::getZtx() const
+{
+    return this->ztx;
 }

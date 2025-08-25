@@ -2,4 +2,19 @@
 BasedOnStyle: Microsoft
 ColumnLimit: 79
 IndentWidth: 4
+
+# Function calls
+BinPackArguments: false
+AllowAllArgumentsOnNextLine: false
+AlignAfterOpenBracket: AlwaysBreak
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakOpenParenthesis: 0
+
+# Constructor init-lists
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+PackConstructorInitializers: Never
+
+# Braced lists
+Cpp11BracedListStyle: false
 ...

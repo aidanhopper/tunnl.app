@@ -36,8 +36,10 @@ const HTTPResponse HTTP::perform(const HTTPRequest &req)
     std::string responseBody;
     std::unordered_map<std::string, std::string> responseHeaders;
 
-    curl_easy_setopt(curl, CURLOPT_URL,
-                     (this->baseUrl + req.getUrl()).c_str());
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        (this->baseUrl + req.getUrl()).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HTTP::curlWriteCallback);
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, HTTP::curlHeaderCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseBody);
@@ -77,8 +79,8 @@ const HTTPResponse HTTP::perform(const HTTPRequest &req)
     return HTTPResponse(code, responseBody, responseHeaders, res);
 }
 
-size_t HTTP::curlHeaderCallback(char *buffer, size_t size, size_t nitems,
-                                void *userdata)
+size_t HTTP::curlHeaderCallback(
+    char *buffer, size_t size, size_t nitems, void *userdata)
 {
     size_t totalSize = size * nitems;
     std::string headerLine(buffer, totalSize);
@@ -115,8 +117,8 @@ size_t HTTP::curlHeaderCallback(char *buffer, size_t size, size_t nitems,
     return totalSize;
 }
 
-size_t HTTP::curlWriteCallback(void *contents, size_t size, size_t nmemb,
-                               void *userp)
+size_t HTTP::curlWriteCallback(
+    void *contents, size_t size, size_t nmemb, void *userp)
 {
     size_t totalSize = size * nmemb;
     std::string *response = (std::string *)userp;
@@ -148,7 +150,8 @@ CURLcode HTTP::sslctx_function(CURL *curl, void *sslctx, void *userptr)
     BIO_free(cert_bio);
     if (!x509)
     {
-        std::cerr << "[ERROR] Failed to parse certificate from memory."
+        std::cerr << "[ERROR] Failed to parse certificate "
+                     "from memory."
                   << std::endl;
         return CURLE_SSL_CERTPROBLEM;
     }
@@ -166,7 +169,8 @@ CURLcode HTTP::sslctx_function(CURL *curl, void *sslctx, void *userptr)
     BIO_free(key_bio);
     if (!pkey)
     {
-        std::cerr << "[ERROR] Failed to parse private key from memory."
+        std::cerr << "[ERROR] Failed to parse private key "
+                     "from memory."
                   << std::endl;
         return CURLE_SSL_CERTPROBLEM;
     }
@@ -184,7 +188,8 @@ CURLcode HTTP::sslctx_function(CURL *curl, void *sslctx, void *userptr)
     if (!store)
     {
         BIO_free(ca_bio);
-        std::cerr << "[ERROR] Failed to get X509_STORE from SSL_CTX."
+        std::cerr << "[ERROR] Failed to get X509_STORE "
+                     "from SSL_CTX."
                   << std::endl;
         return CURLE_SSL_CACERT_BADFILE;
     }
@@ -232,25 +237,30 @@ HTTP &HTTP::setUseSSLContext(bool enable)
     {
         if (this->cert->empty())
         {
-            std::cerr << "[ERROR] Please set the cert before using mTLS"
+            std::cerr << "[ERROR] Please set the cert "
+                         "before using mTLS"
                       << std::endl;
             return *this;
         }
         else if (this->key->empty())
         {
-            std::cerr << "[ERROR] Please set the key before using mTLS"
+            std::cerr << "[ERROR] Please set the key "
+                         "before using mTLS"
                       << std::endl;
             return *this;
         }
         else if (this->ca->empty())
         {
-            std::cerr << "[ERROR] Please set the ca before using mTLS"
+            std::cerr << "[ERROR] Please set the ca before "
+                         "using mTLS"
                       << std::endl;
             return *this;
         }
 
-        curl_easy_setopt(curl, CURLOPT_SSL_CTX_FUNCTION,
-                         &HTTP::sslctx_function);
+        curl_easy_setopt(
+            curl,
+            CURLOPT_SSL_CTX_FUNCTION,
+            &HTTP::sslctx_function);
         curl_easy_setopt(curl, CURLOPT_SSL_CTX_DATA, this);
     }
     else
