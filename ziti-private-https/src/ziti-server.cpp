@@ -1,71 +1,104 @@
 #include "ziti-server.hpp"
+#include "client-handle.hpp"
+#include "server-handle.hpp"
 #include "ssl.hpp"
-#include "ziti-client.hpp"
+#include "ziti-server-state.hpp"
 #include "ziti/zitilib.h"
 #include <openssl/ssl.h>
+#include <unistd.h>
 
 ZitiServer::~ZitiServer()
 {
-    SSL_CTX_free(this->sslContext);
+    SSL_CTX_free(sslContext);
 }
 
 ZitiServer::ZitiServer(const ziti_handle_t &ztx, const Service &service) :
-    PollHandle<ZitiServer>(Ziti_socket(SOCK_STREAM)),
+    PollHandle<ZitiServer>(Ziti_socket(SOCK_STREAM), UV_READABLE),
     service(service),
     zitiContext(ztx)
 {
     int error = Ziti_bind(
-        this->getFd(),
-        this->getZitiContext(),
-        this->getService().getName().c_str(),
+        getFd(),
+        getZitiContext(),
+        getService().getName().c_str(),
         NULL);
 
-    Ziti_listen(this->getFd(), 100);
+    if (error != 0)
+    {
+        throw std::runtime_error(
+            "Could not bind to " + getService().getName());
+    }
 
-    this->sslContext =
+    Ziti_listen(getFd(), 100);
+    fcntl(getFd(), F_SETFL, O_NONBLOCK);
+
+    sslContext =
         MySSL::create_server_ctx("certs/server.crt", "certs/server.key");
 }
 
 void ZitiServer::onPollEvent(int status, int events)
 {
-    ziti_socket_t serverfd = this->getFd();
+    ziti_socket_t proxyFd = getFd();
 
     char caller[128];
 
-    ziti_socket_t clientfd = Ziti_accept(serverfd, caller, sizeof(caller));
+    ziti_socket_t clientFd = Ziti_accept(proxyFd, caller, sizeof(caller));
+    if (clientFd < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        {
+            return;
+        }
+        else
+        {
+            std::cerr << "An error occured on in the Ziti Server for " +
+                             getService().getName()
+                      << std::endl;
+            return;
+        }
+    }
 
-    if (clientfd <= 0)
-        return;
+    fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
     std::cout << caller << std::endl;
 
-    // should make this a smart pointer and put in
-    // vector
-    auto client = new ZitiClient{ clientfd,
-                                  this->getZitiContext(),
-                                  this->sslContext,
-                                  this->getService(),
-                                  std::string{ caller } };
+    ziti_socket_t serverFd = Ziti_socket(SOCK_STREAM);
+    long rc = Ziti_connect(
+        serverFd,
+        zitiContext,
+        (getService().getPrivateHTTPSV1().value().getTargetService()).c_str(),
+        NULL);
+    fcntl(clientFd, F_SETFL, O_NONBLOCK);
+    if (rc != 0)
+    {
+        close(clientFd); // should send http code 500 or something when server
+                         // isn't available
+        std::cerr
+            << "Could not connect to " +
+                   getService().getPrivateHTTPSV1().value().getTargetService()
+            << std::endl;
+    }
 
-    client->start();
+    // will clean itself up when the connection is done
+    new ZitiServerState{ sslContext, clientFd, serverFd };
 }
 
 void ZitiServer::onClose()
 {
-    Ziti_close(this->getFd());
+    Ziti_close(getFd());
 }
 
 const ziti_handle_t ZitiServer::getZitiContext() const
 {
-    return this->zitiContext;
+    return zitiContext;
 }
 
 const Service &ZitiServer::getService() const
 {
-    return this->service;
+    return service;
 }
 
 const SSL_CTX *ZitiServer::getSSLContext() const
 {
-    return this->sslContext;
+    return sslContext;
 }

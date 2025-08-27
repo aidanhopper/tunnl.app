@@ -7,21 +7,24 @@
 template <typename Derived> class PollHandle : public UVHandle<Derived>
 {
   private:
-    int fd;
+    const int fd;
     uv_poll_t pollHandle;
     uv_loop_t *loop;
     bool isPolling;
+    const int events;
 
   public:
-    PollHandle(int fd, uv_loop_t *_loop = uv_default_loop())
-        : fd(fd), isPolling(false)
+    PollHandle(int fd, int events, uv_loop_t *_loop = uv_default_loop()) :
+        fd(fd),
+        events(events),
+        isPolling(false)
     {
         loop = _loop;
     }
 
     ~PollHandle()
     {
-        stop(); // Clean shutdown
+        stop();
     }
 
     bool start()
@@ -38,8 +41,10 @@ template <typename Derived> class PollHandle : public UVHandle<Derived>
         }
 
         this->attachToHandle(&pollHandle);
-        result = uv_poll_start(&pollHandle, UV_READABLE,
-                               UVHandle<Derived>::pollCallback);
+        result = uv_poll_start(
+            &pollHandle,
+            events,
+            UVHandle<Derived>::pollCallback);
 
         if (result == 0)
         {
@@ -53,8 +58,9 @@ template <typename Derived> class PollHandle : public UVHandle<Derived>
         if (isPolling)
         {
             uv_poll_stop(&pollHandle);
-            uv_close((uv_handle_t *)&pollHandle,
-                     UVHandle<Derived>::closeCallback);
+            uv_close(
+                (uv_handle_t *)&pollHandle,
+                UVHandle<Derived>::closeCallback);
             isPolling = false;
         }
     }
@@ -62,11 +68,11 @@ template <typename Derived> class PollHandle : public UVHandle<Derived>
   protected:
     const int &getFd() const
     {
-        return this->fd;
+        return fd;
     }
 
     const uv_loop_t *getLoop() const
     {
-        return this->loop;
+        return loop;
     }
 };

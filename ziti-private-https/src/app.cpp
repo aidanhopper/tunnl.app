@@ -19,6 +19,7 @@ App::App()
     HTTP::globalInit();
     Identity::globalInit();
     MySSL::globalInit();
+    signal(SIGPIPE, SIG_IGN);
 }
 
 App::~App()
@@ -60,18 +61,24 @@ void App::run()
     auto bindServices = id.getBindServices();
     auto dialServices = id.getDialServices();
 
-    auto server1 = ZitiServer{
-        id.getZtx(),
-        bindServices.at("private-https-service")
-    };
+    // Two things
+    // In order to avoid redirect loops I need to inject some headers
+    // X-Forwarded-Proto ...
+    //
+    // Change from server and client to TLSHandle and regular SocketHandle
+    // Then make it so I can freely swap between SSL and not for client.
+    // (good for testing).
+   
+    auto server1 =
+        ZitiServer{ id.getZtx(), bindServices.at("private-https-service") };
 
-    auto server2 = ZitiServer{
-        id.getZtx(),
-        bindServices.at("private-https-service-2")
-    };
+    auto server2 =
+        ZitiServer{ id.getZtx(), bindServices.at("private-https-service-2") };
 
     server1.start();
     server2.start();
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+    std::cout << "Uv run is over" << std::endl;
 }

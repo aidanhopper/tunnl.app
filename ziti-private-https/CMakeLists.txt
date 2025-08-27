@@ -26,7 +26,10 @@ add_executable(my_secure_app
     src/utils.cpp
     src/service.cpp
     src/ziti-server.cpp
-    src/ziti-client.cpp
+    src/write-queue.cpp
+    src/client-handle.cpp
+    src/server-handle.cpp
+    src/ziti-server-state.cpp
     src/config/intercept-v1.cpp
     src/config/private-https-v1.cpp
     src/ssl.cpp
