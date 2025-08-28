@@ -9,6 +9,7 @@ class ClientHandle : public PollHandle<ClientHandle>
 {
   private:
     std::vector<char> buf;
+    std::string headersBuf;
     ZitiServerState *state;
 
   public:
@@ -18,4 +19,5 @@ class ClientHandle : public PollHandle<ClientHandle>
     void handleReadEvent();
     void handleWriteEvent();
     void handleTLSConnect();
+    bool tryParseHeaders(int n);
 };

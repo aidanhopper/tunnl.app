@@ -19,10 +19,10 @@ Identity::Identity(const std::string &identityPath)
 {
     this->identityPath = identityPath;
 
-    json data = json::parse(std::ifstream{identityPath});
+    json data = json::parse(std::ifstream{ identityPath });
     this->getDataFromEnrolledIdentity(data);
 
-    auto tokens = split(this->controllerUrl, ':');
+    auto tokens = split(this->controllerUrl, ":");
     auto domain = tokens[1].substr(2);
     auto port = std::stoi(tokens[2]);
 
@@ -37,16 +37,16 @@ Identity::Identity(const std::string &identityPath)
 
     if (err != ZITI_OK)
     {
-        throw std::runtime_error{ziti_errorstr(err)};
+        throw std::runtime_error{ ziti_errorstr(err) };
     }
 }
 
 void Identity::getDataFromEnrolledIdentity(json &data)
 {
-    this->cert = std::string{data["id"]["cert"]};
-    this->ca = std::string{data["id"]["ca"]};
-    this->key = std::string{data["id"]["key"]};
-    this->controllerUrl = std::string{data["ztAPI"]};
+    this->cert = std::string{ data["id"]["cert"] };
+    this->ca = std::string{ data["id"]["ca"] };
+    this->key = std::string{ data["id"]["key"] };
+    this->controllerUrl = std::string{ data["ztAPI"] };
 }
 
 const std::string Identity::getCa() const
@@ -139,9 +139,9 @@ const bool Identity::sessionHasChanged()
         .setUrl("/current-api-session/service-updates");
 
     auto sessionLastChangedAt =
-        std::string{json::parse(this->http.perform(req).getBody())
-                        .at("data")
-                        .at("lastChangeAt")};
+        std::string{ json::parse(this->http.perform(req).getBody())
+                         .at("data")
+                         .at("lastChangeAt") };
 
     // Parse the timestamp into a std::tm
     std::tm tm = {};
@@ -225,7 +225,7 @@ const void Identity::getServicesHelper()
     {
         try
         {
-            Service srv{s};
+            Service srv{ s };
             services[srv.getName()] = srv;
             if (srv.canBind())
                 bindServices[srv.getName()] = srv;

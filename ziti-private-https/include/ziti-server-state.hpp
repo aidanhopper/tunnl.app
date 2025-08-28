@@ -1,5 +1,6 @@
 #pragma once
 
+#include "service.hpp"
 #include "write-queue.hpp"
 #include <openssl/crypto.h>
 
@@ -18,7 +19,8 @@ class ZitiServerState
 
     ~ZitiServerState();
     ZitiServerState(
-        SSL_CTX *sslContext, const int clientFd, const int serverFd);
+        const Service &service, SSL_CTX *sslContext, const int clientFd,
+        const int serverFd);
 
     WriteQueue &getClientWriteQueue();
     WriteQueue &getServerWriteQueue();
@@ -26,11 +28,16 @@ class ZitiServerState
     const int &getServerFd() const;
     const int &getClientFd() const;
 
+    const Service &getService() const;
+
     SSL *&getClientSSL();
 
     const TLS_STATE &getTLSState() const;
     void setTLSState(ZitiServerState::TLS_STATE state);
     void shutdown();
+
+    void toggleHeadersParsed();
+    const bool &headersParsed() const;
 
   private:
     WriteQueue clientWriteQueue;
@@ -44,5 +51,9 @@ class ZitiServerState
     const int serverFd;
     const int clientFd;
 
+    const Service &service;
+
     SSL *clientSSL;
+
+    bool _headersParsed = false;
 };

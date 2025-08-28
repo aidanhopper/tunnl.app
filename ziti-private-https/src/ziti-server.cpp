@@ -60,15 +60,15 @@ void ZitiServer::onPollEvent(int status, int events)
 
     fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
-    std::cout << caller << std::endl;
-
+    std::cout << "OPENING ZITI CONNECTION" << std::endl;
     ziti_socket_t serverFd = Ziti_socket(SOCK_STREAM);
+    fcntl(serverFd, F_SETFL, O_NONBLOCK);
     long rc = Ziti_connect(
         serverFd,
         zitiContext,
         (getService().getPrivateHTTPSV1().value().getTargetService()).c_str(),
         NULL);
-    fcntl(clientFd, F_SETFL, O_NONBLOCK);
+    fcntl(serverFd, F_SETFL, O_NONBLOCK);
     if (rc != 0)
     {
         close(clientFd); // should send http code 500 or something when server
@@ -78,9 +78,10 @@ void ZitiServer::onPollEvent(int status, int events)
                    getService().getPrivateHTTPSV1().value().getTargetService()
             << std::endl;
     }
+    std::cout << "DONE ZITI CONNECTION" << std::endl;
 
     // will clean itself up when the connection is done
-    new ZitiServerState{ sslContext, clientFd, serverFd };
+    new ZitiServerState{ service, sslContext, clientFd, serverFd };
 }
 
 void ZitiServer::onClose()

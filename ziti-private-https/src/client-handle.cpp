@@ -1,6 +1,8 @@
 #include "client-handle.hpp"
+#include "utils.hpp"
 #include <openssl/ssl.h>
 #include <unistd.h>
+#include <unordered_map>
 
 ClientHandle::~ClientHandle()
 {
@@ -38,27 +40,41 @@ void ClientHandle::onPollEvent(int status, int events)
 
 void ClientHandle::handleReadEvent()
 {
-    int n = SSL_read(state->getClientSSL(), buf.data(), buf.size());
+    while (true)
+    {
+        int n = SSL_read(state->getClientSSL(), buf.data(), buf.size());
 
-    if (n == 0)
-    {
-        state->shutdown();
-        return;
-    }
-    else if (n < 0)
-    {
-        int err = SSL_get_error(state->getClientSSL(), n);
-        switch (err)
+        if (n == 0)
         {
-        case SSL_ERROR_WANT_READ:
-        case SSL_ERROR_WANT_WRITE:
-            return;
-        default:
             state->shutdown();
             return;
         }
+        else if (n < 0)
+        {
+            int err = SSL_get_error(state->getClientSSL(), n);
+            switch (err)
+            {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+                return;
+            default:
+                state->shutdown();
+                return;
+            }
+        }
+
+        if (!state->headersParsed())
+        {
+            if (tryParseHeaders(n))
+            {
+                state->toggleHeadersParsed();
+            }
+        }
+        else
+        {
+            state->getServerWriteQueue().enqueue(buf.data(), n);
+        }
     }
-    state->getServerWriteQueue().enqueue(buf.data(), n);
 }
 
 void ClientHandle::handleWriteEvent()
@@ -91,7 +107,7 @@ void ClientHandle::handleWriteEvent()
         }
     }
 
-    state->getServerWriteQueue().commit(n);
+    state->getClientWriteQueue().commit(n);
 }
 
 void ClientHandle::handleTLSConnect()
@@ -101,20 +117,79 @@ void ClientHandle::handleTLSConnect()
     if (rc <= 0)
     {
         int err = SSL_get_error(state->getClientSSL(), rc);
-        if (err == SSL_ERROR_WANT_READ)
+        switch (err)
         {
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
             return;
-        }
-        else if (err == SSL_ERROR_WANT_WRITE)
-        {
-            return;
-        }
-        else
-        {
+        default:
             state->shutdown();
             return;
         }
     }
 
     state->setTLSState(ZitiServerState::TLS_STATE::CONNECTED);
+}
+
+bool ClientHandle::tryParseHeaders(int n)
+{
+    headersBuf += std::string{ buf.begin(), buf.begin() + n };
+
+    int pos = headersBuf.find("\r\n\r\n");
+
+    if (pos == std::string::npos)
+    {
+        return false;
+    }
+
+    std::unordered_map<std::string, std::string> headerMap;
+
+    std::string_view unparsedHeaders{ headersBuf.begin(),
+                                      headersBuf.begin() + pos + 4 };
+
+    std::string_view body{ headersBuf.begin() + pos + 4, headersBuf.end() };
+
+    auto lines = split(unparsedHeaders, "\r\n");
+
+    for (const auto &line : lines)
+    {
+        if (line == "")
+        {
+            break;
+        }
+
+        auto header = split(line, ": ");
+
+        if (header.size() == 2)
+        {
+            headerMap[header[0]] = header[1];
+        }
+    }
+
+    // headers are parsed and ready to be appended to and altered
+
+    headerMap["X-Forwarded-Host"] =
+        state->getService().getInterceptV1().value().getAddresses()[0];
+
+    headerMap["X-Forwarded-Proto"] = "https";
+
+    // reconstruct headers
+    std::string headers{ lines[0] + "\r\n" };
+
+    for (auto &[k, v] : headerMap)
+    {
+        headers += std::string{ k + ": " + v + "\r\n" };
+    }
+
+    headers += "\r\n";
+
+    std::cout << headers << std::endl;
+
+    state->getServerWriteQueue().enqueue(headers.data(), headers.size());
+    state->getServerWriteQueue().enqueue(body.data(), body.size());
+
+    // headersBuf = "";
+    // headersBuf.shrink_to_fit();
+
+    return true;
 }

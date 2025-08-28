@@ -27,19 +27,22 @@ void ServerHandle::onPollEvent(int status, int events)
 
 void ServerHandle::handleReadEvent()
 {
-    int n = read(state->getServerFd(), buf.data(), buf.size());
-
-    if (n == 0)
+    while (true)
     {
-        state->shutdown();
-        return;
-    }
-    else if (n < 0)
-    {
-        return;
-    }
+        int n = read(state->getServerFd(), buf.data(), buf.size());
 
-    state->getClientWriteQueue().enqueue(buf.data(), n);
+        if (n == 0)
+        {
+            state->shutdown();
+            return;
+        }
+        else if (n < 0)
+        {
+            return;
+        }
+
+        state->getClientWriteQueue().enqueue(buf.data(), n);
+    }
 }
 
 void ServerHandle::handleWriteEvent()
@@ -50,7 +53,6 @@ void ServerHandle::handleWriteEvent()
     {
         return;
     }
- 
 
     int n = send(state->getServerFd(), w.data(), w.size(), MSG_NOSIGNAL);
 

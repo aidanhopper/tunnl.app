@@ -1,7 +1,7 @@
 #include "ziti-server-state.hpp"
 #include "client-handle.hpp"
 #include "server-handle.hpp"
-#include <iostream>
+#include "ziti/zitilib.h"
 #include <openssl/ssl.h>
 #include <unistd.h>
 
@@ -18,14 +18,16 @@ ZitiServerState::~ZitiServerState()
         clientSSL = nullptr;
     }
 
-    close(clientFd);
-    close(serverFd);
+    Ziti_close(clientFd);
+    Ziti_close(serverFd);
 }
 
 ZitiServerState::ZitiServerState(
-    SSL_CTX *sslContext, const int clientFd, const int serverFd) :
+    const Service &service, SSL_CTX *sslContext, const int clientFd,
+    const int serverFd) :
     clientFd(clientFd),
-    serverFd(serverFd)
+    serverFd(serverFd),
+    service(service)
 {
     clientSSL = SSL_new(sslContext);
     SSL_set_fd(clientSSL, clientFd);
@@ -73,4 +75,19 @@ void ZitiServerState::setTLSState(ZitiServerState::TLS_STATE state)
 void ZitiServerState::shutdown()
 {
     delete this;
+}
+
+const bool &ZitiServerState::headersParsed() const
+{
+    return _headersParsed;
+}
+
+void ZitiServerState::toggleHeadersParsed()
+{
+    _headersParsed = true;
+}
+
+const Service &ZitiServerState::getService() const
+{
+    return service;
 }
