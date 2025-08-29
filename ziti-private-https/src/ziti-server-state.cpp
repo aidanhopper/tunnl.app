@@ -18,8 +18,8 @@ ZitiServerState::~ZitiServerState()
         clientSSL = nullptr;
     }
 
-    Ziti_close(clientFd);
-    Ziti_close(serverFd);
+    close(clientFd);
+    close(serverFd);
 }
 
 ZitiServerState::ZitiServerState(

@@ -79,6 +79,4 @@ void App::run()
     server2.start();
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-
-    std::cout << "Uv run is over" << std::endl;
 }

@@ -181,9 +181,9 @@ bool ClientHandle::tryParseHeaders(int n)
         headers += std::string{ k + ": " + v + "\r\n" };
     }
 
-    headers += "\r\n";
-
     std::cout << headers << std::endl;
+
+    headers += "\r\n";
 
     state->getServerWriteQueue().enqueue(headers.data(), headers.size());
     state->getServerWriteQueue().enqueue(body.data(), body.size());
