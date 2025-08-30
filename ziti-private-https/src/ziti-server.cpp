@@ -17,6 +17,7 @@ ZitiServer::ZitiServer(const ziti_handle_t &ztx, const Service &service) :
     service(service),
     zitiContext(ztx)
 {
+    fcntl(getFd(), F_SETFL, O_NONBLOCK);
     int error = Ziti_bind(
         getFd(),
         getZitiContext(),
@@ -29,8 +30,7 @@ ZitiServer::ZitiServer(const ziti_handle_t &ztx, const Service &service) :
             "Could not bind to " + getService().getName());
     }
 
-    Ziti_listen(getFd(), 100);
-    fcntl(getFd(), F_SETFL, O_NONBLOCK);
+    Ziti_listen(getFd(), 1000);
 
     sslContext =
         MySSL::create_server_ctx("certs/server.crt", "certs/server.key");
@@ -43,7 +43,7 @@ ZitiServer::ZitiServer(const ziti_handle_t &ztx, const Service &service) :
 // prevent opening and closing the connection so much, but then I will need
 // specialized handling of the the Connection: Upgrade header. Should start
 // by creating a connection manager within the Ziti Server that contains
-// a backend fd. Ziti Server can ask the connection manager for the backend 
+// a backend fd. Ziti Server can ask the connection manager for the backend
 // socket, and it will create a new one if it's been consumed. The client
 // can then ask Ziti State to consume the backend socket for websocket
 // requests.
@@ -54,6 +54,7 @@ void ZitiServer::onPollEvent(int status, int events)
     auto bindServiceName = getService().getName();
 
     ziti_socket_t clientFd = Ziti_accept(proxyFd, caller, sizeof(caller));
+    fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
     if (clientFd < 0)
     {
@@ -71,17 +72,14 @@ void ZitiServer::onPollEvent(int status, int events)
     }
 
     ziti_socket_t serverFd = Ziti_socket(SOCK_STREAM);
-
     fcntl(serverFd, F_SETFL, O_NONBLOCK);
-    fcntl(clientFd, F_SETFL, O_NONBLOCK);
 
     connectBackend(clientFd, serverFd);
 }
 
 void ZitiServer::onClose()
 {
-    // close(getFd());
-    Ziti_close(getFd());
+    close(getFd());
 }
 
 void ZitiServer::connectBackend(int clientFd, int serverFd)
@@ -116,41 +114,32 @@ void ZitiServer::connectBackend(int clientFd, int serverFd)
             auto targetServiceName =
                 data->service.getPrivateHTTPSV1().value().getTargetService();
 
-            std::cout << "CONNECTING TO ZITI SERVICE" << std::endl;
             data->rc = Ziti_connect(
                 data->serverFd,
                 data->zitiContext,
                 targetServiceName.c_str(),
                 NULL);
-            if (data->rc == 0)
-            {
-                std::cout << "CONNECTED" << std::endl;
-            }
-            else
-            {
-                std::cout << "CONNECTED" << std::endl;
-            }
         },
         [](uv_work_t *req, int status) {
             auto *data = static_cast<ConnectBackendData *>(req->data);
 
-            auto targetServiceName =
-                data->service.getPrivateHTTPSV1().value().getTargetService();
-
             if (data->rc != 0)
             {
+                auto targetServiceName = data->service.getPrivateHTTPSV1()
+                                             .value()
+                                             .getTargetService();
                 close(data->clientFd);
                 close(data->serverFd);
                 std::cerr << "Could not connect to " + targetServiceName
                           << std::endl;
-                return;
             }
-
-            // will clean itself up when the connection is done
-            new ZitiServerState{ data->service,
-                                 data->sslContext,
-                                 data->clientFd,
-                                 data->serverFd };
+            else
+            {
+                new ZitiServerState{ data->service,
+                                     data->sslContext,
+                                     data->clientFd,
+                                     data->serverFd };
+            }
 
             delete data;
             req->data = nullptr;

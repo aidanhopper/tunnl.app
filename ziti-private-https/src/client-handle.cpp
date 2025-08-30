@@ -58,10 +58,12 @@ void ClientHandle::handleReadEvent()
             case SSL_ERROR_WANT_WRITE:
                 return;
             default:
-                state->shutdown();
+                // state->shutdown();
                 return;
             }
         }
+
+        state->kick();
 
         if (!state->headersParsed())
         {
@@ -106,6 +108,8 @@ void ClientHandle::handleWriteEvent()
             return;
         }
     }
+
+    state->kick();
 
     state->getClientWriteQueue().commit(n);
 }
@@ -173,6 +177,13 @@ bool ClientHandle::tryParseHeaders(int n)
 
     headerMap["X-Forwarded-Proto"] = "https";
 
+    // headerMap.erase("Connection");
+    // headerMap.erase("Keep-Alive");
+    headerMap.erase("Proxy-Authenticate");
+    headerMap.erase("TE");
+    headerMap.erase("Trailer");
+    headerMap.erase("Transfer-Encoding");
+
     // reconstruct headers
     std::string headers{ lines[0] + "\r\n" };
 
@@ -181,7 +192,7 @@ bool ClientHandle::tryParseHeaders(int n)
         headers += std::string{ k + ": " + v + "\r\n" };
     }
 
-    std::cout << headers << std::endl;
+    // std::cout << headers << std::endl;
 
     headers += "\r\n";
 

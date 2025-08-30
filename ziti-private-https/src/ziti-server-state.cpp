@@ -7,6 +7,8 @@
 
 ZitiServerState::~ZitiServerState()
 {
+    uv_timer_stop(&timer);
+
     if (clientSSL)
     {
         int rc = SSL_shutdown(clientSSL);
@@ -18,8 +20,8 @@ ZitiServerState::~ZitiServerState()
         clientSSL = nullptr;
     }
 
-    close(clientFd);
     close(serverFd);
+    close(clientFd);
 }
 
 ZitiServerState::ZitiServerState(
@@ -31,10 +33,34 @@ ZitiServerState::ZitiServerState(
 {
     clientSSL = SSL_new(sslContext);
     SSL_set_fd(clientSSL, clientFd);
+
     client = std::make_unique<ClientHandle>(this);
     server = std::make_unique<ServerHandle>(this);
+
+    uv_timer_init(uv_default_loop(), &timer);
+    timer.data = this;
+
     client->start();
     server->start();
+
+    kick();
+}
+
+void ZitiServerState::kick()
+{
+    uv_timer_stop(&timer);
+    uv_timer_start(
+        &timer,
+        [](uv_timer_t *handle) {
+            ZitiServerState *state =
+                static_cast<ZitiServerState *>(handle->data);
+            std::cerr << "Idle timeout, closing connection\n";
+            state->shutdown();
+            uv_timer_stop(handle);
+        },
+        60000, // Timeout in ms
+        0      // 0 = single-shot
+    );
 }
 
 WriteQueue &ZitiServerState::getServerWriteQueue()

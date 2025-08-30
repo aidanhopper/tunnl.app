@@ -8,9 +8,9 @@
 class ZitiServer : public PollHandle<ZitiServer>
 {
   private:
-    const Service &service;
+    const Service service;
     const ziti_handle_t &zitiContext;
-    SSL_CTX *sslContext; 
+    SSL_CTX *sslContext;
     char caller[128];
 
   public:
@@ -21,6 +21,7 @@ class ZitiServer : public PollHandle<ZitiServer>
 
     const SSL_CTX *getSSLContext() const;
     const ziti_handle_t getZitiContext() const;
-    const Service& getService() const;
+    const Service &getService() const;
     void connectBackend(int clientFd, int serverFd);
+    int acceptConnection();
 };

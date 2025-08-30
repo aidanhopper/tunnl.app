@@ -8,10 +8,12 @@
 #include <curl/curl.h>
 #include <fcntl.h>
 #include <iostream>
+#include <openssl/pkcs7.h>
 #include <ranges>
 #include <string>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <unordered_map>
 #include <uv.h>
 
 App::App()
@@ -58,25 +60,75 @@ void App::run()
 {
     Identity id{ "id.json" };
 
-    auto bindServices = id.getBindServices();
-    auto dialServices = id.getDialServices();
+    std::unordered_map<std::string, std::unique_ptr<ZitiServer>> listeners;
 
-    // Two things
-    // In order to avoid redirect loops I need to inject some headers
-    // X-Forwarded-Proto ...
+    uv_timer_t timer;
+
+    uv_timer_init(uv_default_loop(), &timer);
+
+    struct Data
+    {
+        Identity &id;
+        std::unordered_map<std::string, std::unique_ptr<ZitiServer>>
+            &listeners;
+    };
+
+    timer.data = new Data{
+        .id = id,
+        .listeners = listeners,
+    };
+
+    uv_timer_start(
+        &timer,
+        [](uv_timer_t *handle) {
+            auto data = static_cast<Data *>(handle->data);
+
+            auto bindServices = data->id.getBindServices();
+            auto dialServices = data->id.getDialServices();
+
+            // make sure every service currently in listeners is still valid
+            for (auto &name : data->listeners | std::views::keys)
+            {
+                if (!bindServices.contains(name))
+                {
+                    data->listeners.erase(name);
+                }
+                else if (!bindServices.at(name)
+                              .getPrivateHTTPSV1()
+                              .has_value())
+                {
+                    data->listeners.erase(name);
+                }
+                else if (!dialServices.contains(bindServices.at(name)
+                                                    .getPrivateHTTPSV1()
+                                                    .value()
+                                                    .getTargetService()))
+                {
+                    data->listeners.erase(name);
+                }
+            }
+        },
+        0,
+        15000);
+
+    // auto bindServices = id.getBindServices();
+    // auto dialServices = id.getDialServices();
+
+    // for (auto &bindService : bindServices | std::views::values)
+    // {
+    //     if (bindService.getPrivateHTTPSV1().has_value() &&
+    //         dialServices.contains(
+    //             bindService.getPrivateHTTPSV1().value().getTargetService()))
+    //     {
+    //         listeners[bindService.getName()] =
+    //             std::make_unique<ZitiServer>(id.getZtx(), bindService);
+    //     }
+    // }
     //
-    // Change from server and client to TLSHandle and regular SocketHandle
-    // Then make it so I can freely swap between SSL and not for client.
-    // (good for testing).
-   
-    auto server1 =
-        ZitiServer{ id.getZtx(), bindServices.at("private-https-service") };
-
-    auto server2 =
-        ZitiServer{ id.getZtx(), bindServices.at("private-https-service-2") };
-
-    server1.start();
-    server2.start();
+    // for (auto &listener : listeners | std::views::values)
+    // {
+    //     listener->start();
+    // }
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 }

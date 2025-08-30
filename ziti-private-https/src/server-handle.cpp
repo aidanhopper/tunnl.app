@@ -41,6 +41,8 @@ void ServerHandle::handleReadEvent()
             return;
         }
 
+        state->kick();
+
         state->getClientWriteQueue().enqueue(buf.data(), n);
     }
 }
@@ -61,6 +63,8 @@ void ServerHandle::handleWriteEvent()
         state->shutdown();
         return;
     }
+
+    state->kick();
 
     state->getServerWriteQueue().commit(n);
 }

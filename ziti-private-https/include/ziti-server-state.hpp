@@ -3,6 +3,7 @@
 #include "service.hpp"
 #include "write-queue.hpp"
 #include <openssl/crypto.h>
+#include <uv.h>
 
 class ClientHandle;
 class ServerHandle;
@@ -39,12 +40,15 @@ class ZitiServerState
     void toggleHeadersParsed();
     const bool &headersParsed() const;
 
+    void kick();
+
   private:
     WriteQueue clientWriteQueue;
     WriteQueue serverWriteQueue;
 
     std::unique_ptr<ClientHandle> client;
     std::unique_ptr<ServerHandle> server;
+    uv_timer_t timer;
 
     TLS_STATE tlsState = HANDSHAKE;
 
