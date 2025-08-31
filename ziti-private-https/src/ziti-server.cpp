@@ -9,6 +9,7 @@
 
 ZitiServer::~ZitiServer()
 {
+    close(getFd());
     SSL_CTX_free(sslContext);
 }
 
@@ -58,7 +59,7 @@ void ZitiServer::onPollEvent(int status, int events)
 
     if (clientFd < 0)
     {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == 9)
         {
             return;
         }
@@ -79,7 +80,6 @@ void ZitiServer::onPollEvent(int status, int events)
 
 void ZitiServer::onClose()
 {
-    close(getFd());
 }
 
 void ZitiServer::connectBackend(int clientFd, int serverFd)

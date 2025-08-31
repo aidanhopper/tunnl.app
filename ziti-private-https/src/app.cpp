@@ -86,26 +86,79 @@ void App::run()
             auto bindServices = data->id.getBindServices();
             auto dialServices = data->id.getDialServices();
 
+            std::vector<std::string> listenersToErase;
+
             // make sure every service currently in listeners is still valid
-            for (auto &name : data->listeners | std::views::keys)
+            for (auto name : data->listeners | std::views::keys)
             {
-                if (!bindServices.contains(name))
+                if (!bindServices.contains(name) ||
+                    !bindServices.at(name).getPrivateHTTPSV1().has_value() ||
+                    !dialServices.contains(bindServices.at(name)
+                                               .getPrivateHTTPSV1()
+                                               .value()
+                                               .getTargetService()))
                 {
-                    data->listeners.erase(name);
+                    std::cout << "[INFO] Removing " << name << " service"
+                              << std::endl;
+                    listenersToErase.push_back(name);
                 }
-                else if (!bindServices.at(name)
-                              .getPrivateHTTPSV1()
-                              .has_value())
+            }
+
+            for (auto &name : listenersToErase)
+            {
+                data->listeners.erase(name);
+            }
+
+            for (auto &bindService : bindServices | std::views::values)
+            {
+                // if its a new service
+                if (!data->listeners.contains(bindService.getName()))
                 {
-                    data->listeners.erase(name);
+                    if (bindService.getPrivateHTTPSV1().has_value() &&
+                        dialServices.contains(bindService.getPrivateHTTPSV1()
+                                                  .value()
+                                                  .getTargetService()))
+                    {
+                        std::cout << "[INFO] Adding " << bindService.getName()
+                                  << " service" << std::endl;
+                        data->listeners[bindService.getName()] =
+                            std::make_unique<ZitiServer>(
+                                data->id.getZtx(),
+                                bindService);
+                    }
                 }
-                else if (!dialServices.contains(bindServices.at(name)
-                                                    .getPrivateHTTPSV1()
-                                                    .value()
-                                                    .getTargetService()))
+
+                // if the service configuration has changed
+                else
                 {
-                    data->listeners.erase(name);
+                    auto currentBindService =
+                        data->listeners[bindService.getName()]->getService();
+
+                    auto &newBindService = bindService;
+
+                    if (currentBindService.getPrivateHTTPSV1()
+                            .value()
+                            .getTargetService() !=
+                        newBindService.getPrivateHTTPSV1()
+                            .value()
+                            .getTargetService())
+                    {
+                        std::cout
+                            << "[INFO] " << bindService.getName()
+                            << " service has changed, updating configuration"
+                            << std::endl;
+                        data->listeners.erase(currentBindService.getName());
+                        data->listeners[currentBindService.getName()] =
+                            std::make_unique<ZitiServer>(
+                                data->id.getZtx(),
+                                bindService);
+                    }
                 }
+            }
+
+            for (auto &listener : data->listeners | std::views::values)
+            {
+                listener->start();
             }
         },
         0,
