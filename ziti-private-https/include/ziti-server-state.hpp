@@ -55,7 +55,7 @@ class ZitiServerState
     const int serverFd;
     const int clientFd;
 
-    const Service &service;
+    const Service service;
 
     SSL *clientSSL;
 

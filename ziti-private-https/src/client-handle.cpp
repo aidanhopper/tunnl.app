@@ -137,6 +137,11 @@ void ClientHandle::handleTLSConnect()
 
 bool ClientHandle::tryParseHeaders(int n)
 {
+    if (!state->getService().getInterceptV1().has_value())
+    {
+        state->shutdown();
+    }
+
     headersBuf += std::string{ buf.begin(), buf.begin() + n };
 
     int pos = headersBuf.find("\r\n\r\n");

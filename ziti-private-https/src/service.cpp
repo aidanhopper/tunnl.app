@@ -19,59 +19,59 @@ Service::Service(const json &blob)
 // Getters implementations
 const std::string &Service::getId() const
 {
-    return this->id;
+    return id;
 }
 
 const std::string &Service::getCreatedAt() const
 {
-    return this->createdAt;
+    return createdAt;
 }
 
 const std::string &Service::getUpdatedAt() const
 {
-    return this->updatedAt;
+    return updatedAt;
 }
 
 const json &Service::getConfig() const
 {
-    return this->config;
+    return config;
 }
 
 const std::vector<std::string> &Service::getConfigs() const
 {
-    return this->configs;
+    return configs;
 }
 
 const bool Service::isEncryptionRequired() const
 {
-    return this->encryptionRequired;
+    return encryptionRequired;
 }
 
 const int Service::getMaxIdleTimeMillis() const
 {
-    return this->maxIdleTimeMillis;
+    return maxIdleTimeMillis;
 }
 
 const std::string &Service::getName() const
 {
-    return this->name;
+    return name;
 }
 
 const std::vector<std::string> &Service::getPermissions() const
 {
-    return this->permissions;
+    return permissions;
 }
 
 const std::string &Service::getTerminatorStrategy() const
 {
-    return this->terminatorStrategy;
+    return terminatorStrategy;
 }
 
 const bool Service::canBind() const
 {
-    bool hasBindPermission{false};
+    bool hasBindPermission{ false };
 
-    for (const auto &p : this->getPermissions())
+    for (const auto &p : getPermissions())
     {
         if (p == "Bind")
         {
@@ -83,9 +83,9 @@ const bool Service::canBind() const
 }
 const bool Service::canDial() const
 {
-    bool hasDialPermission{false};
+    bool hasDialPermission{ false };
 
-    for (const auto &p : this->getPermissions())
+    for (const auto &p : getPermissions())
     {
         if (p == "Dial")
         {
@@ -98,32 +98,32 @@ const bool Service::canDial() const
 
 const bool Service::hasInterceptV1() const
 {
-    return this->config.contains("intercept.v1");
+    return config.contains("intercept.v1");
 }
 
 const bool Service::hasPrivateHTTPSV1() const
 {
-    return this->config.contains("private-https.v1");
+    return config.contains("private-https.v1");
 }
 
 const std::optional<Config::InterceptV1> Service::getInterceptV1() const
 {
-    if (!this->getConfig().contains("intercept.v1"))
+    if (!config.contains("intercept.v1"))
     {
         return std::nullopt;
     }
 
-    return Config::InterceptV1(this->getConfig().at("intercept.v1"));
+    return Config::InterceptV1(config.at("intercept.v1"));
 }
 
 const std::optional<Config::PrivateHTTPSV1> Service::getPrivateHTTPSV1() const
 {
-    if (!this->getConfig().contains("private-https.v1"))
+    if (!config.contains("private-https.v1"))
     {
         return std::nullopt;
     }
 
-    return Config::PrivateHTTPSV1(this->getConfig().at("private-https.v1"));
+    return Config::PrivateHTTPSV1(config.at("private-https.v1"));
 }
 
 std::ostream &operator<<(std::ostream &os, const Service &service)

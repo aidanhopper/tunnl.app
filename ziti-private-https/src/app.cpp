@@ -134,7 +134,7 @@ void App::run()
                     auto currentBindService =
                         data->listeners[bindService.getName()]->getService();
 
-                    auto &newBindService = bindService;
+                    auto newBindService = bindService;
 
                     if (currentBindService.getPrivateHTTPSV1()
                             .value()
